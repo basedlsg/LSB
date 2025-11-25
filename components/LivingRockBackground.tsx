@@ -157,7 +157,11 @@ void main() {
 // Renders 3D primitive shapes (Rings, Sticks) that float in front of the rock
 const FloatingArtifacts = ({ scrollProgress, mouse }: { scrollProgress: number, mouse: THREE.Vector2 }) => {
   const groupRef = useRef<THREE.Group>(null);
-  
+
+  // Use ref to avoid stale closures in useFrame
+  const scrollProgressRef = useRef(scrollProgress);
+  scrollProgressRef.current = scrollProgress;
+
   // Generate random positions for artifacts
   const artifacts = useMemo(() => {
     return new Array(8).fill(0).map((_, i) => ({
@@ -178,7 +182,7 @@ const FloatingArtifacts = ({ scrollProgress, mouse }: { scrollProgress: number, 
     
     // Visibility logic: Visible mostly during Section 3 (Shared Learning)
     // Scroll 0.4 to 0.7
-    const opacity = smoothstep(0.3, 0.45, scrollProgress) * (1.0 - smoothstep(0.65, 0.8, scrollProgress));
+    const opacity = smoothstep(0.3, 0.45, scrollProgressRef.current) * (1.0 - smoothstep(0.65, 0.8, scrollProgressRef.current));
     
     groupRef.current.children.forEach((child, i) => {
       const art = artifacts[i];
@@ -223,7 +227,11 @@ const FloatingArtifacts = ({ scrollProgress, mouse }: { scrollProgress: number, 
 const LivingRockBackground = ({ scrollProgress, mouse }: { scrollProgress: number, mouse: THREE.Vector2 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree(); // Get viewport dimensions to fill screen
-  
+
+  // Use ref to avoid stale closures in useFrame
+  const scrollProgressRef = useRef(scrollProgress);
+  scrollProgressRef.current = scrollProgress;
+
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
@@ -239,7 +247,7 @@ const LivingRockBackground = ({ scrollProgress, mouse }: { scrollProgress: numbe
     if (meshRef.current) {
       const material = meshRef.current.material as THREE.ShaderMaterial;
       material.uniforms.uTime.value = clock.getElapsedTime();
-      material.uniforms.uScrollProgress.value = scrollProgress;
+      material.uniforms.uScrollProgress.value = scrollProgressRef.current;
       // Convert Mouse (-1 to 1) to (0 to 1) for Shader UV logic
       material.uniforms.uMouse.value.set(
         (mouse.x + 1) * 0.5,

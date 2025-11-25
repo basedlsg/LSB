@@ -495,6 +495,10 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
 
+  // Use refs to avoid stale closures in useFrame
+  const scrollProgressRef = useRef(scrollProgress);
+  scrollProgressRef.current = scrollProgress;
+
   const particles = useMemo(() => generateParticles(viewport.width, viewport.height), [viewport]);
 
   const uniforms = useMemo(() => ({
@@ -511,13 +515,13 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uScrollProgress.value = scrollProgress;
+      mat.uniforms.uScrollProgress.value = scrollProgressRef.current;
       mat.uniforms.uMouse.value.copy(mouse);
     }
     if (rockRef.current) {
       const mat = rockRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uScrollProgress.value = scrollProgress;
+      mat.uniforms.uScrollProgress.value = scrollProgressRef.current;
       mat.uniforms.uMouse.value.copy(mouse);
     }
   });
