@@ -50,13 +50,13 @@ const Cursor: React.FC = () => {
            position: fixed;
            top: 0;
            left: 0;
-           width: 6px;
-           height: 6px;
+           width: 2px;
+           height: 2px;
            background-color: #FDFBF7;
            border-radius: 50%;
            z-index: 9999;
-           margin-left: -3px;
-           margin-top: -3px;
+           margin-left: -1px;
+           margin-top: -1px;
            mix-blend-mode: exclusion;
            transition: transform 0.05s linear;
         }

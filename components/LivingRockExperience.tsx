@@ -385,7 +385,7 @@ void main() {
 }
 `;
 
-const LivingRockExperience = ({ scrollProgress, mouseRef }: { scrollProgress: number, mouseRef: React.RefObject<THREE.Vector2 | null> }) => {
+const LivingRockExperience = ({ scrollProgressRef, mouseRef }: { scrollProgressRef: React.RefObject<number | null>, mouseRef: React.RefObject<THREE.Vector2 | null> }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
@@ -403,6 +403,7 @@ const LivingRockExperience = ({ scrollProgress, mouseRef }: { scrollProgress: nu
     const { clock } = state;
     const t = clock.getElapsedTime();
     const mouse = mouseRef.current;
+    const scrollProgress = scrollProgressRef.current ?? 0;
 
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;

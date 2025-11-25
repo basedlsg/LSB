@@ -53,6 +53,7 @@ const SidebarNav = ({ progress }: { progress: number }) => {
 export default function App() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const scrollProgressRef = useRef(0);
   const mousePosRef = useRef(new THREE.Vector2(0, 0));
 
   useEffect(() => {
@@ -61,7 +62,8 @@ export default function App() {
       const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
       const maxScroll = scrollHeight - clientHeight;
       const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
-      setScrollProgress(progress);
+      scrollProgressRef.current = progress; // Update ref for Three.js (no re-render)
+      setScrollProgress(progress); // Update state for UI components
     };
 
     const container = scrollContainerRef.current;
@@ -92,7 +94,7 @@ export default function App() {
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
-          <LivingRockExperience scrollProgress={scrollProgress} mouseRef={mousePosRef} />
+          <LivingRockExperience scrollProgressRef={scrollProgressRef} mouseRef={mousePosRef} />
         </Canvas>
       </div>
 
