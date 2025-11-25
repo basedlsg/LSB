@@ -326,12 +326,12 @@ void main() {
   vec3 finalPos = mixPos + turbulence;
 
   // --- SUBTLE LIFE (Drift) ---
-  // Slow breathing motion
+  // Slow breathing motion - creates gentle ambient movement
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.05),
-    snoise(finalPos * 0.5 + uTime * 0.06 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.04 + 20.0)
-  ) * 0.05;
+    snoise(finalPos * 0.5 + uTime * 0.15),
+    snoise(finalPos * 0.5 + uTime * 0.18 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.12 + 20.0)
+  ) * 0.12;
   finalPos += drift;
 
   // --- MOUSE INTERACTION ---
@@ -385,7 +385,7 @@ void main() {
 }
 `;
 
-const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: number, mouse: THREE.Vector2 }) => {
+const LivingRockExperience = ({ scrollProgress, mouseRef }: { scrollProgress: number, mouseRef: React.RefObject<THREE.Vector2 | null> }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
@@ -402,18 +402,23 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
   useFrame((state) => {
     const { clock } = state;
     const t = clock.getElapsedTime();
+    const mouse = mouseRef.current;
 
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = scrollProgress;
-      mat.uniforms.uMouse.value.copy(mouse);
+      if (mouse) {
+        mat.uniforms.uMouse.value.copy(mouse);
+      }
     }
     if (rockRef.current) {
       const mat = rockRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = scrollProgress;
-      mat.uniforms.uMouse.value.copy(mouse);
+      if (mouse) {
+        mat.uniforms.uMouse.value.copy(mouse);
+      }
     }
   });
 
