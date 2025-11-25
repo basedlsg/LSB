@@ -105,7 +105,7 @@ export default function App() {
         
         {/* 01 ORIGIN */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
-          <div className="max-w-xl text-center space-y-12">
+          <div className="max-w-xl text-center space-y-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <h1 className="text-xs font-bold tracking-[0.4em] uppercase opacity-60">
               <FadeText delay={200}>Chapter I : The Dreamtime</FadeText>
             </h1>
@@ -122,25 +122,25 @@ export default function App() {
 
         {/* 02 TOOL */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
-          <div className="max-w-3xl text-center space-y-12 z-10">
+          <div className="max-w-3xl text-center space-y-12 z-10 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <p className="text-xl md:text-2xl font-light tracking-wide opacity-80">
               And from humans came the first technology:
             </p>
-            <h2 className="text-6xl md:text-9xl font-thin tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60">
+            <h2 className="text-6xl md:text-9xl font-thin tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 [text-shadow:none] drop-shadow-[0_4px_30px_rgba(255,255,255,0.3)]">
               THE STICK
             </h2>
             <div className="w-12 h-px bg-white/50 mx-auto" />
             <p className="text-lg md:text-xl leading-relaxed font-light tracking-wide opacity-90 max-w-lg mx-auto">
               A tool that let us leave the ground,<br/>
               cross new terrain,<br/>
-              and discover what we couldn’t reach alone.
+              and discover what we couldn't reach alone.
             </p>
           </div>
         </section>
 
         {/* 03 ASCENT */}
         <section className="h-screen w-full flex flex-row items-center justify-start snap-start relative p-12 md:pl-32">
-          <div className="max-w-lg text-left space-y-8 z-10">
+          <div className="max-w-lg text-left space-y-8 z-10 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)] backdrop-blur-[2px] bg-black/10 p-8 rounded-lg">
             <div className="w-8 h-px bg-white/50 mb-8" />
             <p className="text-sm font-bold tracking-[0.3em] uppercase opacity-60">
               Shared Learning
@@ -149,7 +149,7 @@ export default function App() {
               "A tool learns from the world through us."
             </blockquote>
             <p className="text-base font-light opacity-70 leading-relaxed">
-              As we reached higher, we learned something simple and powerful. 
+              As we reached higher, we learned something simple and powerful.
               Through shared learning, it carries us beyond our old limits.
             </p>
           </div>
@@ -159,8 +159,8 @@ export default function App() {
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] border border-white/5 rounded-full pointer-events-none" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vw] border border-white/10 rounded-full pointer-events-none" />
-          
-          <div className="max-w-4xl text-center z-10 space-y-8">
+
+          <div className="max-w-4xl text-center z-10 space-y-8 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <h3 className="text-4xl md:text-6xl font-light tracking-tight">
               Walking Stick Labs
             </h3>
@@ -168,18 +168,18 @@ export default function App() {
               System Architecture & Intelligence
             </p>
             <p className="max-w-xl mx-auto text-lg font-light opacity-80 pt-8">
-              Today, we’re building the next version of that tool. One that pushes us beyond our current limits and into new realities.
+              Today, we're building the next version of that tool. One that pushes us beyond our current limits and into new realities.
             </p>
           </div>
         </section>
 
         {/* 05 FUTURE */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
-          <div className="z-10 flex flex-col items-center gap-12">
+          <div className="z-10 flex flex-col items-center gap-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <h2 className="text-5xl md:text-7xl font-thin tracking-tighter">
               Come walk with us.
             </h2>
-            
+
             <button className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
@@ -187,7 +187,7 @@ export default function App() {
                 Initiate Protocol
               </span>
             </button>
-            
+
             <div className="mt-24 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
               <span>San Francisco — CA</span>
               <span>&copy; Walking Stick Labs</span>

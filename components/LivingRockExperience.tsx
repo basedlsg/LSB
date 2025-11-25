@@ -301,25 +301,34 @@ vec2 rotate(vec2 v, float a) {
 }
 
 void main() {
-  float totalStates = 4.0; 
+  float totalStates = 4.0;
   float progress = uScrollProgress * totalStates;
-  float stateIdx = floor(progress);
+
+  // Clamp to prevent issues at scrollProgress = 1.0
+  float stateIdx = min(floor(progress), 3.0);
   float t = fract(progress);
-  
+
+  // At the very end (scrollProgress = 1.0), show final state fully
+  if (uScrollProgress >= 0.999) {
+    stateIdx = 3.0;
+    t = 1.0;
+  }
+
   // Ease the transition time
   float easeT = t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 - pow(-2.0 * t + 2.0, 5.0) / 2.0;
 
   vec3 currentPos;
   vec3 nextPos;
 
+  // New order: pos0 (Galaxy) -> pos2 (Beam) -> pos3 (Flow) -> pos2 (Beam) -> pos4 (Sphere)
   if (stateIdx < 0.5) {
-     currentPos = pos0; nextPos = pos1;
+     currentPos = pos0; nextPos = pos2;  // Galaxy -> Beam
   } else if (stateIdx < 1.5) {
-     currentPos = pos1; nextPos = pos2;
+     currentPos = pos2; nextPos = pos3;  // Beam -> Flowing Path
   } else if (stateIdx < 2.5) {
-     currentPos = pos2; nextPos = pos3;
+     currentPos = pos3; nextPos = pos2;  // Flowing Path -> Beam
   } else {
-     currentPos = pos3; nextPos = pos4;
+     currentPos = pos2; nextPos = pos4;  // Beam -> Sphere
   }
 
   // --- FLUID TRANSITION ---
