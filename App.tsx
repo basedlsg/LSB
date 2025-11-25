@@ -53,7 +53,8 @@ const SidebarNav = ({ progress }: { progress: number }) => {
 export default function App() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [mousePos, setMousePos] = useState(new THREE.Vector2(0, 0));
+  // Use ref for mouse position to avoid re-renders
+  const mousePos = useRef(new THREE.Vector2(0, 0));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,9 +75,10 @@ export default function App() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Calculate Normalized Device Coordinates (-1 to 1)
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      setMousePos(new THREE.Vector2(x, y));
+      mousePos.current.set(x, y);
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
@@ -91,7 +93,7 @@ export default function App() {
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
-          <LivingRockExperience scrollProgress={scrollProgress} mouse={mousePos} />
+          <LivingRockExperience scrollProgress={scrollProgress} mouse={mousePos.current} />
         </Canvas>
       </div>
 

@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // --- SHADER CHUNKS ---
-// Corrected GLSL with proper function ordering and overloads
 const noiseFunctions = `
 // 1. Helper functions must be defined before use
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -157,14 +156,14 @@ varying vec3 vPosition;
 varying float vNoise;
 uniform float uTime;
 uniform vec2 uMouse;
-uniform vec2 uResolution;
+uniform vec2 uViewport;
 uniform float uScrollProgress;
 
 ${noiseFunctions}
 
 void main() {
   vec2 uv = vUv;
-  float aspect = uResolution.x / uResolution.y;
+  float aspect = uViewport.x / uViewport.y;
   vec2 p = vec2(uv.x * aspect, uv.y);
   
   // Palette (Deepened for elegance)
@@ -185,7 +184,11 @@ void main() {
   color *= vignette;
 
   // Torch Effect (Mouse Light)
-  vec2 mouseP = uMouse * vec2(aspect, 1.0);
+  // Convert mouse (0 to 1) to shader space
+  // We need to approximate mouse position on the plane UVs
+  vec2 mouseUV = (uMouse + 1.0) * 0.5;
+  vec2 mouseP = vec2(mouseUV.x * aspect, mouseUV.y);
+  
   float mouseDist = distance(p, mouseP);
   float mouseGlow = smoothstep(0.5, 0.0, mouseDist);
   
@@ -233,7 +236,8 @@ const generateParticles = (width: number, height: number) => {
     const jitter = (Math.random() - 0.5) * 0.05;
     pos1[idx] = Math.cos(ringAngle) * (ringRadius + jitter);
     pos1[idx+1] = Math.sin(ringAngle) * (ringRadius + jitter);
-    pos1[idx+2] = (Math.random() - 0.5) * 0.1;
+    // Add wave in Z to prevent them being too flat
+    pos1[idx+2] = Math.sin(ringAngle * 5.0) * 0.2 + (Math.random() - 0.5) * 0.1;
 
     // POS 2: THE BEAM (The Stick)
     // A tight vertical shaft of light
@@ -282,12 +286,19 @@ attribute vec3 pos4;
 uniform float uTime;
 uniform float uScrollProgress; // 0.0 to 1.0
 uniform vec2 uMouse; // -1 to 1
-uniform vec2 uResolution;
+uniform vec2 uViewport; // Viewport dimensions
 
 varying float vAlpha;
 varying float vSize;
 
 ${noiseFunctions}
+
+vec2 rotate(vec2 v, float a) {
+	float s = sin(a);
+	float c = cos(a);
+	mat2 m = mat2(c, -s, s, c);
+	return m * v;
+}
 
 void main() {
   float totalStates = 4.0; 
@@ -296,7 +307,6 @@ void main() {
   float t = fract(progress);
   
   // Ease the transition time
-  // Quintic ease for very snappy start/end and slow middle
   float easeT = t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 - pow(-2.0 * t + 2.0, 5.0) / 2.0;
 
   vec3 currentPos;
@@ -313,37 +323,38 @@ void main() {
   }
 
   // --- FLUID TRANSITION ---
-  // Instead of linear mix, we use curl noise to displace particles during the transition
-  // Transition activity peaks at t=0.5
-  float activity = sin(t * 3.14159);
-  
-  // Calculate the linear path
   vec3 mixPos = mix(currentPos, nextPos, easeT);
   
-  // Add curl noise turbulence during transition
+  // Transition Turbulence
+  float activity = sin(t * 3.14159);
   vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 2.0;
   
   vec3 finalPos = mixPos + turbulence;
 
+  // --- CONSTANT MOTION (Fix for Stick Page) ---
+  // Apply a slow, constant rotation to everything so it never freezes
+  finalPos.xy = rotate(finalPos.xy, uTime * 0.05);
+
   // --- SUBTLE LIFE (Drift) ---
   // Slow breathing motion
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.05),
-    snoise(finalPos * 0.5 + uTime * 0.06 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.04 + 20.0)
-  ) * 0.05;
+    snoise(finalPos * 0.5 + uTime * 0.1),
+    snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.08 + 20.0)
+  ) * 0.08; // Increased drift amplitude for more life
   finalPos += drift;
 
   // --- MOUSE INTERACTION ---
-  float aspect = uResolution.x / uResolution.y;
-  vec3 mouseWorld = vec3(uMouse.x * aspect * 5.0, uMouse.y * 5.0, 0.0);
+  // Correctly map mouse to world space for interaction
+  vec3 mouseWorld = vec3(uMouse.x * uViewport.x * 0.5, uMouse.y * uViewport.y * 0.5, 0.0);
+  
   float dist = distance(finalPos.xy, mouseWorld.xy);
-  float radius = 1.2;
+  float radius = 0.15; // TIGHT radius for "small" cursor
   
   if (dist < radius) {
     vec3 dir = normalize(finalPos - mouseWorld);
     float force = (1.0 - dist / radius);
-    force = pow(force, 2.0) * 1.5; // Sharp falloff
+    force = pow(force, 2.0) * 0.8; 
     finalPos += dir * force;
   }
 
@@ -355,7 +366,6 @@ void main() {
   vSize = gl_PointSize;
 
   // Alpha / Fade logic
-  // Particles are consistent but sparkle
   float sparkle = snoise(finalPos * 10.0 + uTime * 2.0);
   vAlpha = 0.6 + 0.4 * sparkle;
   
@@ -385,6 +395,101 @@ void main() {
 }
 `;
 
+// --- CURSOR PARTICLE RING ---
+const CursorParticles = ({ mouse }: { mouse: THREE.Vector2 }) => {
+  const pointsRef = useRef<THREE.Points>(null);
+  const { viewport } = useThree();
+
+  const { positions, angles } = useMemo(() => {
+    const count = 48; // Number of particles in the ring
+    const pos = new Float32Array(count * 3);
+    const ang = new Float32Array(count);
+    for(let i=0; i<count; i++) {
+        const a = (i/count) * Math.PI * 2;
+        pos[i*3] = Math.cos(a) * 0.15; // Base radius matching interaction
+        pos[i*3+1] = Math.sin(a) * 0.15;
+        pos[i*3+2] = 0;
+        ang[i] = a;
+    }
+    return { positions: pos, angles: ang };
+  }, []);
+
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 }
+  }), []);
+
+  useFrame((state) => {
+    if(pointsRef.current) {
+        // Map NDC (-1 to 1) to World Plane
+        const x = (mouse.x * viewport.width) / 2;
+        const y = (mouse.y * viewport.height) / 2;
+        
+        // Lerp for smooth movement
+        const lerpFactor = 0.15;
+        pointsRef.current.position.x += (x - pointsRef.current.position.x) * lerpFactor;
+        pointsRef.current.position.y += (y - pointsRef.current.position.y) * lerpFactor;
+        
+        (pointsRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = state.clock.getElapsedTime();
+    }
+  });
+
+  const vertexShader = `
+    attribute float angle;
+    uniform float uTime;
+    varying float vAlpha;
+    ${noiseFunctions}
+
+    void main() {
+      // Dynamic Ring
+      float rBase = 1.0; // Scaled by position
+      float theta = angle + uTime * 0.5;
+      
+      // Turbulent radius
+      float noise = snoise(vec2(cos(theta), sin(theta)) + uTime);
+      float r = rBase + noise * 0.2;
+      
+      vec3 pos = position * r; 
+      
+      // Add drift/trail effect in Z and slightly XY
+      pos.z += snoise(vec3(pos.xy * 4.0, uTime)) * 0.1;
+
+      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+      
+      gl_PointSize = (40.0 / -mvPosition.z); 
+      vAlpha = 0.7 + 0.3 * noise;
+    }
+  `;
+  
+  const fragmentShader = `
+    varying float vAlpha;
+    void main() {
+      vec2 coord = gl_PointCoord - 0.5;
+      float dist = length(coord);
+      if(dist > 0.5) discard;
+      float glow = exp(-dist * 6.0);
+      gl_FragColor = vec4(0.9, 0.95, 1.0, vAlpha * glow); // Slightly blue-white
+    }
+  `;
+
+  return (
+    <points ref={pointsRef}>
+        <bufferGeometry>
+            <bufferAttribute attach="attributes-position" count={positions.length/3} array={positions} itemSize={3} />
+            <bufferAttribute attach="attributes-angle" count={angles.length} array={angles} itemSize={1} />
+        </bufferGeometry>
+        <shaderMaterial 
+            vertexShader={vertexShader}
+            fragmentShader={fragmentShader}
+            uniforms={uniforms}
+            transparent={true}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+        />
+    </points>
+  )
+}
+
 const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: number, mouse: THREE.Vector2 }) => {
   const pointsRef = useRef<THREE.Points>(null);
   const rockRef = useRef<THREE.Mesh>(null);
@@ -396,8 +501,8 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
     uTime: { value: 0 },
     uScrollProgress: { value: 0 },
     uMouse: { value: new THREE.Vector2(0, 0) },
-    uResolution: { value: new THREE.Vector2(size.width, size.height) }
-  }), [size]);
+    uViewport: { value: new THREE.Vector2(viewport.width, viewport.height) }
+  }), [viewport, size]);
 
   useFrame((state) => {
     const { clock } = state;
@@ -448,6 +553,9 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
           blending={THREE.AdditiveBlending}
         />
       </points>
+
+      {/* New Cursor Ring Component */}
+      <CursorParticles mouse={mouse} />
     </>
   );
 };
