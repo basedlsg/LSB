@@ -320,36 +320,36 @@ void main() {
   vec3 currentPos;
   vec3 nextPos;
 
-  // New order: pos0 (Galaxy) -> pos2 (Beam) -> pos3 (Flow) -> pos2 (Beam) -> pos4 (Sphere)
+  // Order: pos0 (Galaxy) -> pos2 (Beam) -> pos3 (Flow) -> pos1 (Rings) -> pos4 (Sphere)
   if (stateIdx < 0.5) {
      currentPos = pos0; nextPos = pos2;  // Galaxy -> Beam
   } else if (stateIdx < 1.5) {
      currentPos = pos2; nextPos = pos3;  // Beam -> Flowing Path
   } else if (stateIdx < 2.5) {
-     currentPos = pos3; nextPos = pos2;  // Flowing Path -> Beam
+     currentPos = pos3; nextPos = pos1;  // Flowing Path -> Rings
   } else {
-     currentPos = pos2; nextPos = pos4;  // Beam -> Sphere
+     currentPos = pos1; nextPos = pos4;  // Rings -> Sphere
   }
 
   // --- FLUID TRANSITION ---
   vec3 mixPos = mix(currentPos, nextPos, easeT);
-  
-  // Transition Turbulence
-  float activity = sin(t * 3.14159);
-  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 2.0;
-  
+
+  // Transition Turbulence - always have some base activity
+  float activity = sin(t * 3.14159) + 0.15;
+  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 1.5;
+
   vec3 finalPos = mixPos + turbulence;
 
-  // --- CONSTANT MOTION (Fix for Stick Page) ---
-  // Apply a slow, constant rotation to everything so it never freezes
-  finalPos.xy = rotate(finalPos.xy, uTime * 0.05);
+  // --- CONSTANT MOTION ---
+  // Apply continuous rotation so particles never freeze
+  finalPos.xy = rotate(finalPos.xy, uTime * 0.08);
 
   // --- SUBTLE LIFE (Drift) ---
-  // Slow breathing motion
+  // Continuous breathing motion - stronger for more visible movement
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.1),
-    snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.08 + 20.0)
+    snoise(finalPos * 0.5 + uTime * 0.15),
+    snoise(finalPos * 0.5 + uTime * 0.18 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.12 + 20.0)
   ) * 0.08; // Increased drift amplitude for more life
   finalPos += drift;
 
