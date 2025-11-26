@@ -55,41 +55,31 @@ export default function App() {
   const [scrollProgress, setScrollProgress] = useState(0);
   // Use ref for mouse position to avoid re-renders
   const mousePos = useRef(new THREE.Vector2(0, 0));
+  // Store scroll container ref for direct access in animation loop
+  const scrollRef = useRef({ progress: 0 });
 
   useEffect(() => {
     const calculateProgress = () => {
       if (!scrollContainerRef.current) return 0;
       const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
       const maxScroll = scrollHeight - clientHeight;
-      // Safety check for division by zero
       if (maxScroll <= 0) return 0;
-      // Clamp to 0-1 range, with 0.9999 max to avoid edge case issues
       return Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
     };
 
     const handleScroll = () => {
       const progress = calculateProgress();
+      scrollRef.current.progress = progress;
       setScrollProgress(progress);
-    };
-
-    // Also handle wheel events to catch scroll attempts at boundaries
-    const handleWheel = () => {
-      // Recalculate on wheel to ensure we have fresh values
-      requestAnimationFrame(() => {
-        const progress = calculateProgress();
-        setScrollProgress(progress);
-      });
     };
 
     const container = scrollContainerRef.current;
     if (container) {
-      container.addEventListener('scroll', handleScroll);
-      container.addEventListener('wheel', handleWheel, { passive: true });
+      container.addEventListener('scroll', handleScroll, { passive: true });
       handleScroll();
     }
     return () => {
       container?.removeEventListener('scroll', handleScroll);
-      container?.removeEventListener('wheel', handleWheel);
     };
   }, []);
 
@@ -113,7 +103,7 @@ export default function App() {
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
-          <LivingRockExperience scrollProgress={scrollProgress} mouse={mousePos.current} />
+          <LivingRockExperience scrollProgress={scrollProgress} mouse={mousePos.current} scrollContainerRef={scrollContainerRef} />
         </Canvas>
       </div>
 

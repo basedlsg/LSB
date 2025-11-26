@@ -545,14 +545,16 @@ const CursorParticles = ({ mouse }: { mouse: THREE.Vector2 }) => {
   )
 }
 
-const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: number, mouse: THREE.Vector2 }) => {
+interface LivingRockExperienceProps {
+  scrollProgress: number;
+  mouse: THREE.Vector2;
+  scrollContainerRef: React.RefObject<HTMLDivElement>;
+}
+
+const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: LivingRockExperienceProps) => {
   const pointsRef = useRef<THREE.Points>(null);
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
-
-  // Use refs to avoid stale closures in useFrame
-  const scrollProgressRef = useRef(scrollProgress);
-  scrollProgressRef.current = scrollProgress;
 
   const particles = useMemo(() => generateParticles(viewport.width, viewport.height), [viewport]);
 
@@ -563,20 +565,32 @@ const LivingRockExperience = ({ scrollProgress, mouse }: { scrollProgress: numbe
     uViewport: { value: new THREE.Vector2(viewport.width, viewport.height) }
   }), [viewport, size]);
 
+  // Calculate scroll progress directly from DOM in animation loop
+  const getScrollProgress = () => {
+    if (!scrollContainerRef.current) return scrollProgress;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const maxScroll = scrollHeight - clientHeight;
+    if (maxScroll <= 0) return 0;
+    return Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+  };
+
   useFrame((state) => {
     const { clock } = state;
     const t = clock.getElapsedTime();
 
+    // Read scroll position directly from DOM every frame
+    const currentScrollProgress = getScrollProgress();
+
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uScrollProgress.value = scrollProgressRef.current;
+      mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
     }
     if (rockRef.current) {
       const mat = rockRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uScrollProgress.value = scrollProgressRef.current;
+      mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
     }
   });
