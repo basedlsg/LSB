@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
+import CubeStory from './components/CubeStory';
 
 // --- COMPONENTS ---
 
@@ -35,7 +36,7 @@ const SidebarNav = ({ progress }: { progress: number }) => {
         // Map progress (0-1) to 5 chapters (0, 0.25, 0.5, 0.75, 1)
         const target = idx / 4;
         const isActive = Math.abs(progress - target) < 0.125;
-        
+
         return (
           <div key={chapter.id} className="flex items-center gap-4 transition-all duration-500">
             <span className={`text-[10px] tracking-[0.2em] font-medium transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0 translate-x-4'}`}>
@@ -50,12 +51,11 @@ const SidebarNav = ({ progress }: { progress: number }) => {
   );
 };
 
-export default function App() {
+// Main home page component
+function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  // Use ref for mouse position to avoid re-renders
   const mousePos = useRef(new THREE.Vector2(0, 0));
-  // Store scroll container ref for direct access in animation loop
   const scrollRef = useRef({ progress: 0 });
 
   useEffect(() => {
@@ -85,7 +85,6 @@ export default function App() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      // Calculate Normalized Device Coordinates (-1 to 1)
       const x = (e.clientX / window.innerWidth) * 2 - 1;
       const y = -(e.clientY / window.innerHeight) * 2 + 1;
       mousePos.current.set(x, y);
@@ -96,7 +95,7 @@ export default function App() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#1a0c05] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
-      
+
       <Cursor />
       <SidebarNav progress={scrollProgress} />
 
@@ -113,7 +112,7 @@ export default function App() {
         className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
         style={{ scrollBehavior: 'auto', overscrollBehavior: 'contain' }}
       >
-        
+
         {/* 01 ORIGIN */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
           <div className="max-w-xl text-center space-y-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
@@ -199,7 +198,19 @@ export default function App() {
               </span>
             </button>
 
-            <div className="mt-24 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
+            {/* Navigation to Cube Story */}
+            <a
+              href="#/story"
+              className="group relative mt-8 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+            >
+              <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+              <span className="relative text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
+                Read The Dreaming &rarr;
+              </span>
+            </a>
+
+            <div className="mt-16 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
               <span>San Francisco — CA</span>
               <span>&copy; Walking Stick Labs</span>
             </div>
@@ -209,4 +220,25 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+// Simple hash-based router
+export default function App() {
+  const [route, setRoute] = useState(window.location.hash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setRoute(window.location.hash);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Route to different pages based on hash
+  if (route === '#/story') {
+    return <CubeStory />;
+  }
+
+  return <HomePage />;
 }
