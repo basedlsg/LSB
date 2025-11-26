@@ -313,8 +313,8 @@ void main() {
     t = 1.0;
   }
 
-  // Ease the transition time
-  float easeT = t < 0.5 ? 16.0 * t * t * t * t * t : 1.0 - pow(-2.0 * t + 2.0, 5.0) / 2.0;
+  // Smoother easing - cubic ease in-out for natural feel
+  float easeT = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(-2.0 * t + 2.0, 3.0) / 2.0;
 
   vec3 currentPos;
   vec3 nextPos;
@@ -333,45 +333,49 @@ void main() {
   // --- FLUID TRANSITION ---
   vec3 mixPos = mix(currentPos, nextPos, easeT);
 
-  // Transition Turbulence - only during transitions
+  // Transition Turbulence - gentler, with base movement
   float activity = sin(t * 3.14159);
-  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 1.2;
+  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.08) * activity * 0.8;
 
   vec3 finalPos = mixPos + turbulence;
 
+  // --- CONSTANT BASE MOTION ---
+  // Always have some rotation so nothing ever freezes
+  float baseRotation = 0.02;
+
   // --- STATE-SPECIFIC MOTION ---
   // Apply rotation based on state
-  float rotationAmount = 0.0;
+  float rotationAmount = baseRotation;
   if (stateIdx < 0.5) {
-    rotationAmount = 0.08; // Galaxy rotates
+    rotationAmount = 0.06; // Galaxy rotates
   } else if (stateIdx < 1.5) {
-    rotationAmount = 0.04; // Stick rotates slowly
+    rotationAmount = 0.035; // Stick rotates slowly
   } else if (stateIdx < 2.5) {
-    rotationAmount = 0.03; // Flow has subtle rotation
+    rotationAmount = 0.025; // Flow has subtle rotation
   } else {
-    // Rings rotate, but sphere (at t=1.0) stays stable
-    rotationAmount = mix(0.05, 0.02, easeT);
+    // Rings rotate, sphere has gentle rotation
+    rotationAmount = mix(0.04, 0.025, easeT);
   }
-  // Blend rotation during transitions
-  rotationAmount *= (1.0 - activity * 0.3);
   finalPos.xy = rotate(finalPos.xy, uTime * rotationAmount);
 
   // --- SUBTLE LIFE (Drift) ---
-  // Drift strength per state
-  float driftStrength = 0.02;
+  // Always have base drift so particles keep moving
+  float baseDrift = 0.02;
+  float driftStrength = baseDrift;
   if (stateIdx < 0.5) {
-    driftStrength = 0.06; // Galaxy has more drift
+    driftStrength = 0.05; // Galaxy has more drift
   } else if (stateIdx < 1.5) {
-    driftStrength = 0.015; // Stick has minimal drift to keep shape
+    driftStrength = 0.02; // Stick has minimal drift
   } else if (stateIdx < 2.5) {
-    driftStrength = 0.04; // Flow has medium drift
+    driftStrength = 0.035; // Flow has medium drift
   } else {
-    driftStrength = 0.025; // Rings have subtle drift
+    // Rings and sphere both have visible drift
+    driftStrength = mix(0.03, 0.025, easeT);
   }
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.1),
-    snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.08 + 20.0)
+    snoise(finalPos * 0.5 + uTime * 0.12),
+    snoise(finalPos * 0.5 + uTime * 0.14 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.1 + 20.0)
   ) * driftStrength;
   finalPos += drift;
 
