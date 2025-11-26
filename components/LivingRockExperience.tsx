@@ -567,19 +567,52 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
 
   // Calculate scroll progress directly from DOM in animation loop
   const getScrollProgress = () => {
-    if (!scrollContainerRef.current) return scrollProgress;
+    if (!scrollContainerRef.current) {
+      console.log('[getScrollProgress] No scrollContainerRef, using prop:', scrollProgress);
+      return scrollProgress;
+    }
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
     const maxScroll = scrollHeight - clientHeight;
-    if (maxScroll <= 0) return 0;
-    return Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+    if (maxScroll <= 0) {
+      console.log('[getScrollProgress] maxScroll <= 0:', { scrollTop, scrollHeight, clientHeight, maxScroll });
+      return 0;
+    }
+    const result = Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+    return result;
   };
+
+  // Log every second to avoid console spam
+  const lastLogTime = useRef(0);
+  const frameCount = useRef(0);
+  const lastScrollProgress = useRef(0);
 
   useFrame((state) => {
     const { clock } = state;
     const t = clock.getElapsedTime();
+    frameCount.current++;
 
     // Read scroll position directly from DOM every frame
     const currentScrollProgress = getScrollProgress();
+
+    // Detect if scroll progress suddenly changed dramatically
+    if (Math.abs(currentScrollProgress - lastScrollProgress.current) > 0.1) {
+      console.warn('[useFrame] LARGE SCROLL JUMP:', {
+        from: lastScrollProgress.current,
+        to: currentScrollProgress,
+        frameCount: frameCount.current
+      });
+    }
+    lastScrollProgress.current = currentScrollProgress;
+
+    // Log once per second
+    if (t - lastLogTime.current > 1) {
+      lastLogTime.current = t;
+      console.log('[useFrame] frame:', frameCount.current, 'progress:', currentScrollProgress.toFixed(4), 'time:', t.toFixed(2));
+      if (scrollContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+        console.log('[useFrame] DOM:', { scrollTop: scrollTop.toFixed(0), maxScroll: (scrollHeight - clientHeight).toFixed(0), atEnd: scrollTop >= (scrollHeight - clientHeight) });
+      }
+    }
 
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;
