@@ -302,8 +302,8 @@ vec2 rotate(vec2 v, float a) {
 void main() {
   float totalStates = 4.0;
 
-  // Clamp scroll progress to valid range
-  float clampedScroll = clamp(uScrollProgress, 0.0, 1.0);
+  // Clamp scroll progress to valid range with small epsilon for safety
+  float clampedScroll = clamp(uScrollProgress, 0.0, 0.9999);
   float progress = clampedScroll * totalStates;
 
   // Calculate state index and transition progress
@@ -340,12 +340,16 @@ void main() {
   vec3 finalPos = mixPos + turbulence;
 
   // --- CONTINUOUS MOTION ---
+  // Guaranteed minimum values so particles NEVER freeze
+  float minRotation = 0.015;
+  float minDrift = 0.01;
+
   // Rotation speeds for each state: Galaxy, Stick, Flow, Rings/Sphere
   float rot0 = 0.05;  // Galaxy
   float rot1 = 0.03;  // Stick
   float rot2 = 0.025; // Flow
   float rot3 = 0.035; // Rings
-  float rot4 = 0.02;  // Sphere
+  float rot4 = 0.025; // Sphere
 
   // Smoothly interpolate rotation between states
   float rotationAmount;
@@ -358,6 +362,7 @@ void main() {
   } else {
     rotationAmount = mix(rot3, rot4, easeT);
   }
+  rotationAmount = max(rotationAmount, minRotation);
   finalPos.xy = rotate(finalPos.xy, uTime * rotationAmount);
 
   // --- SUBTLE LIFE (Drift) ---
@@ -379,6 +384,7 @@ void main() {
   } else {
     driftStrength = mix(drift3, drift4, easeT);
   }
+  driftStrength = max(driftStrength, minDrift);
   vec3 drift = vec3(
     snoise(finalPos * 0.5 + uTime * 0.1),
     snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
