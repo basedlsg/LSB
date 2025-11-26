@@ -551,10 +551,22 @@ interface LivingRockExperienceProps {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
 }
 
+// Global mount counter to detect re-mounts
+let mountCount = 0;
+
 const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: LivingRockExperienceProps) => {
   const pointsRef = useRef<THREE.Points>(null);
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
+  const instanceId = useRef(++mountCount);
+
+  // Log when component mounts/unmounts
+  React.useEffect(() => {
+    console.log('[LivingRockExperience] MOUNTED, instance:', instanceId.current);
+    return () => {
+      console.log('[LivingRockExperience] UNMOUNTED, instance:', instanceId.current);
+    };
+  }, []);
 
   const particles = useMemo(() => generateParticles(viewport.width, viewport.height), [viewport]);
 
@@ -566,18 +578,36 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
   }), [viewport, size]);
 
   // Calculate scroll progress directly from DOM in animation loop
+  // Use a cached value with timeout to detect stale reads
+  const lastGoodProgress = useRef(0);
+  const lastReadTime = useRef(0);
+
   const getScrollProgress = () => {
+    const now = performance.now();
+
     if (!scrollContainerRef.current) {
-      console.log('[getScrollProgress] No scrollContainerRef, using prop:', scrollProgress);
-      return scrollProgress;
+      console.log('[getScrollProgress] No scrollContainerRef, using last good:', lastGoodProgress.current);
+      return lastGoodProgress.current;
     }
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+
+    // Force a fresh read by accessing the element directly
+    const container = scrollContainerRef.current;
+    const scrollTop = container.scrollTop;
+    const scrollHeight = container.scrollHeight;
+    const clientHeight = container.clientHeight;
     const maxScroll = scrollHeight - clientHeight;
+
     if (maxScroll <= 0) {
       console.log('[getScrollProgress] maxScroll <= 0:', { scrollTop, scrollHeight, clientHeight, maxScroll });
-      return 0;
+      return lastGoodProgress.current;
     }
+
     const result = Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+
+    // Store this as a good read
+    lastGoodProgress.current = result;
+    lastReadTime.current = now;
+
     return result;
   };
 
@@ -607,10 +637,22 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
     // Log once per second
     if (t - lastLogTime.current > 1) {
       lastLogTime.current = t;
-      console.log('[useFrame] frame:', frameCount.current, 'progress:', currentScrollProgress.toFixed(4), 'time:', t.toFixed(2));
+      const fps = frameCount.current / t;
+      console.log('[useFrame] frame:', frameCount.current, 'fps:', fps.toFixed(1), 'progress:', currentScrollProgress.toFixed(4), 'time:', t.toFixed(2));
       if (scrollContainerRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
-        console.log('[useFrame] DOM:', { scrollTop: scrollTop.toFixed(0), maxScroll: (scrollHeight - clientHeight).toFixed(0), atEnd: scrollTop >= (scrollHeight - clientHeight) });
+        const maxScroll = scrollHeight - clientHeight;
+        const atEnd = scrollTop >= maxScroll - 1;
+        console.log('[useFrame] DOM:', { scrollTop: Math.round(scrollTop), maxScroll: Math.round(maxScroll), atEnd });
+      }
+
+      // Also log the actual uniform values being sent to shader
+      if (pointsRef.current) {
+        const mat = pointsRef.current.material as THREE.ShaderMaterial;
+        console.log('[useFrame] uniforms:', {
+          uTime: mat.uniforms.uTime.value.toFixed(2),
+          uScrollProgress: mat.uniforms.uScrollProgress.value.toFixed(4)
+        });
       }
     }
 
