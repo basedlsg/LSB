@@ -228,26 +228,23 @@ const generateParticles = (width: number, height: number) => {
     pos0[idx+2] = (Math.random() - 0.5) * 2.0; // Depth
 
     // POS 1: CONCENTRIC RINGS (The Tool)
-    // Create 7 discrete rings
+    // Create 7 discrete rings - perfect circles
     const ringIndex = Math.floor(Math.random() * 7);
     const ringRadius = 0.3 + ringIndex * 0.3;
     const ringAngle = Math.random() * Math.PI * 2;
-    // Add slight jitter for "chalk" look
-    const jitter = (Math.random() - 0.5) * 0.05;
-    pos1[idx] = Math.cos(ringAngle) * (ringRadius + jitter);
-    pos1[idx+1] = Math.sin(ringAngle) * (ringRadius + jitter);
-    // Add wave in Z to prevent them being too flat
-    pos1[idx+2] = Math.sin(ringAngle * 5.0) * 0.2 + (Math.random() - 0.5) * 0.1;
+    pos1[idx] = Math.cos(ringAngle) * ringRadius;
+    pos1[idx+1] = Math.sin(ringAngle) * ringRadius;
+    pos1[idx+2] = 0.0; // Flat rings
 
     // POS 2: THE BEAM (The Stick)
-    // A tight vertical shaft of light
-    const beamHeight = (Math.random() - 0.5) * 3.5;
-    const beamWidth = (Math.random() - 0.5) * 0.08; // Very thin
-    const beamDepth = (Math.random() - 0.5) * 0.08;
-    // Concentrate particles in the center
-    const concentration = Math.pow(Math.random(), 3); 
-    pos2[idx] = beamWidth * concentration; // Tapered edges
-    pos2[idx+1] = beamHeight;
+    // A vertical stick with slight curve at top
+    const beamY = (Math.random() - 0.5) * 3.5;
+    const normalizedY = (beamY + 1.75) / 3.5; // 0 to 1, bottom to top
+    const topCurve = normalizedY > 0.85 ? Math.sin((normalizedY - 0.85) * 10) * 0.15 : 0;
+    const beamWidth = (Math.random() - 0.5) * 0.06;
+    const beamDepth = (Math.random() - 0.5) * 0.06;
+    pos2[idx] = beamWidth + topCurve;
+    pos2[idx+1] = beamY;
     pos2[idx+2] = beamDepth;
 
     // POS 3: FLOWING PATH (Ascent)
@@ -334,23 +331,38 @@ void main() {
   // --- FLUID TRANSITION ---
   vec3 mixPos = mix(currentPos, nextPos, easeT);
 
-  // Transition Turbulence - always have some base activity
-  float activity = sin(t * 3.14159) + 0.15;
-  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 1.5;
+  // Transition Turbulence - only during transitions
+  float activity = sin(t * 3.14159);
+  vec3 turbulence = curlNoise(mixPos * 0.5 + uTime * 0.1) * activity * 1.2;
 
   vec3 finalPos = mixPos + turbulence;
 
-  // --- CONSTANT MOTION ---
-  // Apply continuous rotation so particles never freeze
-  finalPos.xy = rotate(finalPos.xy, uTime * 0.08);
+  // --- STATE-SPECIFIC MOTION ---
+  // Only apply rotation to galaxy (state 0) and flow (state 2)
+  // Stick (state 1), Rings (state 3), and Sphere (state 3->4) stay stable
+  float rotationAmount = 0.0;
+  if (stateIdx < 0.5) {
+    rotationAmount = 0.08; // Galaxy rotates
+  } else if (stateIdx > 1.5 && stateIdx < 2.5) {
+    rotationAmount = 0.03; // Flow has subtle rotation
+  }
+  // Blend rotation during transitions
+  rotationAmount *= (1.0 - activity * 0.5);
+  finalPos.xy = rotate(finalPos.xy, uTime * rotationAmount);
 
   // --- SUBTLE LIFE (Drift) ---
-  // Continuous breathing motion - stronger for more visible movement
+  // Very subtle drift - stronger for galaxy/flow, minimal for stick/rings/sphere
+  float driftStrength = 0.02;
+  if (stateIdx < 0.5) {
+    driftStrength = 0.06; // Galaxy has more drift
+  } else if (stateIdx > 1.5 && stateIdx < 2.5) {
+    driftStrength = 0.04; // Flow has medium drift
+  }
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.15),
-    snoise(finalPos * 0.5 + uTime * 0.18 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.12 + 20.0)
-  ) * 0.08; // Increased drift amplitude for more life
+    snoise(finalPos * 0.5 + uTime * 0.1),
+    snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.08 + 20.0)
+  ) * driftStrength;
   finalPos += drift;
 
   // --- MOUSE INTERACTION ---
