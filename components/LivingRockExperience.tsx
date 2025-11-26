@@ -301,20 +301,20 @@ vec2 rotate(vec2 v, float a) {
 
 void main() {
   float totalStates = 4.0;
-  float progress = uScrollProgress * totalStates;
 
-  // Clamp to prevent issues at scrollProgress = 1.0
+  // Clamp scroll progress to valid range
+  float clampedScroll = clamp(uScrollProgress, 0.0, 1.0);
+  float progress = clampedScroll * totalStates;
+
+  // Calculate state index and transition progress
   float stateIdx = min(floor(progress), 3.0);
-  float t = fract(progress);
+  float t = progress - stateIdx;
 
-  // At the very end (scrollProgress = 1.0), show final state fully
-  if (uScrollProgress >= 0.999) {
-    stateIdx = 3.0;
-    t = 1.0;
-  }
+  // Clamp t to prevent any overflow issues
+  t = clamp(t, 0.0, 1.0);
 
-  // Smoother easing - cubic ease in-out for natural feel
-  float easeT = t < 0.5 ? 4.0 * t * t * t : 1.0 - pow(-2.0 * t + 2.0, 3.0) / 2.0;
+  // Smoothstep easing - guaranteed smooth transitions with no jumps
+  float easeT = t * t * (3.0 - 2.0 * t);
 
   vec3 currentPos;
   vec3 nextPos;
@@ -339,43 +339,50 @@ void main() {
 
   vec3 finalPos = mixPos + turbulence;
 
-  // --- CONSTANT BASE MOTION ---
-  // Always have some rotation so nothing ever freezes
-  float baseRotation = 0.02;
+  // --- CONTINUOUS MOTION ---
+  // Rotation speeds for each state: Galaxy, Stick, Flow, Rings/Sphere
+  float rot0 = 0.05;  // Galaxy
+  float rot1 = 0.03;  // Stick
+  float rot2 = 0.025; // Flow
+  float rot3 = 0.035; // Rings
+  float rot4 = 0.02;  // Sphere
 
-  // --- STATE-SPECIFIC MOTION ---
-  // Apply rotation based on state
-  float rotationAmount = baseRotation;
+  // Smoothly interpolate rotation between states
+  float rotationAmount;
   if (stateIdx < 0.5) {
-    rotationAmount = 0.06; // Galaxy rotates
+    rotationAmount = mix(rot0, rot1, easeT);
   } else if (stateIdx < 1.5) {
-    rotationAmount = 0.035; // Stick rotates slowly
+    rotationAmount = mix(rot1, rot2, easeT);
   } else if (stateIdx < 2.5) {
-    rotationAmount = 0.025; // Flow has subtle rotation
+    rotationAmount = mix(rot2, rot3, easeT);
   } else {
-    // Rings rotate, sphere has gentle rotation
-    rotationAmount = mix(0.04, 0.025, easeT);
+    rotationAmount = mix(rot3, rot4, easeT);
   }
   finalPos.xy = rotate(finalPos.xy, uTime * rotationAmount);
 
   // --- SUBTLE LIFE (Drift) ---
-  // Always have base drift so particles keep moving
-  float baseDrift = 0.02;
-  float driftStrength = baseDrift;
+  // Drift strengths for each state
+  float drift0 = 0.04;  // Galaxy
+  float drift1 = 0.015; // Stick
+  float drift2 = 0.03;  // Flow
+  float drift3 = 0.025; // Rings
+  float drift4 = 0.02;  // Sphere
+
+  // Smoothly interpolate drift between states
+  float driftStrength;
   if (stateIdx < 0.5) {
-    driftStrength = 0.05; // Galaxy has more drift
+    driftStrength = mix(drift0, drift1, easeT);
   } else if (stateIdx < 1.5) {
-    driftStrength = 0.02; // Stick has minimal drift
+    driftStrength = mix(drift1, drift2, easeT);
   } else if (stateIdx < 2.5) {
-    driftStrength = 0.035; // Flow has medium drift
+    driftStrength = mix(drift2, drift3, easeT);
   } else {
-    // Rings and sphere both have visible drift
-    driftStrength = mix(0.03, 0.025, easeT);
+    driftStrength = mix(drift3, drift4, easeT);
   }
   vec3 drift = vec3(
-    snoise(finalPos * 0.5 + uTime * 0.12),
-    snoise(finalPos * 0.5 + uTime * 0.14 + 10.0),
-    snoise(finalPos * 0.5 + uTime * 0.1 + 20.0)
+    snoise(finalPos * 0.5 + uTime * 0.1),
+    snoise(finalPos * 0.5 + uTime * 0.12 + 10.0),
+    snoise(finalPos * 0.5 + uTime * 0.08 + 20.0)
   ) * driftStrength;
   finalPos += drift;
 
