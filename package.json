@@ -1,5 +1,5 @@
 {
-  "name": "copy-of-walking-stick-labs",
+  "name": "walking-stick-labs",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react-dom": "^19.2.0",
-    "react": "^19.2.0",
-    "three": "^0.181.2",
-    "@react-three/fiber": "^9.4.0",
-    "@react-three/drei": "^9.0.0"
+    "react-dom": "^18.2.0",
+    "react": "^18.2.0",
+    "three": "^0.160.0",
+    "@react-three/fiber": "^8.15.0",
+    "@react-three/drei": "^9.92.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
