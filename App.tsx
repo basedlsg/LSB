@@ -108,9 +108,10 @@ export default function App() {
       </div>
 
       {/* Content Scroller */}
-      <div 
+      <div
         ref={scrollContainerRef}
-        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
+        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
+        style={{ scrollBehavior: 'auto', overscrollBehavior: 'contain' }}
       >
         
         {/* 01 ORIGIN */}
