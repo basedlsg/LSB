@@ -302,12 +302,19 @@ vec2 rotate(vec2 v, float a) {
 void main() {
   float totalStates = 4.0;
 
-  // Clamp scroll progress to valid range with small epsilon for safety
-  float clampedScroll = clamp(uScrollProgress, 0.0, 0.9999);
+  // Defensive: handle any invalid scroll values
+  float safeScroll = uScrollProgress;
+  if (safeScroll < 0.0 || safeScroll > 1.0 || safeScroll != safeScroll) {
+    safeScroll = 0.0; // Reset to start if invalid (NaN check with != itself)
+  }
+
+  // Clamp scroll progress to valid range
+  float clampedScroll = clamp(safeScroll, 0.0, 0.9999);
   float progress = clampedScroll * totalStates;
 
   // Calculate state index and transition progress
-  float stateIdx = min(floor(progress), 3.0);
+  float stateIdx = floor(progress);
+  stateIdx = clamp(stateIdx, 0.0, 3.0);
   float t = progress - stateIdx;
 
   // Clamp t to prevent any overflow issues

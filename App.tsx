@@ -57,20 +57,40 @@ export default function App() {
   const mousePos = useRef(new THREE.Vector2(0, 0));
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (!scrollContainerRef.current) return;
+    const calculateProgress = () => {
+      if (!scrollContainerRef.current) return 0;
       const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
       const maxScroll = scrollHeight - clientHeight;
-      const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 1);
+      // Safety check for division by zero
+      if (maxScroll <= 0) return 0;
+      // Clamp to 0-1 range, with 0.9999 max to avoid edge case issues
+      return Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+    };
+
+    const handleScroll = () => {
+      const progress = calculateProgress();
       setScrollProgress(progress);
+    };
+
+    // Also handle wheel events to catch scroll attempts at boundaries
+    const handleWheel = () => {
+      // Recalculate on wheel to ensure we have fresh values
+      requestAnimationFrame(() => {
+        const progress = calculateProgress();
+        setScrollProgress(progress);
+      });
     };
 
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener('scroll', handleScroll);
+      container.addEventListener('wheel', handleWheel, { passive: true });
       handleScroll();
     }
-    return () => container?.removeEventListener('scroll', handleScroll);
+    return () => {
+      container?.removeEventListener('scroll', handleScroll);
+      container?.removeEventListener('wheel', handleWheel);
+    };
   }, []);
 
   useEffect(() => {
