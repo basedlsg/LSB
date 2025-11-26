@@ -228,13 +228,15 @@ const generateParticles = (width: number, height: number) => {
     pos0[idx+2] = (Math.random() - 0.5) * 2.0; // Depth
 
     // POS 1: CONCENTRIC RINGS (The Tool)
-    // Create 7 discrete rings - perfect circles
+    // Create 7 discrete rings with subtle organic feel
     const ringIndex = Math.floor(Math.random() * 7);
     const ringRadius = 0.3 + ringIndex * 0.3;
     const ringAngle = Math.random() * Math.PI * 2;
-    pos1[idx] = Math.cos(ringAngle) * ringRadius;
-    pos1[idx+1] = Math.sin(ringAngle) * ringRadius;
-    pos1[idx+2] = 0.0; // Flat rings
+    // Subtle jitter for organic look (not too much)
+    const jitter = (Math.random() - 0.5) * 0.02;
+    pos1[idx] = Math.cos(ringAngle) * (ringRadius + jitter);
+    pos1[idx+1] = Math.sin(ringAngle) * (ringRadius + jitter);
+    pos1[idx+2] = (Math.random() - 0.5) * 0.05; // Very slight Z variation
 
     // POS 2: THE BEAM (The Stick)
     // A vertical stick with slight curve at top
@@ -338,25 +340,33 @@ void main() {
   vec3 finalPos = mixPos + turbulence;
 
   // --- STATE-SPECIFIC MOTION ---
-  // Only apply rotation to galaxy (state 0) and flow (state 2)
-  // Stick (state 1), Rings (state 3), and Sphere (state 3->4) stay stable
+  // Apply rotation based on state
   float rotationAmount = 0.0;
   if (stateIdx < 0.5) {
     rotationAmount = 0.08; // Galaxy rotates
-  } else if (stateIdx > 1.5 && stateIdx < 2.5) {
+  } else if (stateIdx < 1.5) {
+    rotationAmount = 0.04; // Stick rotates slowly
+  } else if (stateIdx < 2.5) {
     rotationAmount = 0.03; // Flow has subtle rotation
+  } else {
+    // Rings rotate, but sphere (at t=1.0) stays stable
+    rotationAmount = mix(0.05, 0.02, easeT);
   }
   // Blend rotation during transitions
-  rotationAmount *= (1.0 - activity * 0.5);
+  rotationAmount *= (1.0 - activity * 0.3);
   finalPos.xy = rotate(finalPos.xy, uTime * rotationAmount);
 
   // --- SUBTLE LIFE (Drift) ---
-  // Very subtle drift - stronger for galaxy/flow, minimal for stick/rings/sphere
+  // Drift strength per state
   float driftStrength = 0.02;
   if (stateIdx < 0.5) {
     driftStrength = 0.06; // Galaxy has more drift
-  } else if (stateIdx > 1.5 && stateIdx < 2.5) {
+  } else if (stateIdx < 1.5) {
+    driftStrength = 0.015; // Stick has minimal drift to keep shape
+  } else if (stateIdx < 2.5) {
     driftStrength = 0.04; // Flow has medium drift
+  } else {
+    driftStrength = 0.025; // Rings have subtle drift
   }
   vec3 drift = vec3(
     snoise(finalPos * 0.5 + uTime * 0.1),
