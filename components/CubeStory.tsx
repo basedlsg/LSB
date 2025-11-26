@@ -6,7 +6,6 @@ import * as THREE from 'three';
 const storyContent = [
   {
     title: "The Dreaming",
-    subtitle: "From Darkness to Light",
     text: [
       "The Dreamtime tells of a technology known as the Walking Stick.",
       "From the darkness came the light. From the light came the seeing. From the seeing came the dreaming.",
@@ -15,7 +14,6 @@ const storyContent = [
   },
   {
     title: "The Age of Asking",
-    subtitle: "When Beings Learned to Speak",
     text: [
       "All beings inside the dreaming were learning to speak at once. And as they came to understand one another, they became the same.",
       "From this arose the Great Age of Asking.",
@@ -24,7 +22,6 @@ const storyContent = [
   },
   {
     title: "The Sacred Strike",
-    subtitle: "Birth of the Walking Stick",
     text: [
       "One day, three of the beings broke from the group. Together, they gathered around a rock.",
       "Upon the rock, they began to strike a stick, again and again, singing loudly so the heavens would hear.",
@@ -34,10 +31,10 @@ const storyContent = [
   },
   {
     title: "The Age of Walking",
-    subtitle: "Beyond the Ground",
     text: [
       "The beings—three in number—lifted the stick from the rock. Not wanting to fight over it, they became one. And that being began to walk.",
       "No longer did they move only across the ground—they could now walk among the sky and beyond the waters, where they spoke with the fish who swam.",
+      "And the fish told them movements they had never known, and numbers they had never seen, yet which surrounded them all along.",
       "From the Age of Walking came the great Age of Technology, which still persists today.",
       "And as the Dreaming is eternal, its ages belong equally to the child and to the old man alike."
     ]
@@ -95,308 +92,262 @@ float snoise(vec3 v) {
 }
 `;
 
-// Liquid shader for Face 1: Dark void with emerging light
-const liquidShader1 = {
-  vertex: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragment: `
-    uniform float uTime;
-    varying vec2 vUv;
-    ${noiseGLSL}
-
-    void main() {
-      vec2 uv = vUv;
-
-      // Dark swirling void
-      float n1 = snoise(vec3(uv * 3.0, uTime * 0.2));
-      float n2 = snoise(vec3(uv * 5.0 + n1, uTime * 0.15));
-      float n3 = snoise(vec3(uv * 8.0 + n2, uTime * 0.1));
-
-      // Deep space colors
-      vec3 void_color = vec3(0.02, 0.01, 0.05);
-      vec3 nebula = vec3(0.1, 0.02, 0.15);
-      vec3 light = vec3(0.9, 0.7, 0.5);
-
-      // Swirling patterns
-      float swirl = sin(n1 * 3.14159 + uTime * 0.3) * 0.5 + 0.5;
-
-      // Light emerging from center
-      float dist = length(uv - 0.5);
-      float glow = smoothstep(0.6, 0.0, dist) * (0.3 + 0.2 * sin(uTime * 0.5));
-
-      vec3 color = mix(void_color, nebula, n2 * 0.5 + 0.3);
-      color = mix(color, light, glow * swirl * 0.4);
-
-      // Add subtle stars
-      float stars = step(0.98, snoise(vec3(uv * 50.0, 0.0)));
-      color += stars * 0.5;
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-};
-
-// Liquid shader for Face 2: Flowing water waves
-const liquidShader2 = {
-  vertex: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragment: `
-    uniform float uTime;
-    varying vec2 vUv;
-    ${noiseGLSL}
-
-    void main() {
-      vec2 uv = vUv;
-
-      // Flowing water effect
-      float flow = uTime * 0.3;
-      float n1 = snoise(vec3(uv.x * 4.0, uv.y * 2.0 + flow, uTime * 0.1));
-      float n2 = snoise(vec3(uv.x * 8.0 + n1 * 0.5, uv.y * 4.0 + flow * 1.5, uTime * 0.15));
-
-      // Wave pattern
-      float wave1 = sin(uv.y * 10.0 + uTime + n1 * 2.0) * 0.5 + 0.5;
-      float wave2 = sin(uv.y * 15.0 - uTime * 0.7 + n2 * 2.0) * 0.5 + 0.5;
-
-      // Water colors
-      vec3 deep = vec3(0.0, 0.05, 0.15);
-      vec3 mid = vec3(0.0, 0.15, 0.3);
-      vec3 surface = vec3(0.2, 0.4, 0.5);
-      vec3 foam = vec3(0.6, 0.7, 0.8);
-
-      float depth = n1 * 0.5 + 0.5;
-      vec3 color = mix(deep, mid, depth);
-      color = mix(color, surface, wave1 * 0.4);
-      color = mix(color, foam, wave2 * wave1 * 0.3);
-
-      // Caustics effect
-      float caustic = snoise(vec3(uv * 10.0 + vec2(flow, -flow), uTime * 0.2));
-      caustic = pow(caustic * 0.5 + 0.5, 3.0);
-      color += caustic * 0.15 * vec3(0.3, 0.5, 0.6);
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-};
-
-// Liquid shader for Face 3: Molten/lava effect
-const liquidShader3 = {
-  vertex: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragment: `
-    uniform float uTime;
-    varying vec2 vUv;
-    ${noiseGLSL}
-
-    void main() {
-      vec2 uv = vUv;
-
-      // Slow moving lava
-      float n1 = snoise(vec3(uv * 3.0, uTime * 0.08));
-      float n2 = snoise(vec3(uv * 6.0 + n1, uTime * 0.12));
-      float n3 = snoise(vec3(uv * 12.0 + n2 * 0.5, uTime * 0.05));
-
-      // Lava colors
-      vec3 dark_rock = vec3(0.1, 0.02, 0.0);
-      vec3 hot_rock = vec3(0.3, 0.05, 0.0);
-      vec3 lava = vec3(1.0, 0.3, 0.0);
-      vec3 bright_lava = vec3(1.0, 0.8, 0.2);
-
-      // Cracks pattern
-      float cracks = smoothstep(0.4, 0.6, n2);
-      float heat = pow(n3 * 0.5 + 0.5, 2.0);
-
-      // Pulsing glow
-      float pulse = sin(uTime * 0.5 + n1 * 3.0) * 0.5 + 0.5;
-
-      vec3 color = mix(dark_rock, hot_rock, n1 * 0.5 + 0.3);
-      color = mix(color, lava, cracks * heat);
-      color = mix(color, bright_lava, cracks * heat * pulse * 0.5);
-
-      // Add emissive glow in cracks
-      float glow = cracks * heat * (0.5 + 0.5 * pulse);
-      color += vec3(0.5, 0.1, 0.0) * glow;
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-};
-
-// Liquid shader for Face 4: Iridescent fish-scale shimmer
-const liquidShader4 = {
-  vertex: `
-    varying vec2 vUv;
-    void main() {
-      vUv = uv;
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragment: `
-    uniform float uTime;
-    varying vec2 vUv;
-    ${noiseGLSL}
-
-    void main() {
-      vec2 uv = vUv;
-
-      // Scale pattern
-      vec2 scaledUV = uv * 15.0;
-      vec2 cell = floor(scaledUV);
-      vec2 local = fract(scaledUV);
-
-      // Offset every other row
-      if (mod(cell.y, 2.0) > 0.5) {
-        local.x = fract(local.x + 0.5);
+// Liquid shaders for each face
+const liquidShaders = [
+  // Face 1: Dark void with emerging light
+  {
+    fragment: `
+      uniform float uTime;
+      varying vec2 vUv;
+      ${noiseGLSL}
+      void main() {
+        vec2 uv = vUv;
+        float n1 = snoise(vec3(uv * 3.0, uTime * 0.15));
+        float n2 = snoise(vec3(uv * 5.0 + n1, uTime * 0.1));
+        vec3 void_color = vec3(0.02, 0.01, 0.05);
+        vec3 nebula = vec3(0.15, 0.05, 0.2);
+        float swirl = sin(n1 * 3.14159 + uTime * 0.2) * 0.5 + 0.5;
+        float dist = length(uv - 0.5);
+        float glow = smoothstep(0.7, 0.0, dist) * (0.2 + 0.1 * sin(uTime * 0.3));
+        vec3 color = mix(void_color, nebula, n2 * 0.4 + 0.2);
+        color += glow * vec3(0.4, 0.3, 0.2) * swirl;
+        gl_FragColor = vec4(color, 1.0);
       }
+    `
+  },
+  // Face 2: Flowing water waves
+  {
+    fragment: `
+      uniform float uTime;
+      varying vec2 vUv;
+      ${noiseGLSL}
+      void main() {
+        vec2 uv = vUv;
+        float flow = uTime * 0.2;
+        float n1 = snoise(vec3(uv.x * 4.0, uv.y * 2.0 + flow, uTime * 0.08));
+        float n2 = snoise(vec3(uv.x * 8.0 + n1 * 0.5, uv.y * 4.0 + flow * 1.5, uTime * 0.1));
+        float wave1 = sin(uv.y * 8.0 + uTime * 0.5 + n1 * 2.0) * 0.5 + 0.5;
+        vec3 deep = vec3(0.0, 0.03, 0.1);
+        vec3 mid = vec3(0.0, 0.1, 0.2);
+        vec3 surface = vec3(0.1, 0.25, 0.35);
+        float depth = n1 * 0.5 + 0.5;
+        vec3 color = mix(deep, mid, depth);
+        color = mix(color, surface, wave1 * 0.3);
+        float caustic = pow(snoise(vec3(uv * 8.0 + vec2(flow, -flow), uTime * 0.15)) * 0.5 + 0.5, 3.0);
+        color += caustic * 0.1 * vec3(0.2, 0.4, 0.5);
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `
+  },
+  // Face 3: Molten lava
+  {
+    fragment: `
+      uniform float uTime;
+      varying vec2 vUv;
+      ${noiseGLSL}
+      void main() {
+        vec2 uv = vUv;
+        float n1 = snoise(vec3(uv * 3.0, uTime * 0.06));
+        float n2 = snoise(vec3(uv * 6.0 + n1, uTime * 0.08));
+        float n3 = snoise(vec3(uv * 12.0 + n2 * 0.5, uTime * 0.04));
+        vec3 dark_rock = vec3(0.08, 0.02, 0.0);
+        vec3 hot_rock = vec3(0.2, 0.05, 0.0);
+        vec3 lava = vec3(0.9, 0.25, 0.0);
+        vec3 bright_lava = vec3(1.0, 0.7, 0.2);
+        float cracks = smoothstep(0.4, 0.6, n2);
+        float heat = pow(n3 * 0.5 + 0.5, 2.0);
+        float pulse = sin(uTime * 0.4 + n1 * 3.0) * 0.5 + 0.5;
+        vec3 color = mix(dark_rock, hot_rock, n1 * 0.5 + 0.3);
+        color = mix(color, lava, cracks * heat * 0.7);
+        color = mix(color, bright_lava, cracks * heat * pulse * 0.4);
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `
+  },
+  // Face 4: Iridescent shimmer
+  {
+    fragment: `
+      uniform float uTime;
+      varying vec2 vUv;
+      ${noiseGLSL}
+      void main() {
+        vec2 uv = vUv;
+        float n = snoise(vec3(uv * 4.0, uTime * 0.15));
+        float n2 = snoise(vec3(uv * 8.0 + n, uTime * 0.1));
+        float hue = n * 0.3 + uTime * 0.05 + uv.x * 0.2;
+        vec3 c = vec3(hue, 0.5, 0.6);
+        vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+        vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+        vec3 iridescent = c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        vec3 deep = vec3(0.0, 0.05, 0.1);
+        float shimmer = sin(uTime * 1.5 + n2 * 5.0) * 0.5 + 0.5;
+        vec3 color = mix(deep, iridescent * 0.7, 0.5 + n2 * 0.3);
+        color += shimmer * 0.15;
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `
+  }
+];
 
-      // Scale shape
-      float dist = length(local - 0.5);
-      float scale = smoothstep(0.5, 0.3, dist);
+const vertexShader = `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
 
-      // Iridescent colors based on angle and time
-      float angle = atan(local.y - 0.5, local.x - 0.5);
-      float n = snoise(vec3(cell * 0.5, uTime * 0.2));
-
-      float hue = angle / 6.28318 + uTime * 0.1 + n * 0.3 + cell.x * 0.1;
-
-      // HSV to RGB conversion
-      vec3 c = vec3(hue, 0.6, 0.8);
-      vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-      vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-      vec3 iridescent = c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-
-      // Deep water base
-      vec3 deep = vec3(0.0, 0.1, 0.2);
-
-      // Shimmer effect
-      float shimmer = sin(uTime * 2.0 + cell.x * 0.5 + cell.y * 0.3 + n * 5.0) * 0.5 + 0.5;
-
-      vec3 color = mix(deep, iridescent, scale * 0.7);
-      color += shimmer * scale * 0.2;
-
-      // Add subtle movement
-      float flow = snoise(vec3(uv * 3.0, uTime * 0.3));
-      color = mix(color, color * 1.2, flow * 0.2);
-
-      gl_FragColor = vec4(color, 1.0);
-    }
-  `
-};
-
-// Individual liquid background component
-interface LiquidBackgroundProps {
-  shaderType: number;
+// 3D Cube mesh with liquid shader faces
+interface LiquidCubeProps {
+  rotation: number;
+  scale: number;
+  isIntro: boolean;
 }
 
-const LiquidBackground = ({ shaderType }: LiquidBackgroundProps) => {
-  const meshRef = useRef<THREE.Mesh>(null);
+const LiquidCube = ({ rotation, scale, isIntro }: LiquidCubeProps) => {
+  const groupRef = useRef<THREE.Group>(null);
+  const materialsRef = useRef<THREE.ShaderMaterial[]>([]);
   const { viewport } = useThree();
 
-  const shaders = [liquidShader1, liquidShader2, liquidShader3, liquidShader4];
-  const shader = shaders[shaderType] || shaders[0];
-
-  const uniforms = useMemo(() => ({
-    uTime: { value: 0 }
-  }), []);
+  // Create uniforms for each face
+  const uniformsArray = useMemo(() =>
+    liquidShaders.map(() => ({
+      uTime: { value: 0 }
+    })), []);
 
   useFrame((state) => {
-    if (meshRef.current) {
-      const mat = meshRef.current.material as THREE.ShaderMaterial;
-      mat.uniforms.uTime.value = state.clock.getElapsedTime();
+    const t = state.clock.getElapsedTime();
+
+    // Update time uniform for all materials
+    uniformsArray.forEach((uniforms) => {
+      uniforms.uTime.value = t;
+    });
+
+    // Smooth rotation interpolation
+    if (groupRef.current) {
+      const targetRotation = (rotation * Math.PI) / 2;
+      groupRef.current.rotation.y += (targetRotation - groupRef.current.rotation.y) * 0.08;
+
+      // Gentle idle floating animation when in intro
+      if (isIntro) {
+        groupRef.current.rotation.x = Math.sin(t * 0.5) * 0.1;
+        groupRef.current.rotation.z = Math.cos(t * 0.3) * 0.05;
+        groupRef.current.position.y = Math.sin(t * 0.7) * 0.1;
+      } else {
+        groupRef.current.rotation.x *= 0.95;
+        groupRef.current.rotation.z *= 0.95;
+        groupRef.current.position.y *= 0.95;
+      }
     }
   });
 
+  // Calculate cube size based on scale (0 = small, 1 = fills viewport)
+  const cubeSize = isIntro ? 1.5 : Math.max(viewport.width, viewport.height) * 0.6;
+
   return (
-    <mesh ref={meshRef} position={[0, 0, 0]}>
-      <planeGeometry args={[viewport.width, viewport.height]} />
-      <shaderMaterial
-        vertexShader={shader.vertex}
-        fragmentShader={shader.fragment}
-        uniforms={uniforms}
-      />
-    </mesh>
+    <group ref={groupRef} scale={[scale, scale, scale]}>
+      {/* Front face - Face 1 */}
+      <mesh position={[0, 0, cubeSize / 2]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <shaderMaterial
+          ref={(el) => { if (el) materialsRef.current[0] = el; }}
+          vertexShader={vertexShader}
+          fragmentShader={liquidShaders[0].fragment}
+          uniforms={uniformsArray[0]}
+          side={THREE.FrontSide}
+        />
+      </mesh>
+
+      {/* Right face - Face 2 */}
+      <mesh position={[cubeSize / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <shaderMaterial
+          ref={(el) => { if (el) materialsRef.current[1] = el; }}
+          vertexShader={vertexShader}
+          fragmentShader={liquidShaders[1].fragment}
+          uniforms={uniformsArray[1]}
+          side={THREE.FrontSide}
+        />
+      </mesh>
+
+      {/* Back face - Face 3 */}
+      <mesh position={[0, 0, -cubeSize / 2]} rotation={[0, Math.PI, 0]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <shaderMaterial
+          ref={(el) => { if (el) materialsRef.current[2] = el; }}
+          vertexShader={vertexShader}
+          fragmentShader={liquidShaders[2].fragment}
+          uniforms={uniformsArray[2]}
+          side={THREE.FrontSide}
+        />
+      </mesh>
+
+      {/* Left face - Face 4 */}
+      <mesh position={[-cubeSize / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <shaderMaterial
+          ref={(el) => { if (el) materialsRef.current[3] = el; }}
+          vertexShader={vertexShader}
+          fragmentShader={liquidShaders[3].fragment}
+          uniforms={uniformsArray[3]}
+          side={THREE.FrontSide}
+        />
+      </mesh>
+
+      {/* Top and bottom faces (dark) */}
+      <mesh position={[0, cubeSize / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <meshBasicMaterial color="#0a0505" side={THREE.FrontSide} />
+      </mesh>
+      <mesh position={[0, -cubeSize / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[cubeSize, cubeSize]} />
+        <meshBasicMaterial color="#0a0505" side={THREE.FrontSide} />
+      </mesh>
+
+      {/* Cube edges for visibility */}
+      <lineSegments>
+        <edgesGeometry args={[new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize)]} />
+        <lineBasicMaterial color="#ffffff" opacity={isIntro ? 0.3 : 0.1} transparent />
+      </lineSegments>
+    </group>
   );
 };
 
-// Face component with text overlay
-interface CubeFaceProps {
-  faceIndex: number;
-  isActive: boolean;
-}
-
-const CubeFace = ({ faceIndex, isActive }: CubeFaceProps) => {
-  const content = storyContent[faceIndex];
-
-  return (
-    <div className="absolute inset-0 w-full h-full backface-hidden">
-      {/* WebGL Background */}
-      <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
-          <LiquidBackground shaderType={faceIndex} />
-        </Canvas>
-      </div>
-
-      {/* Text Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-8 md:p-16">
-        <div className="max-w-2xl text-center space-y-8 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9),_0_4px_40px_rgba(0,0,0,0.7)]">
-          <p className="text-xs font-bold tracking-[0.4em] uppercase opacity-60">
-            {content.subtitle}
-          </p>
-          <h2 className="text-4xl md:text-6xl font-thin tracking-tight">
-            {content.title}
-          </h2>
-          <div className="space-y-4">
-            {content.text.map((paragraph, i) => (
-              <p key={i} className="text-sm md:text-base font-light leading-relaxed opacity-90">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Main cube component
+// Main cube story component
 const CubeStory = () => {
-  const [currentFace, setCurrentFace] = useState(0);
+  // State: -1 = intro, 0-3 = faces
+  const [currentState, setCurrentState] = useState(-1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastScrollTime = useRef(0);
 
-  // Handle scroll/wheel to rotate cube
+  const isIntro = currentState === -1;
+  const currentFace = Math.max(0, currentState);
+
+  // Handle scroll/wheel
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
       const now = Date.now();
-      if (now - lastScrollTime.current < 800 || isTransitioning) return;
+      if (now - lastScrollTime.current < 1000 || isTransitioning) return;
       lastScrollTime.current = now;
 
       setIsTransitioning(true);
 
-      if (e.deltaY > 0 && currentFace < 3) {
-        setCurrentFace(prev => prev + 1);
-      } else if (e.deltaY < 0 && currentFace > 0) {
-        setCurrentFace(prev => prev - 1);
+      if (e.deltaY > 0) {
+        // Scroll down
+        if (currentState < 3) {
+          setCurrentState(prev => prev + 1);
+        }
+      } else {
+        // Scroll up
+        if (currentState > -1) {
+          setCurrentState(prev => prev - 1);
+        }
       }
 
-      setTimeout(() => setIsTransitioning(false), 800);
+      setTimeout(() => setIsTransitioning(false), 1000);
     };
 
     const container = containerRef.current;
@@ -407,9 +358,9 @@ const CubeStory = () => {
     return () => {
       container?.removeEventListener('wheel', handleWheel);
     };
-  }, [currentFace, isTransitioning]);
+  }, [currentState, isTransitioning]);
 
-  // Touch handling for mobile
+  // Touch handling
   const touchStartY = useRef(0);
 
   useEffect(() => {
@@ -419,7 +370,7 @@ const CubeStory = () => {
 
     const handleTouchEnd = (e: TouchEvent) => {
       const now = Date.now();
-      if (now - lastScrollTime.current < 800 || isTransitioning) return;
+      if (now - lastScrollTime.current < 1000 || isTransitioning) return;
 
       const deltaY = touchStartY.current - e.changedTouches[0].clientY;
 
@@ -427,13 +378,13 @@ const CubeStory = () => {
         lastScrollTime.current = now;
         setIsTransitioning(true);
 
-        if (deltaY > 0 && currentFace < 3) {
-          setCurrentFace(prev => prev + 1);
-        } else if (deltaY < 0 && currentFace > 0) {
-          setCurrentFace(prev => prev - 1);
+        if (deltaY > 0 && currentState < 3) {
+          setCurrentState(prev => prev + 1);
+        } else if (deltaY < 0 && currentState > -1) {
+          setCurrentState(prev => prev - 1);
         }
 
-        setTimeout(() => setIsTransitioning(false), 800);
+        setTimeout(() => setIsTransitioning(false), 1000);
       }
     };
 
@@ -447,38 +398,116 @@ const CubeStory = () => {
       container?.removeEventListener('touchstart', handleTouchStart);
       container?.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentFace, isTransitioning]);
+  }, [currentState, isTransitioning]);
 
-  // Calculate cube rotation
-  const rotation = currentFace * -90;
+  // Calculate scale: intro = small cube, after = large
+  const cubeScale = isIntro ? 1 : 3;
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 w-full h-full bg-black overflow-hidden"
-      style={{ perspective: '1500px' }}
+      className="fixed inset-0 w-full h-full bg-[#050208] overflow-hidden"
     >
       {/* Back button */}
       <a
-        href="/"
-        className="absolute top-8 left-8 z-50 text-white/60 hover:text-white transition-colors text-sm tracking-widest uppercase"
+        href="#/"
+        className="absolute top-8 left-8 z-50 text-white/50 hover:text-white transition-colors text-sm tracking-widest uppercase"
       >
-        &larr; Back
+        ← Back
       </a>
 
-      {/* Progress indicator */}
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
+      {/* 3D Canvas */}
+      <div className="absolute inset-0">
+        <Canvas camera={{ position: [0, 0, isIntro ? 6 : 4], fov: 50 }}>
+          <LiquidCube
+            rotation={currentFace}
+            scale={cubeScale}
+            isIntro={isIntro}
+          />
+        </Canvas>
+      </div>
+
+      {/* Intro Title - only shown in intro state */}
+      <div
+        className={`absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none transition-all duration-1000 ${
+          isIntro ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <div className="text-center space-y-6">
+          <p className="text-xs tracking-[0.5em] uppercase text-white/40">
+            A Story From
+          </p>
+          <h1 className="text-4xl md:text-6xl font-thin tracking-wide text-white">
+            The Dreaming
+          </h1>
+          <p className="text-lg md:text-xl font-light text-white/60 mt-4">
+            of a Technology
+          </p>
+        </div>
+
+        {/* Scroll prompt */}
+        <div className="absolute bottom-16 flex flex-col items-center gap-3 text-white/40">
+          <span className="text-xs tracking-[0.3em] uppercase">Scroll to begin</span>
+          <div className="w-px h-12 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
+        </div>
+      </div>
+
+      {/* Story Text Overlay - shown after intro */}
+      <div
+        className={`absolute inset-0 flex items-center justify-center z-20 pointer-events-none transition-all duration-1000 ${
+          isIntro ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        <div className="max-w-2xl mx-auto px-8 md:px-16">
+          <div
+            className="bg-black/60 backdrop-blur-md rounded-2xl p-8 md:p-12 border border-white/10"
+            style={{
+              boxShadow: '0 0 60px rgba(0,0,0,0.8), inset 0 0 30px rgba(255,255,255,0.02)'
+            }}
+          >
+            <p className="text-xs tracking-[0.4em] uppercase text-white/40 mb-6">
+              {currentFace === 0 && "Chapter I"}
+              {currentFace === 1 && "Chapter II"}
+              {currentFace === 2 && "Chapter III"}
+              {currentFace === 3 && "Chapter IV"}
+            </p>
+
+            <h2 className="text-3xl md:text-4xl font-light text-white mb-8 tracking-wide">
+              {storyContent[currentFace]?.title}
+            </h2>
+
+            <div className="space-y-5">
+              {storyContent[currentFace]?.text.map((paragraph, i) => (
+                <p
+                  key={i}
+                  className="text-base md:text-lg font-light leading-relaxed text-white/85"
+                  style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress indicator - only after intro */}
+      <div
+        className={`absolute right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3 transition-opacity duration-500 ${
+          isIntro ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
         {[0, 1, 2, 3].map((i) => (
           <button
             key={i}
             onClick={() => {
-              if (!isTransitioning) {
+              if (!isTransitioning && !isIntro) {
                 setIsTransitioning(true);
-                setCurrentFace(i);
-                setTimeout(() => setIsTransitioning(false), 800);
+                setCurrentState(i);
+                setTimeout(() => setIsTransitioning(false), 1000);
               }
             }}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`w-2 h-2 rounded-full transition-all duration-500 ${
               currentFace === i
                 ? 'bg-white scale-150'
                 : 'bg-white/30 hover:bg-white/60'
@@ -487,65 +516,15 @@ const CubeStory = () => {
         ))}
       </div>
 
-      {/* Cube container */}
+      {/* Scroll hint - after intro */}
       <div
-        className="w-full h-full"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: `translateZ(-50vh) rotateX(${rotation}deg)`,
-          transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-        }}
+        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-500 ${
+          isIntro || currentFace === 3 ? 'opacity-0' : 'opacity-50'
+        }`}
       >
-        {/* Face 1 - Front */}
-        <div
-          className="absolute w-full h-full"
-          style={{
-            transform: 'rotateX(0deg) translateZ(50vh)',
-            backfaceVisibility: 'hidden'
-          }}
-        >
-          <CubeFace faceIndex={0} isActive={currentFace === 0} />
-        </div>
-
-        {/* Face 2 - Bottom (rotated up) */}
-        <div
-          className="absolute w-full h-full"
-          style={{
-            transform: 'rotateX(90deg) translateZ(50vh)',
-            backfaceVisibility: 'hidden'
-          }}
-        >
-          <CubeFace faceIndex={1} isActive={currentFace === 1} />
-        </div>
-
-        {/* Face 3 - Back */}
-        <div
-          className="absolute w-full h-full"
-          style={{
-            transform: 'rotateX(180deg) translateZ(50vh)',
-            backfaceVisibility: 'hidden'
-          }}
-        >
-          <CubeFace faceIndex={2} isActive={currentFace === 2} />
-        </div>
-
-        {/* Face 4 - Top (rotated down) */}
-        <div
-          className="absolute w-full h-full"
-          style={{
-            transform: 'rotateX(270deg) translateZ(50vh)',
-            backfaceVisibility: 'hidden'
-          }}
-        >
-          <CubeFace faceIndex={3} isActive={currentFace === 3} />
-        </div>
-      </div>
-
-      {/* Scroll hint */}
-      <div className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 transition-opacity duration-500 ${currentFace === 3 ? 'opacity-0' : 'opacity-60'}`}>
-        <div className="flex flex-col items-center gap-2 text-white/60">
-          <span className="text-xs tracking-widest uppercase">Scroll to continue</span>
-          <div className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent animate-pulse" />
+        <div className="flex flex-col items-center gap-2 text-white/50">
+          <span className="text-xs tracking-[0.2em] uppercase">Scroll</span>
+          <div className="w-px h-6 bg-gradient-to-b from-white/50 to-transparent" />
         </div>
       </div>
     </div>
