@@ -194,19 +194,19 @@ function HomePage() {
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
               <span className="relative text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
-                Initiate Protocol
+                Learn More
               </span>
             </button>
 
-            {/* Navigation to Cube Story */}
+            {/* Navigation to Philosophy Page */}
             <a
-              href="#/story"
+              href="#/philosophy"
               className="group relative mt-8 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
             >
               <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
               <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
               <span className="relative text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
-                Read The Dreaming &rarr;
+                Our Philosophy &rarr;
               </span>
             </a>
 
@@ -236,7 +236,7 @@ export default function App() {
   }, []);
 
   // Route to different pages based on hash
-  if (route === '#/story') {
+  if (route === '#/philosophy') {
     return <CubeStory />;
   }
 
