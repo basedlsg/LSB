@@ -3,7 +3,8 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
-import CubeStory from './components/CubeStory';
+import PhilosophyWaveform from './components/PhilosophyWaveform';
+import PhilosophyConstellations from './components/PhilosophyConstellations';
 
 // --- COMPONENTS ---
 
@@ -236,9 +237,76 @@ export default function App() {
   }, []);
 
   // Route to different pages based on hash
+  if (route === '#/philosophy/waveform') {
+    return <PhilosophyWaveform />;
+  }
+  if (route === '#/philosophy/constellations') {
+    return <PhilosophyConstellations />;
+  }
+  // Default philosophy route shows selector
   if (route === '#/philosophy') {
-    return <CubeStory />;
+    return <PhilosophySelector />;
   }
 
   return <HomePage />;
+}
+
+// Philosophy version selector page
+function PhilosophySelector() {
+  return (
+    <div className="relative w-full h-screen overflow-hidden bg-[#0a0504] text-[#FDFBF7] font-sans flex flex-col items-center justify-center">
+      {/* Back button */}
+      <a
+        href="#/"
+        className="fixed top-8 left-8 z-50 text-xs tracking-[0.2em] uppercase opacity-60 hover:opacity-100 transition-opacity"
+      >
+        &larr; Back
+      </a>
+
+      <div className="text-center space-y-12 max-w-2xl px-8">
+        <h1 className="text-4xl md:text-6xl font-thin tracking-tight">
+          Our Philosophy
+        </h1>
+        <p className="text-lg font-light opacity-60">
+          Choose a visual experience to explore The Dreaming
+        </p>
+
+        <div className="flex flex-col md:flex-row gap-8 mt-12">
+          {/* Waveform Option */}
+          <a
+            href="#/philosophy/waveform"
+            className="group flex-1 p-8 border border-white/20 rounded-lg hover:border-white/50 hover:bg-white/5 transition-all duration-500"
+          >
+            <div className="space-y-4">
+              <div className="text-xs tracking-[0.3em] uppercase opacity-50">Option A</div>
+              <h3 className="text-2xl font-light">Waveform</h3>
+              <p className="text-sm font-light opacity-60 leading-relaxed">
+                Horizontal scrolling with flowing particle waves that rise and fall with the narrative.
+              </p>
+              <div className="pt-4 text-xs tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+                View &rarr;
+              </div>
+            </div>
+          </a>
+
+          {/* Constellations Option */}
+          <a
+            href="#/philosophy/constellations"
+            className="group flex-1 p-8 border border-white/20 rounded-lg hover:border-white/50 hover:bg-white/5 transition-all duration-500"
+          >
+            <div className="space-y-4">
+              <div className="text-xs tracking-[0.3em] uppercase opacity-50">Option B</div>
+              <h3 className="text-2xl font-light">Constellations</h3>
+              <p className="text-sm font-light opacity-60 leading-relaxed">
+                Particles form symbolic shapes that morph between story chapters with vertical scrolling.
+              </p>
+              <div className="pt-4 text-xs tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 transition-opacity">
+                View &rarr;
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
 }
