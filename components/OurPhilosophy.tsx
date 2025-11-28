@@ -1208,33 +1208,14 @@ const OurPhilosophy = () => {
         </Canvas>
       </div>
 
-      {/* Flash overlay - enhanced for lightning ripple */}
+      {/* Flash overlay - simple dramatic light flash */}
       <div
-        className="absolute inset-0 pointer-events-none z-30"
+        className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-75"
         style={{
-          opacity: flash * 0.85,
-          background: lightningRipple
-            ? `radial-gradient(circle at 50% 30%, rgba(255,255,255,${flash}) 0%, rgba(255,220,150,${flash * 0.6}) 30%, rgba(0,0,0,0) 70%)`
-            : 'rgba(255,245,220,1)'
+          opacity: flash * 0.9,
+          background: 'radial-gradient(ellipse at 50% 20%, rgba(255,255,255,1) 0%, rgba(255,240,200,0.8) 20%, rgba(255,200,100,0.4) 40%, transparent 70%)'
         }}
       />
-      {/* Lightning bolt overlay during ripple */}
-      {lightningRipple && (
-        <div className="absolute inset-0 pointer-events-none z-31 overflow-hidden">
-          <svg className="absolute w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path
-              d="M48 0 L45 35 L55 35 L40 100 L50 55 L42 55 Z"
-              fill={`rgba(255,255,255,${flash * 0.9})`}
-              style={{ filter: 'blur(2px)' }}
-            />
-            <path
-              d="M52 0 L55 30 L48 30 L60 100 L48 50 L55 50 Z"
-              fill={`rgba(255,220,100,${flash * 0.7})`}
-              style={{ filter: 'blur(3px)' }}
-            />
-          </svg>
-        </div>
-      )}
 
       {/* Navigation */}
       <a
@@ -1278,11 +1259,9 @@ const OurPhilosophy = () => {
         ))}
       </div>
 
-      {/* Text content - positioned left for Chapter III to show rock in center */}
-      <div className={`absolute inset-0 flex items-center z-20 pointer-events-none ${
-        currentChapter === 2 ? 'justify-start pl-8' : 'justify-center'
-      }`}>
-        <div className={`px-8 ${currentChapter === 2 ? 'max-w-lg' : 'max-w-2xl mx-auto'}`}>
+      {/* Text content - positioned left for ALL chapters so particle formations are visible */}
+      <div className="absolute inset-0 flex items-center z-20 pointer-events-none justify-start pl-8 md:pl-12">
+        <div className="px-4 md:px-8 max-w-md md:max-w-lg">
           {/* Glass container */}
           <div className={`relative p-10 md:p-14 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl ${
             currentChapter === 2 ? 'bg-black/60' : 'bg-black/40'
