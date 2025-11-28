@@ -497,12 +497,12 @@ void main() {
   pos.x += flow;
   pos.y += flow2;
 
-  // Subtle mouse interaction - very gentle displacement
+  // Subtle mouse interaction - very gentle displacement (reduced further)
   vec2 mouseWorld = uMouse * 3.5;
   float mouseDist = length(pos.xy - mouseWorld);
-  if (mouseDist < 1.5) {
+  if (mouseDist < 1.2) {
     vec2 away = normalize(pos.xy - mouseWorld);
-    float force = smoothstep(1.5, 0.0, mouseDist) * 0.08;
+    float force = smoothstep(1.2, 0.0, mouseDist) * 0.03;
     pos.xy += away * force;
   }
 
@@ -898,12 +898,18 @@ interface ChapterSceneProps {
 const ChapterScene = ({ chapter, progress, transition, mouse, flash }: ChapterSceneProps) => {
   const particlesRef = useRef<THREE.Points>(null);
   const bgRef = useRef<THREE.Mesh>(null);
-  const { viewport, size } = useThree();
+  const positionRef = useRef<THREE.BufferAttribute>(null);
+  const targetRef = useRef<THREE.BufferAttribute>(null);
+  const colorRef = useRef<THREE.BufferAttribute>(null);
+  const prevChapterRef = useRef(chapter);
+  const morphProgressRef = useRef(0);
+  const { viewport } = useThree();
 
   const allParticles = useMemo(() => generateParticlePositions(), []);
 
-  const currentParticles = allParticles[chapter];
-  const nextParticles = allParticles[Math.min(chapter + 1, 4)];
+  // Interpolated positions for smooth morphing
+  const interpolatedPos = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
+  const interpolatedColors = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
 
   const particleUniforms = useMemo(() => ({
     uTime: { value: 0 },
@@ -919,8 +925,49 @@ const ChapterScene = ({ chapter, progress, transition, mouse, flash }: ChapterSc
     uMouse: { value: new THREE.Vector2() }
   }), []);
 
-  useFrame((state) => {
+  // Initialize with first chapter
+  useEffect(() => {
+    const particles = allParticles[0];
+    interpolatedPos.set(particles.pos);
+    interpolatedColors.set(particles.colors);
+  }, [allParticles, interpolatedPos, interpolatedColors]);
+
+  useFrame((state, delta) => {
     const t = state.clock.getElapsedTime();
+
+    // Handle smooth chapter morphing
+    if (chapter !== prevChapterRef.current) {
+      morphProgressRef.current = 0;
+      prevChapterRef.current = chapter;
+    }
+
+    // Smooth morph animation
+    if (morphProgressRef.current < 1) {
+      morphProgressRef.current = Math.min(1, morphProgressRef.current + delta * 1.5); // ~0.67s transition
+      const ease = 1 - Math.pow(1 - morphProgressRef.current, 3); // Ease out cubic
+
+      const targetParticles = allParticles[chapter];
+
+      // Interpolate positions and colors
+      for (let i = 0; i < PARTICLE_COUNT * 3; i++) {
+        interpolatedPos[i] += (targetParticles.pos[i] - interpolatedPos[i]) * ease * 0.1;
+        interpolatedColors[i] += (targetParticles.colors[i] - interpolatedColors[i]) * ease * 0.1;
+      }
+
+      // Update buffer attributes
+      if (positionRef.current) {
+        positionRef.current.array = interpolatedPos;
+        positionRef.current.needsUpdate = true;
+      }
+      if (colorRef.current) {
+        colorRef.current.array = interpolatedColors;
+        colorRef.current.needsUpdate = true;
+      }
+      if (targetRef.current) {
+        targetRef.current.array = targetParticles.pos;
+        targetRef.current.needsUpdate = true;
+      }
+    }
 
     if (particlesRef.current) {
       const mat = particlesRef.current.material as THREE.ShaderMaterial;
@@ -951,31 +998,34 @@ const ChapterScene = ({ chapter, progress, transition, mouse, flash }: ChapterSc
         />
       </mesh>
 
-      {/* Particle system - key forces re-render when chapter changes */}
-      <points ref={particlesRef} key={`particles-${chapter}`}>
+      {/* Particle system - smooth morphing between chapters */}
+      <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute
+            ref={positionRef}
             attach="attributes-position"
             count={PARTICLE_COUNT}
-            array={currentParticles.pos}
+            array={interpolatedPos}
             itemSize={3}
           />
           <bufferAttribute
             attach="attributes-aVelocity"
             count={PARTICLE_COUNT}
-            array={currentParticles.vel}
+            array={allParticles[0].vel}
             itemSize={3}
           />
           <bufferAttribute
+            ref={colorRef}
             attach="attributes-aColor"
             count={PARTICLE_COUNT}
-            array={currentParticles.colors}
+            array={interpolatedColors}
             itemSize={3}
           />
           <bufferAttribute
+            ref={targetRef}
             attach="attributes-aTarget"
             count={PARTICLE_COUNT}
-            array={nextParticles.pos}
+            array={allParticles[Math.min(chapter + 1, 4)].pos}
             itemSize={3}
           />
         </bufferGeometry>
