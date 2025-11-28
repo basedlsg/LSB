@@ -192,7 +192,7 @@ function HomePage() {
           </h2>
 
           {/* Buttons - spaced left and right */}
-          <div className="z-10 w-full max-w-4xl flex justify-between items-center mt-16 px-8 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+          <div className="z-10 w-full flex justify-between items-center mt-16 px-16 md:px-24 lg:px-32 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <button className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
