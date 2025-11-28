@@ -962,8 +962,8 @@ const ChapterScene = ({ chapter, progress, transition, mouse, flash }: ChapterSc
         />
       </mesh>
 
-      {/* Particle system */}
-      <points ref={particlesRef}>
+      {/* Particle system - key forces re-render when chapter changes */}
+      <points ref={particlesRef} key={`particles-${chapter}`}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
