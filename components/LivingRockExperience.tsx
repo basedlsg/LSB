@@ -556,22 +556,36 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
   const rockRef = useRef<THREE.Mesh>(null);
   const { viewport, size } = useThree();
 
+  // Cache last known good scroll progress to prevent freezes
+  const lastScrollProgress = useRef(0);
+
   const particles = useMemo(() => generateParticles(viewport.width, viewport.height), [viewport]);
 
+  // IMPORTANT: Keep uniforms stable with empty deps to prevent recreation
+  // Viewport is updated every frame in useFrame instead
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uScrollProgress: { value: 0 },
     uMouse: { value: new THREE.Vector2(0, 0) },
-    uViewport: { value: new THREE.Vector2(viewport.width, viewport.height) }
-  }), [viewport, size]);
+    uViewport: { value: new THREE.Vector2(1, 1) }  // Will be updated in useFrame
+  }), []);
 
   // Calculate scroll progress directly from DOM in animation loop
+  // Uses cached value to prevent issues when ref is temporarily unavailable
   const getScrollProgress = () => {
-    if (!scrollContainerRef.current) return scrollProgress;
+    if (!scrollContainerRef.current) {
+      // Return cached value instead of potentially stale prop
+      return lastScrollProgress.current;
+    }
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
     const maxScroll = scrollHeight - clientHeight;
-    if (maxScroll <= 0) return 0;
-    return Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+    if (maxScroll <= 0) {
+      return lastScrollProgress.current;
+    }
+    const progress = Math.min(Math.max(scrollTop / maxScroll, 0), 0.9999);
+    // Cache the value for next frame
+    lastScrollProgress.current = progress;
+    return progress;
   };
 
   useFrame((state) => {
@@ -581,17 +595,22 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
     // Read scroll position directly from DOM every frame
     const currentScrollProgress = getScrollProgress();
 
+    // Always update uniforms every frame to prevent any freeze
+    // Update particles
     if (pointsRef.current) {
       const mat = pointsRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
+      mat.uniforms.uViewport.value.set(viewport.width, viewport.height);
     }
+    // Update rock background
     if (rockRef.current) {
       const mat = rockRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
+      mat.uniforms.uViewport.value.set(viewport.width, viewport.height);
     }
   });
 
