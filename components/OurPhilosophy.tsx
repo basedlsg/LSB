@@ -316,167 +316,81 @@ const generateParticlePositions = () => {
         }
 
         case 3: {
-          // CHAPTER IV: THE AGE OF WALKING - Large central figure with walking stick
-          // Sky above, water below, fish swimming
-          const zone = t < 0.2 ? 'sky' : t < 0.55 ? 'walker' : t < 0.85 ? 'water' : 'fish';
+          // CHAPTER IV: THE AGE OF WALKING - Ascending path through realms
+          // "they could now walk among the sky and beyond the waters"
+          // A grand ascending spiral path from water through earth to sky
 
-          if (zone === 'sky') {
-            // SKY - scattered stars above
-            pos[idx] = (Math.random() - 0.5) * 10;
-            pos[idx + 1] = 2.0 + Math.random() * 2.5;
-            pos[idx + 2] = (Math.random() - 0.5) * 4;
-            // Golden celestial
-            colors[idx] = 1.0;
-            colors[idx + 1] = 0.85 + Math.random() * 0.15;
-            colors[idx + 2] = 0.5 + Math.random() * 0.3;
-          } else if (zone === 'walker') {
-            // THE ONE WHO WALKS - LARGE central humanoid with walking stick
-            const walkerT = (t - 0.2) / 0.35;
-            const isStick = walkerT > 0.75;
+          // Single continuous ascending helix/path
+          const pathT = t;
+          const totalRotations = 3; // 3 full rotations as it ascends
+          const angle = pathT * Math.PI * 2 * totalRotations;
+          const radius = 2.0 + Math.sin(pathT * Math.PI * 4) * 0.5; // Breathing radius
+          const height = -3.0 + pathT * 6.0; // From bottom to top
 
-            if (isStick) {
-              // The Walking Stick - prominent, held at angle
-              const stickT = (walkerT - 0.75) / 0.25;
-              pos[idx] = 0.8 + stickT * 0.6 + (Math.random() - 0.5) * 0.1;
-              pos[idx + 1] = 1.5 - stickT * 3.5 + (Math.random() - 0.5) * 0.1;
-              pos[idx + 2] = 0.2 + (Math.random() - 0.5) * 0.08;
-              // Glowing golden stick
-              colors[idx] = 1.0;
-              colors[idx + 1] = 0.85;
-              colors[idx + 2] = 0.4;
-            } else {
-              // Large humanoid figure - clearly visible
-              let localX = 0, localY = 0;
-              if (walkerT < 0.2) {
-                // Head - round
-                const headAngle = Math.random() * Math.PI * 2;
-                localX = Math.cos(headAngle) * 0.3;
-                localY = 2.8 + Math.sin(headAngle) * 0.3;
-              } else if (walkerT < 0.55) {
-                // Torso
-                localX = (Math.random() - 0.5) * 0.6;
-                localY = 1.2 + Math.random() * 1.4;
-              } else {
-                // Legs
-                localX = (Math.random() - 0.5) * 0.5;
-                localY = Math.random() * 1.0;
-              }
-              pos[idx] = localX;
-              pos[idx + 1] = -1.0 + localY;
-              pos[idx + 2] = (Math.random() - 0.5) * 0.25;
-              // Radiant white-gold
-              colors[idx] = 1.0;
-              colors[idx + 1] = 0.95;
-              colors[idx + 2] = 0.8;
-            }
-          } else if (zone === 'water') {
-            // WATER - wave layer below
-            const waveX = (Math.random() - 0.5) * 10;
-            const wavePhase = Math.sin(waveX * 1.5 + i * 0.005) * 0.2;
-            pos[idx] = waveX;
-            pos[idx + 1] = -2.0 - Math.random() * 2 + wavePhase;
-            pos[idx + 2] = (Math.random() - 0.5) * 4;
-            // Deep blue water
-            colors[idx] = 0.1 + Math.random() * 0.15;
-            colors[idx + 1] = 0.35 + Math.random() * 0.2;
-            colors[idx + 2] = 0.65 + Math.random() * 0.25;
+          // Path particles with some spread
+          pos[idx] = Math.cos(angle) * radius + (Math.random() - 0.5) * 0.3;
+          pos[idx + 1] = height + (Math.random() - 0.5) * 0.2;
+          pos[idx + 2] = Math.sin(angle) * radius * 0.5 + (Math.random() - 0.5) * 0.2;
+
+          // Color gradient: deep blue (water) -> earth brown -> golden sky
+          if (pathT < 0.33) {
+            // Water realm - deep blues
+            const waterT = pathT / 0.33;
+            colors[idx] = 0.1 + waterT * 0.3;
+            colors[idx + 1] = 0.3 + waterT * 0.2;
+            colors[idx + 2] = 0.7 + waterT * 0.1;
+          } else if (pathT < 0.66) {
+            // Earth realm - warm browns to amber
+            const earthT = (pathT - 0.33) / 0.33;
+            colors[idx] = 0.4 + earthT * 0.5;
+            colors[idx + 1] = 0.5 + earthT * 0.3;
+            colors[idx + 2] = 0.3 - earthT * 0.1;
           } else {
-            // FISH - larger, clearer fish shapes
-            const fishGroup = Math.floor((t - 0.85) / 0.03); // Multiple fish
-            const fishX = -4 + fishGroup * 1.5;
-            const fishY = -2.5 + Math.sin(fishGroup * 2) * 0.5;
-            const fishT = ((t - 0.85) % 0.03) / 0.03;
-            // Fish body - oval with tail
-            const bodyX = fishT < 0.6 ? Math.sin(fishT / 0.6 * Math.PI) * 0.4 : (1 - fishT) / 0.4 * 0.8;
-            const bodyY = fishT < 0.6 ? Math.sin(fishT / 0.6 * Math.PI) * 0.15 : 0;
-            pos[idx] = fishX + bodyX;
-            pos[idx + 1] = fishY + bodyY * (Math.random() > 0.5 ? 1 : -1);
-            pos[idx + 2] = (Math.random() - 0.5) * 0.4;
-            // Silvery blue fish
-            colors[idx] = 0.5 + Math.random() * 0.3;
-            colors[idx + 1] = 0.65 + Math.random() * 0.25;
-            colors[idx + 2] = 0.8 + Math.random() * 0.2;
+            // Sky realm - brilliant gold to white
+            const skyT = (pathT - 0.66) / 0.34;
+            colors[idx] = 0.9 + skyT * 0.1;
+            colors[idx + 1] = 0.8 + skyT * 0.15;
+            colors[idx + 2] = 0.2 + skyT * 0.6;
           }
           break;
         }
 
         case 4: {
-          // CHAPTER V: THE ETERNAL DREAMING - Child and elder connected by infinity
-          // Large, clear figures with prominent connecting loop
-          const element = t < 0.25 ? 'child' : t < 0.5 ? 'elder' : 'connection';
+          // CHAPTER V: THE ETERNAL DREAMING - Double spiral / two intertwining loops
+          // "The Dreaming is eternal, its ages belong equally to the child and to the old man"
 
-          if (element === 'child') {
-            // THE CHILD - clear small humanoid figure on left
-            const childT = t / 0.25;
-            let localX = 0, localY = 0;
+          // Two intertwining spirals that form a cohesive double-helix pattern
+          const isFirstSpiral = i % 2 === 0;
+          const spiralT = t;
+          const totalLoops = 2; // 2 full loops
+          const angle = spiralT * Math.PI * 2 * totalLoops;
 
-            if (childT < 0.3) {
-              // Head
-              const headAngle = Math.random() * Math.PI * 2;
-              localX = Math.cos(headAngle) * 0.2;
-              localY = 1.6 + Math.sin(headAngle) * 0.2;
-            } else if (childT < 0.65) {
-              // Body
-              localX = (Math.random() - 0.5) * 0.35;
-              localY = 0.7 + Math.random() * 0.8;
-            } else {
-              // Legs
-              localX = (Math.random() - 0.5) * 0.3;
-              localY = Math.random() * 0.6;
-            }
+          // Offset the second spiral by 180 degrees for intertwining effect
+          const spiralOffset = isFirstSpiral ? 0 : Math.PI;
+          const finalAngle = angle + spiralOffset;
 
-            pos[idx] = -3.0 + localX;
-            pos[idx + 1] = -0.8 + localY;
-            pos[idx + 2] = (Math.random() - 0.5) * 0.2;
-            // Bright, pure white - youth/innocence
+          // Radius expands outward as it spirals
+          const baseRadius = 0.5 + spiralT * 2.5;
+          const radius = baseRadius + Math.sin(spiralT * Math.PI * 8) * 0.2;
+
+          // Flat spiral in the XY plane
+          pos[idx] = Math.cos(finalAngle) * radius + (Math.random() - 0.5) * 0.15;
+          pos[idx + 1] = Math.sin(finalAngle) * radius + (Math.random() - 0.5) * 0.15;
+          pos[idx + 2] = (Math.random() - 0.5) * 0.3 + (isFirstSpiral ? 0.1 : -0.1);
+
+          // Colors: First spiral is bright white/gold (youth), second is warm amber (wisdom)
+          if (isFirstSpiral) {
+            // Pure bright - representing the child / new
+            const brightness = 0.8 + spiralT * 0.2;
             colors[idx] = 1.0;
-            colors[idx + 1] = 0.95 + Math.random() * 0.05;
-            colors[idx + 2] = 0.9 + Math.random() * 0.1;
-          } else if (element === 'elder') {
-            // THE ELDER - larger humanoid figure on right
-            const elderT = (t - 0.25) / 0.25;
-            let localX = 0, localY = 0;
-
-            if (elderT < 0.25) {
-              // Head - larger
-              const headAngle = Math.random() * Math.PI * 2;
-              localX = Math.cos(headAngle) * 0.25;
-              localY = 2.4 + Math.sin(headAngle) * 0.25;
-            } else if (elderT < 0.6) {
-              // Body - broader
-              localX = (Math.random() - 0.5) * 0.5;
-              localY = 1.0 + Math.random() * 1.2;
-            } else {
-              // Legs
-              localX = (Math.random() - 0.5) * 0.4;
-              localY = Math.random() * 0.9;
-            }
-
-            pos[idx] = 3.0 + localX;
-            pos[idx + 1] = -0.8 + localY;
-            pos[idx + 2] = (Math.random() - 0.5) * 0.25;
-            // Warm deep gold - wisdom/age
-            colors[idx] = 1.0;
-            colors[idx + 1] = 0.75 + Math.random() * 0.15;
-            colors[idx + 2] = 0.35 + Math.random() * 0.2;
+            colors[idx + 1] = 0.95 * brightness;
+            colors[idx + 2] = 0.85 * brightness;
           } else {
-            // THE CONNECTION - prominent infinity loop between them
-            const connT = (t - 0.5) / 0.5;
-            const angle = connT * Math.PI * 2;
-
-            // Large figure-8 / infinity connecting child to elder
-            const infinityX = Math.sin(angle) * 3.0;
-            const infinityY = Math.sin(angle * 2) * 1.2;
-
-            pos[idx] = infinityX + (Math.random() - 0.5) * 0.2;
-            pos[idx + 1] = infinityY + (Math.random() - 0.5) * 0.2;
-            pos[idx + 2] = Math.cos(angle) * 0.4 + (Math.random() - 0.5) * 0.15;
-
-            // Golden flowing thread
-            const flowPhase = Math.sin(angle * 4);
-            colors[idx] = 1.0;
-            colors[idx + 1] = 0.8 + flowPhase * 0.15;
-            colors[idx + 2] = 0.45 + flowPhase * 0.2;
+            // Warm amber/gold - representing the elder / eternal
+            const warmth = 0.7 + spiralT * 0.3;
+            colors[idx] = 1.0 * warmth;
+            colors[idx + 1] = 0.7 * warmth;
+            colors[idx + 2] = 0.3 * warmth;
           }
           break;
         }
