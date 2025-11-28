@@ -122,11 +122,16 @@ const chapters = [
   }
 ];
 
-// --- MASSIVE PARTICLE SYSTEM ---
-const PARTICLE_COUNT = 15000;
+// --- REFINED PARTICLE SYSTEM ---
+const PARTICLE_COUNT = 18000;
+
+// Utility for smooth randomness
+const smoothRandom = (seed: number) => {
+  const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+  return x - Math.floor(x);
+};
 
 const generateParticlePositions = () => {
-  // 5 meaningful formations that tell the story
   const positions = [];
 
   for (let c = 0; c < 5; c++) {
@@ -137,269 +142,259 @@ const generateParticlePositions = () => {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const idx = i * 3;
       const t = i / PARTICLE_COUNT;
+      const seed = i * 0.001;
 
       switch(c) {
         case 0: {
-          // CHAPTER I: THE DREAMING - Dramatic void with bright central light
-          // "From the darkness came the light"
-          const voidProgress = t;
-          const isCore = t > 0.7; // 30% are the bright emerging light
+          // CHAPTER I: THE DREAMING - Elegant spiral galaxy with luminous core
+          const isCore = t > 0.65;
 
           if (isCore) {
-            // THE LIGHT - large, bright central cluster
-            const coreAngle = Math.random() * Math.PI * 2;
-            const coreRadius = Math.pow(Math.random(), 1.5) * 1.5; // Larger core
-            pos[idx] = Math.cos(coreAngle) * coreRadius;
-            pos[idx + 1] = Math.sin(coreAngle) * coreRadius;
-            pos[idx + 2] = (Math.random() - 0.5) * 0.8;
-            // Brilliant warm light
+            // Central light - gaussian distribution for soft edges
+            const coreT = (t - 0.65) / 0.35;
+            const theta = smoothRandom(seed) * Math.PI * 2;
+            const r = Math.sqrt(-2 * Math.log(Math.max(0.001, smoothRandom(seed + 1)))) * 0.8;
+            pos[idx] = Math.cos(theta) * r;
+            pos[idx + 1] = Math.sin(theta) * r;
+            pos[idx + 2] = (smoothRandom(seed + 2) - 0.5) * 0.4;
+            // Soft warm glow - gradient from center
+            const coreBrightness = 1 - r * 0.3;
             colors[idx] = 1.0;
-            colors[idx + 1] = 0.9 + Math.random() * 0.1;
-            colors[idx + 2] = 0.6 + Math.random() * 0.3;
+            colors[idx + 1] = 0.92 * coreBrightness;
+            colors[idx + 2] = 0.7 * coreBrightness;
           } else {
-            // THE VOID - clear spiral streams flowing inward
-            const armCount = 5; // 5 spiral arms
+            // Spiral arms - clean logarithmic spiral
+            const armCount = 4;
             const armId = i % armCount;
             const armOffset = (armId / armCount) * Math.PI * 2;
-            const streamProgress = voidProgress / 0.7; // Normalize to 0-1
+            const streamT = t / 0.65;
 
-            const spiralAngle = streamProgress * Math.PI * 4 + armOffset;
-            const spiralRadius = 4.5 - streamProgress * 3.5; // Far to center
+            const spiralAngle = streamT * Math.PI * 3.5 + armOffset;
+            const spiralRadius = 0.8 + streamT * 3.2;
+            const armWidth = 0.08 + streamT * 0.06;
 
-            pos[idx] = Math.cos(spiralAngle) * spiralRadius + (Math.random() - 0.5) * 0.3;
-            pos[idx + 1] = Math.sin(spiralAngle) * spiralRadius + (Math.random() - 0.5) * 0.3;
-            pos[idx + 2] = (Math.random() - 0.5) * 1.5;
+            pos[idx] = Math.cos(spiralAngle) * spiralRadius + (smoothRandom(seed) - 0.5) * armWidth;
+            pos[idx + 1] = Math.sin(spiralAngle) * spiralRadius + (smoothRandom(seed + 1) - 0.5) * armWidth;
+            pos[idx + 2] = (smoothRandom(seed + 2) - 0.5) * 0.5;
 
-            // Gradient from dark purple (edge) to brighter (center)
-            const brightness = streamProgress * 0.5;
-            colors[idx] = 0.3 + brightness * 0.5;
-            colors[idx + 1] = 0.15 + brightness * 0.3;
-            colors[idx + 2] = 0.5 + brightness * 0.3;
+            // Smooth color gradient along arms
+            const armBrightness = 0.3 + (1 - streamT) * 0.4;
+            colors[idx] = 0.4 + armBrightness * 0.4;
+            colors[idx + 1] = 0.2 + armBrightness * 0.25;
+            colors[idx + 2] = 0.5 + armBrightness * 0.2;
           }
           break;
         }
 
         case 1: {
-          // CHAPTER II: THE AGE OF ASKING - 60 beings walking, asking sky and water
-          // "sixty some in number—would gather together and walk in groups"
-          // Show clearly recognizable humanoid figures in a crowd
-          const beingCount = 30; // Fewer beings = more particles per being = clearer shapes
+          // CHAPTER II: THE AGE OF ASKING - Flowing crowd of luminous figures
+          const beingCount = 24;
           const beingId = i % beingCount;
           const particleInBeing = Math.floor(i / beingCount);
 
-          // Position beings in rows - a visible crowd
-          const row = Math.floor(beingId / 10);
-          const col = beingId % 10;
-          const beingX = (col - 4.5) * 0.8; // Spread horizontally
-          const beingBaseY = -1.5 + row * 0.4; // Rows from bottom
+          // Organic crowd arrangement
+          const row = Math.floor(beingId / 8);
+          const col = beingId % 8;
+          const rowOffset = row * 0.15;
+          const beingX = (col - 3.5) * 0.9 + rowOffset;
+          const beingBaseY = -1.2 + row * 0.5;
 
-          // Each being - LARGER humanoid shape
-          const bodyPart = particleInBeing % 150;
+          // Refined humanoid proportions
+          const bodyT = (particleInBeing % 200) / 200;
           let localX = 0, localY = 0, localZ = 0;
 
-          if (bodyPart < 40) {
-            // HEAD - clear round shape at top
-            const headAngle = Math.random() * Math.PI * 2;
-            const headR = Math.random() * 0.15;
+          if (bodyT < 0.2) {
+            // Head - perfect circle distribution
+            const headAngle = bodyT / 0.2 * Math.PI * 2;
+            const headR = 0.08 + smoothRandom(seed) * 0.04;
             localX = Math.cos(headAngle) * headR;
-            localY = 1.4 + Math.sin(headAngle) * headR; // Head at top
-            localZ = (Math.random() - 0.5) * 0.1;
-          } else if (bodyPart < 90) {
-            // TORSO - rectangular body
-            localX = (Math.random() - 0.5) * 0.25;
-            localY = 0.7 + Math.random() * 0.6; // Body middle
-            localZ = (Math.random() - 0.5) * 0.15;
-          } else if (bodyPart < 120) {
-            // ARMS - some UP (asking sky), some to sides
-            const armSide = bodyPart < 105 ? -1 : 1;
-            const isAskingSky = beingId % 3 === 0;
-            const armAngle = isAskingSky ? Math.PI * 0.4 : Math.PI * 0.15; // Up or slightly out
-            const armLength = 0.2 + Math.random() * 0.3;
-            localX = armSide * 0.15 + Math.cos(armAngle) * armLength * armSide;
-            localY = 1.0 + Math.sin(armAngle) * armLength;
-            localZ = (Math.random() - 0.5) * 0.08;
+            localY = 1.5 + Math.sin(headAngle) * headR;
+            localZ = smoothRandom(seed + 1) * 0.03;
+          } else if (bodyT < 0.55) {
+            // Torso - tapered elegant shape
+            const torsoT = (bodyT - 0.2) / 0.35;
+            const torsoWidth = 0.12 - torsoT * 0.03;
+            localX = (smoothRandom(seed) - 0.5) * torsoWidth;
+            localY = 0.8 + torsoT * 0.6;
+            localZ = smoothRandom(seed + 1) * 0.04;
+          } else if (bodyT < 0.75) {
+            // Arms - graceful curves reaching up
+            const armT = (bodyT - 0.55) / 0.2;
+            const armSide = smoothRandom(seed) > 0.5 ? 1 : -1;
+            const isReaching = beingId % 3 === 0;
+            const armCurve = isReaching ? 0.4 + armT * 0.3 : 0.15 + armT * 0.1;
+            localX = armSide * (0.1 + armT * 0.2);
+            localY = 1.1 + Math.sin(armCurve * Math.PI) * 0.35;
+            localZ = smoothRandom(seed + 1) * 0.02;
           } else {
-            // LEGS
-            const legSide = bodyPart < 135 ? -1 : 1;
-            localX = legSide * 0.1 + (Math.random() - 0.5) * 0.06;
-            localY = Math.random() * 0.6; // Legs at bottom
-            localZ = (Math.random() - 0.5) * 0.08;
+            // Legs - subtle taper
+            const legT = (bodyT - 0.75) / 0.25;
+            const legSide = smoothRandom(seed) > 0.5 ? 1 : -1;
+            localX = legSide * 0.05 + (smoothRandom(seed + 2) - 0.5) * 0.03;
+            localY = legT * 0.7;
+            localZ = smoothRandom(seed + 1) * 0.02;
           }
 
           pos[idx] = beingX + localX;
           pos[idx + 1] = beingBaseY + localY;
-          pos[idx + 2] = row * 0.3 + localZ; // Depth by row
+          pos[idx + 2] = row * 0.25 + localZ;
 
-          // Warm communal colors
-          colors[idx] = 1.0;
-          colors[idx + 1] = 0.6 + Math.random() * 0.3;
-          colors[idx + 2] = 0.2 + Math.random() * 0.2;
+          // Warm harmonious colors - subtle variation
+          const warmth = 0.85 + smoothRandom(seed + 3) * 0.15;
+          colors[idx] = warmth;
+          colors[idx + 1] = 0.65 * warmth;
+          colors[idx + 2] = 0.3 * warmth;
           break;
         }
 
         case 2: {
-          // CHAPTER III: THE SACRED STRIKE - 3 beings around rock, stick + lightning
-          // Much larger, clearer formations
-          const element = t < 0.2 ? 'rock' : t < 0.6 ? 'beings' : t < 0.8 ? 'stick' : 'lightning';
+          // CHAPTER III: THE SACRED STRIKE - Dramatic composition
+          const element = t < 0.18 ? 'rock' : t < 0.58 ? 'beings' : t < 0.78 ? 'stick' : 'lightning';
 
           if (element === 'rock') {
-            // THE ROCK - large, prominent boulder at center-bottom
-            const rockAngle = Math.random() * Math.PI * 2;
-            const rockRadius = Math.pow(Math.random(), 0.5) * 1.2; // Larger rock
-            const rockHeight = (Math.random() - 0.5) * 0.6;
-            pos[idx] = Math.cos(rockAngle) * rockRadius;
-            pos[idx + 1] = -2.0 + rockHeight; // Low, grounded
-            pos[idx + 2] = Math.sin(rockAngle) * rockRadius * 0.4;
-            // Dark stone colors
-            colors[idx] = 0.3 + Math.random() * 0.15;
-            colors[idx + 1] = 0.25 + Math.random() * 0.1;
-            colors[idx + 2] = 0.2 + Math.random() * 0.1;
+            // Rock - dense, solid ellipsoid
+            const rockT = t / 0.18;
+            const theta = smoothRandom(seed) * Math.PI * 2;
+            const phi = Math.acos(2 * smoothRandom(seed + 1) - 1);
+            const r = Math.pow(smoothRandom(seed + 2), 0.33) * 1.0;
+            pos[idx] = Math.sin(phi) * Math.cos(theta) * r;
+            pos[idx + 1] = -2.0 + Math.cos(phi) * r * 0.5;
+            pos[idx + 2] = Math.sin(phi) * Math.sin(theta) * r * 0.4;
+            // Rich stone tones
+            const stoneVar = smoothRandom(seed + 3) * 0.1;
+            colors[idx] = 0.25 + stoneVar;
+            colors[idx + 1] = 0.2 + stoneVar * 0.8;
+            colors[idx + 2] = 0.18 + stoneVar * 0.5;
           } else if (element === 'beings') {
-            // THREE BEINGS - large humanoid figures around the rock
-            const beingNum = Math.floor((t - 0.2) / 0.133); // 0, 1, or 2
-            const beingAngle = (beingNum / 3) * Math.PI * 2 - Math.PI / 2; // Spread around
-            const beingDist = 2.2; // Further from rock
+            // Three figures - elegant silhouettes
+            const beingNum = Math.floor((t - 0.18) / 0.133);
+            const beingAngle = (beingNum / 3) * Math.PI * 2 - Math.PI / 2;
+            const beingDist = 2.0;
             const beingX = Math.cos(beingAngle) * beingDist;
 
-            // Large humanoid shape
-            const localT = ((t - 0.2) % 0.133) / 0.133;
+            const localT = ((t - 0.18) % 0.133) / 0.133;
             let localX = 0, localY = 0;
 
-            if (localT < 0.25) {
-              // Head
-              const headAngle = Math.random() * Math.PI * 2;
-              localX = Math.cos(headAngle) * 0.2;
-              localY = 1.8 + Math.sin(headAngle) * 0.2;
+            if (localT < 0.22) {
+              const headAngle = localT / 0.22 * Math.PI * 2;
+              localX = Math.cos(headAngle) * 0.12;
+              localY = 1.9 + Math.sin(headAngle) * 0.12;
             } else if (localT < 0.6) {
-              // Body
-              localX = (Math.random() - 0.5) * 0.4;
-              localY = 0.8 + Math.random() * 0.9;
+              const torsoT = (localT - 0.22) / 0.38;
+              localX = (smoothRandom(seed) - 0.5) * 0.22;
+              localY = 0.9 + torsoT * 0.9;
             } else {
-              // Legs
-              localX = (Math.random() - 0.5) * 0.3;
-              localY = Math.random() * 0.7;
+              localX = (smoothRandom(seed) - 0.5) * 0.15;
+              localY = smoothRandom(seed + 1) * 0.8;
             }
 
             pos[idx] = beingX + localX;
-            pos[idx + 1] = -1.8 + localY;
-            pos[idx + 2] = Math.sin(beingAngle) * 0.5 + (Math.random() - 0.5) * 0.15;
-            // Warm earth tones
-            colors[idx] = 0.9 + Math.random() * 0.1;
-            colors[idx + 1] = 0.5 + Math.random() * 0.2;
-            colors[idx + 2] = 0.2 + Math.random() * 0.1;
+            pos[idx + 1] = -1.7 + localY;
+            pos[idx + 2] = Math.sin(beingAngle) * 0.4 + smoothRandom(seed + 2) * 0.05;
+            // Warm earth presence
+            colors[idx] = 0.9;
+            colors[idx + 1] = 0.55;
+            colors[idx + 2] = 0.25;
           } else if (element === 'stick') {
-            // THE STICK - thick diagonal line striking down
-            const stickT = (t - 0.6) / 0.2;
-            const stickX = -1.5 + stickT * 1.5; // Angled strike
-            const stickY = 2.5 - stickT * 4.5; // Down to rock
-            pos[idx] = stickX + (Math.random() - 0.5) * 0.15;
-            pos[idx + 1] = stickY + (Math.random() - 0.5) * 0.15;
-            pos[idx + 2] = (Math.random() - 0.5) * 0.1;
-            // Wooden brown - glowing
-            colors[idx] = 0.7 + Math.random() * 0.2;
-            colors[idx + 1] = 0.4 + Math.random() * 0.15;
-            colors[idx + 2] = 0.15 + Math.random() * 0.1;
+            // Stick - refined diagonal
+            const stickT = (t - 0.58) / 0.2;
+            const stickX = -1.3 + stickT * 1.3;
+            const stickY = 2.2 - stickT * 4.2;
+            pos[idx] = stickX + (smoothRandom(seed) - 0.5) * 0.06;
+            pos[idx + 1] = stickY + (smoothRandom(seed + 1) - 0.5) * 0.06;
+            pos[idx + 2] = (smoothRandom(seed + 2) - 0.5) * 0.04;
+            // Glowing wood
+            colors[idx] = 0.75;
+            colors[idx + 1] = 0.45;
+            colors[idx + 2] = 0.18;
           } else {
-            // LIGHTNING FROM HEAVEN - thick, dramatic bolt
-            const boltT = (t - 0.8) / 0.2;
-            const boltY = 3.5 - boltT * 5.5; // Top to rock
-            const boltZigzag = Math.sin(boltY * 5) * 0.5 + Math.sin(boltY * 12) * 0.2;
-            pos[idx] = boltZigzag + (Math.random() - 0.5) * 0.25;
+            // Lightning - electric and precise
+            const boltT = (t - 0.78) / 0.22;
+            const boltY = 3.2 - boltT * 5.2;
+            const boltZig = Math.sin(boltY * 4) * 0.35 + Math.sin(boltY * 11) * 0.12;
+            const boltWidth = 0.04 + (1 - Math.abs(boltT - 0.5) * 2) * 0.08;
+            pos[idx] = boltZig + (smoothRandom(seed) - 0.5) * boltWidth;
             pos[idx + 1] = boltY;
-            pos[idx + 2] = (Math.random() - 0.5) * 0.15;
-            // Brilliant white-gold lightning
+            pos[idx + 2] = (smoothRandom(seed + 1) - 0.5) * 0.04;
+            // Pure electric light
             colors[idx] = 1.0;
-            colors[idx + 1] = 0.95 + Math.random() * 0.05;
-            colors[idx + 2] = 0.7 + Math.random() * 0.3;
+            colors[idx + 1] = 0.97;
+            colors[idx + 2] = 0.85;
           }
           break;
         }
 
         case 3: {
-          // CHAPTER IV: THE AGE OF WALKING - Ascending path through realms
-          // "they could now walk among the sky and beyond the waters"
-          // A grand ascending spiral path from water through earth to sky
-
-          // Single continuous ascending helix/path
+          // CHAPTER IV: THE AGE OF WALKING - Elegant ascending helix
           const pathT = t;
-          const totalRotations = 3; // 3 full rotations as it ascends
-          const angle = pathT * Math.PI * 2 * totalRotations;
-          const radius = 2.0 + Math.sin(pathT * Math.PI * 4) * 0.5; // Breathing radius
-          const height = -3.0 + pathT * 6.0; // From bottom to top
+          const rotations = 2.5;
+          const angle = pathT * Math.PI * 2 * rotations;
 
-          // Path particles with some spread
-          pos[idx] = Math.cos(angle) * radius + (Math.random() - 0.5) * 0.3;
-          pos[idx + 1] = height + (Math.random() - 0.5) * 0.2;
-          pos[idx + 2] = Math.sin(angle) * radius * 0.5 + (Math.random() - 0.5) * 0.2;
+          // Smooth radius modulation
+          const baseRadius = 1.8 + Math.sin(pathT * Math.PI * 3) * 0.3;
+          const height = -2.8 + pathT * 5.6;
 
-          // Color gradient: deep blue (water) -> earth brown -> golden sky
-          if (pathT < 0.33) {
-            // Water realm - deep blues
-            const waterT = pathT / 0.33;
-            colors[idx] = 0.1 + waterT * 0.3;
-            colors[idx + 1] = 0.3 + waterT * 0.2;
-            colors[idx + 2] = 0.7 + waterT * 0.1;
-          } else if (pathT < 0.66) {
-            // Earth realm - warm browns to amber
-            const earthT = (pathT - 0.33) / 0.33;
-            colors[idx] = 0.4 + earthT * 0.5;
-            colors[idx + 1] = 0.5 + earthT * 0.3;
-            colors[idx + 2] = 0.3 - earthT * 0.1;
+          // Tight ribbon-like distribution
+          const ribbonWidth = 0.06 + pathT * 0.04;
+          pos[idx] = Math.cos(angle) * baseRadius + (smoothRandom(seed) - 0.5) * ribbonWidth;
+          pos[idx + 1] = height + (smoothRandom(seed + 1) - 0.5) * 0.08;
+          pos[idx + 2] = Math.sin(angle) * baseRadius * 0.45 + (smoothRandom(seed + 2) - 0.5) * ribbonWidth;
+
+          // Seamless color gradient
+          const colorT = pathT;
+          if (colorT < 0.35) {
+            const ct = colorT / 0.35;
+            colors[idx] = 0.15 + ct * 0.35;
+            colors[idx + 1] = 0.35 + ct * 0.2;
+            colors[idx + 2] = 0.75 - ct * 0.15;
+          } else if (colorT < 0.7) {
+            const ct = (colorT - 0.35) / 0.35;
+            colors[idx] = 0.5 + ct * 0.4;
+            colors[idx + 1] = 0.55 + ct * 0.25;
+            colors[idx + 2] = 0.6 - ct * 0.35;
           } else {
-            // Sky realm - brilliant gold to white
-            const skyT = (pathT - 0.66) / 0.34;
-            colors[idx] = 0.9 + skyT * 0.1;
-            colors[idx + 1] = 0.8 + skyT * 0.15;
-            colors[idx + 2] = 0.2 + skyT * 0.6;
+            const ct = (colorT - 0.7) / 0.3;
+            colors[idx] = 0.9 + ct * 0.1;
+            colors[idx + 1] = 0.8 + ct * 0.15;
+            colors[idx + 2] = 0.25 + ct * 0.55;
           }
           break;
         }
 
         case 4: {
-          // CHAPTER V: THE ETERNAL DREAMING - Double spiral / two intertwining loops
-          // "The Dreaming is eternal, its ages belong equally to the child and to the old man"
-
-          // Two intertwining spirals that form a cohesive double-helix pattern
-          const isFirstSpiral = i % 2 === 0;
+          // CHAPTER V: THE ETERNAL DREAMING - Perfect double spiral
+          const isFirst = i % 2 === 0;
           const spiralT = t;
-          const totalLoops = 2; // 2 full loops
-          const angle = spiralT * Math.PI * 2 * totalLoops;
+          const loops = 2;
+          const angle = spiralT * Math.PI * 2 * loops + (isFirst ? 0 : Math.PI);
 
-          // Offset the second spiral by 180 degrees for intertwining effect
-          const spiralOffset = isFirstSpiral ? 0 : Math.PI;
-          const finalAngle = angle + spiralOffset;
+          // Elegant expanding radius
+          const radius = 0.4 + spiralT * 2.6;
+          const ribbonWidth = 0.04 + spiralT * 0.03;
 
-          // Radius expands outward as it spirals
-          const baseRadius = 0.5 + spiralT * 2.5;
-          const radius = baseRadius + Math.sin(spiralT * Math.PI * 8) * 0.2;
+          pos[idx] = Math.cos(angle) * radius + (smoothRandom(seed) - 0.5) * ribbonWidth;
+          pos[idx + 1] = Math.sin(angle) * radius + (smoothRandom(seed + 1) - 0.5) * ribbonWidth;
+          pos[idx + 2] = (isFirst ? 0.08 : -0.08) + (smoothRandom(seed + 2) - 0.5) * 0.06;
 
-          // Flat spiral in the XY plane
-          pos[idx] = Math.cos(finalAngle) * radius + (Math.random() - 0.5) * 0.15;
-          pos[idx + 1] = Math.sin(finalAngle) * radius + (Math.random() - 0.5) * 0.15;
-          pos[idx + 2] = (Math.random() - 0.5) * 0.3 + (isFirstSpiral ? 0.1 : -0.1);
-
-          // Colors: First spiral is bright white/gold (youth), second is warm amber (wisdom)
-          if (isFirstSpiral) {
-            // Pure bright - representing the child / new
-            const brightness = 0.8 + spiralT * 0.2;
-            colors[idx] = 1.0;
-            colors[idx + 1] = 0.95 * brightness;
-            colors[idx + 2] = 0.85 * brightness;
+          // Complementary color harmony
+          const intensity = 0.75 + spiralT * 0.25;
+          if (isFirst) {
+            colors[idx] = intensity;
+            colors[idx + 1] = 0.95 * intensity;
+            colors[idx + 2] = 0.9 * intensity;
           } else {
-            // Warm amber/gold - representing the elder / eternal
-            const warmth = 0.7 + spiralT * 0.3;
-            colors[idx] = 1.0 * warmth;
-            colors[idx + 1] = 0.7 * warmth;
-            colors[idx + 2] = 0.3 * warmth;
+            colors[idx] = 0.95 * intensity;
+            colors[idx + 1] = 0.7 * intensity;
+            colors[idx + 2] = 0.35 * intensity;
           }
           break;
         }
       }
 
-      // Velocities for animation - gentle movement
-      vel[idx] = (Math.random() - 0.5) * 0.015;
-      vel[idx + 1] = (Math.random() - 0.5) * 0.015;
-      vel[idx + 2] = (Math.random() - 0.5) * 0.015;
+      // Minimal velocity for subtle drift
+      vel[idx] = (smoothRandom(seed + 10) - 0.5) * 0.008;
+      vel[idx + 1] = (smoothRandom(seed + 11) - 0.5) * 0.008;
+      vel[idx + 2] = (smoothRandom(seed + 12) - 0.5) * 0.008;
     }
 
     positions.push({ pos, vel, colors });
@@ -421,6 +416,7 @@ uniform vec2 uMouse;
 
 varying vec3 vColor;
 varying float vAlpha;
+varying float vSize;
 
 ${noiseFunctions}
 
@@ -430,21 +426,23 @@ void main() {
   // Morph towards target position during transition
   pos = mix(pos, aTarget, uTransition);
 
-  // VERY subtle breathing movement - preserves formation shape
-  float breathe = sin(uTime * 0.5 + pos.x * 0.5 + pos.y * 0.5) * 0.03;
-  pos += aVelocity * breathe;
+  // Elegant flowing movement - gentle sine waves
+  float flow = sin(uTime * 0.3 + pos.x * 0.8 + pos.y * 0.6) * 0.02;
+  float flow2 = cos(uTime * 0.25 + pos.y * 0.7) * 0.015;
+  pos.x += flow;
+  pos.y += flow2;
 
-  // Subtle mouse interaction - gentle push
-  vec2 mouseWorld = uMouse * 3.0;
+  // Subtle mouse interaction - very gentle displacement
+  vec2 mouseWorld = uMouse * 3.5;
   float mouseDist = length(pos.xy - mouseWorld);
-  if (mouseDist < 1.0) {
+  if (mouseDist < 1.5) {
     vec2 away = normalize(pos.xy - mouseWorld);
-    float force = (1.0 - mouseDist) * 0.15;
+    float force = smoothstep(1.5, 0.0, mouseDist) * 0.08;
     pos.xy += away * force;
   }
 
-  // Very slow rotation - keeps formations recognizable
-  float rotSpeed = 0.02;
+  // Very slow, graceful rotation
+  float rotSpeed = 0.015;
   float cosR = cos(uTime * rotSpeed);
   float sinR = sin(uTime * rotSpeed);
   pos.xz = mat2(cosR, -sinR, sinR, cosR) * pos.xz;
@@ -452,37 +450,49 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  // Larger, more visible particles
-  float sizeNoise = snoise(pos * 0.5 + uTime * 0.2) * 0.5 + 0.5;
-  float baseSize = 35.0 + sizeNoise * 20.0;
+  // Refined size variation - smaller range, more consistent
+  float sizeVar = snoise(pos * 0.3 + uTime * 0.1) * 0.5 + 0.5;
+  float baseSize = 25.0 + sizeVar * 15.0;
   gl_PointSize = baseSize / -mvPosition.z;
+  vSize = sizeVar;
 
-  // Pass color with subtle variation
-  vColor = aColor * (0.9 + sizeNoise * 0.2);
+  // Smooth color with subtle luminance variation
+  vColor = aColor * (0.95 + sizeVar * 0.1);
 
-  // Higher alpha for visibility
-  vAlpha = 0.7 + sizeNoise * 0.3;
-  vAlpha *= smoothstep(-8.0, 0.0, pos.z);
+  // Refined alpha - depth-based fade
+  vAlpha = 0.6 + sizeVar * 0.25;
+  vAlpha *= smoothstep(-10.0, -1.0, pos.z);
 }
 `;
 
 const particleFragmentShader = `
 varying vec3 vColor;
 varying float vAlpha;
+varying float vSize;
 
 void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float dist = length(coord);
 
-  // Soft glow with bright core
-  float core = exp(-dist * 8.0);
-  float glow = exp(-dist * 3.0);
-  float combined = core * 0.6 + glow * 0.4;
+  // Multi-layered soft glow for ethereal effect
+  float innerCore = exp(-dist * 12.0);  // Bright center
+  float midGlow = exp(-dist * 5.0);     // Soft middle
+  float outerGlow = exp(-dist * 2.5);   // Diffuse halo
 
-  if (combined < 0.01) discard;
+  // Combine layers with refined weights
+  float combined = innerCore * 0.4 + midGlow * 0.35 + outerGlow * 0.25;
 
-  // Add bloom effect
-  vec3 finalColor = vColor * (1.0 + core * 0.5);
+  // Smooth edge falloff
+  combined *= smoothstep(0.5, 0.2, dist);
+
+  if (combined < 0.005) discard;
+
+  // Subtle color enhancement at core
+  vec3 coreColor = vColor + vec3(0.1, 0.08, 0.05) * innerCore;
+
+  // Final color with gentle bloom
+  vec3 finalColor = mix(vColor, coreColor, innerCore * 0.5);
+  finalColor *= (1.0 + innerCore * 0.3);
 
   gl_FragColor = vec4(finalColor, vAlpha * combined);
 }
