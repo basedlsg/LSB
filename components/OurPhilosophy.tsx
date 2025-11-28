@@ -497,12 +497,12 @@ void main() {
   pos.x += flow;
   pos.y += flow2;
 
-  // Subtle mouse interaction - very gentle displacement (reduced further)
+  // Minimal mouse interaction - barely noticeable
   vec2 mouseWorld = uMouse * 3.5;
   float mouseDist = length(pos.xy - mouseWorld);
-  if (mouseDist < 1.2) {
+  if (mouseDist < 0.8) {
     vec2 away = normalize(pos.xy - mouseWorld);
-    float force = smoothstep(1.2, 0.0, mouseDist) * 0.03;
+    float force = smoothstep(0.8, 0.0, mouseDist) * 0.01;
     pos.xy += away * force;
   }
 
@@ -591,11 +591,11 @@ const createBgFragmentShader = (chapter: number) => {
       vec2 center = vec2(0.5);
       float dist = length(uv - center);
 
-      // Deep space colors
-      vec3 void_black = vec3(0.02, 0.01, 0.04);
-      vec3 nebula_purple = vec3(0.15, 0.05, 0.25);
-      vec3 nebula_blue = vec3(0.05, 0.1, 0.3);
-      vec3 star_gold = vec3(1.0, 0.9, 0.6);
+      // Deep space colors - much darker
+      vec3 void_black = vec3(0.01, 0.005, 0.02);
+      vec3 nebula_purple = vec3(0.06, 0.02, 0.1);
+      vec3 nebula_blue = vec3(0.02, 0.04, 0.12);
+      vec3 star_gold = vec3(0.6, 0.5, 0.3);
 
       // Swirling nebula
       float angle = atan(uv.y - 0.5, uv.x - 0.5);
@@ -606,27 +606,21 @@ const createBgFragmentShader = (chapter: number) => {
       float n3 = snoise(vec3(uv * 12.0, uTime * 0.05));
 
       vec3 color = void_black;
-      color = mix(color, nebula_purple, smoothstep(0.3, 0.7, n1 * 0.5 + 0.5) * 0.6);
-      color = mix(color, nebula_blue, smoothstep(0.4, 0.8, n2 * 0.5 + 0.5) * 0.4);
+      color = mix(color, nebula_purple, smoothstep(0.3, 0.7, n1 * 0.5 + 0.5) * 0.3);
+      color = mix(color, nebula_blue, smoothstep(0.4, 0.8, n2 * 0.5 + 0.5) * 0.2);
 
-      // Spiral arms
+      // Spiral arms - subtle
       float arms = smoothstep(0.0, 0.3, spiral * 0.5 + 0.5) * smoothstep(0.8, 0.2, dist);
-      color += nebula_purple * arms * 0.3;
+      color += nebula_purple * arms * 0.15;
 
-      // Central glow - the emerging light
+      // Central glow - reduced
       float centerGlow = exp(-dist * 3.0) * uProgress;
-      color += star_gold * centerGlow * 0.8;
+      color += star_gold * centerGlow * 0.3;
 
-      // Stars
+      // Stars - dimmer
       float stars = pow(max(0.0, snoise(vec3(uv * 80.0, 0.0))), 20.0);
       float twinkle = sin(uTime * 3.0 + uv.x * 50.0) * 0.5 + 0.5;
-      color += stars * twinkle * 1.5;
-
-      // Mouse light
-      vec2 mouseUV = uMouse * 0.5 + 0.5;
-      float mouseDist = length(uv - mouseUV);
-      float mouseGlow = exp(-mouseDist * 5.0) * 0.3;
-      color += star_gold * mouseGlow;
+      color += stars * twinkle * 0.4;
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -644,10 +638,10 @@ const createBgFragmentShader = (chapter: number) => {
     void main() {
       vec2 uv = vUv;
 
-      vec3 deep_brown = vec3(0.08, 0.04, 0.02);
-      vec3 warm_amber = vec3(0.4, 0.2, 0.08);
-      vec3 bright_gold = vec3(1.0, 0.7, 0.3);
-      vec3 soft_orange = vec3(0.9, 0.5, 0.2);
+      vec3 deep_brown = vec3(0.03, 0.015, 0.01);
+      vec3 warm_amber = vec3(0.15, 0.08, 0.03);
+      vec3 bright_gold = vec3(0.4, 0.28, 0.12);
+      vec3 soft_orange = vec3(0.35, 0.2, 0.08);
 
       // Flowing warm currents
       float flow = uTime * 0.2;
@@ -657,26 +651,26 @@ const createBgFragmentShader = (chapter: number) => {
 
       vec3 color = deep_brown;
 
-      // Warm flowing layers
+      // Warm flowing layers - subtle
       float warmth = smoothstep(-0.2, 0.6, n1);
-      color = mix(color, warm_amber, warmth * 0.7);
+      color = mix(color, warm_amber, warmth * 0.4);
 
-      // Bright spots where beings gather
+      // Bright spots where beings gather - reduced
       float gathering = pow(max(0.0, n2), 2.0);
-      color = mix(color, bright_gold, gathering * 0.5);
+      color = mix(color, bright_gold, gathering * 0.2);
 
-      // Connection lines effect
+      // Connection lines effect - very subtle
       float lines = abs(sin(uv.x * 30.0 + n1 * 5.0 + uTime)) * abs(sin(uv.y * 30.0 + n2 * 5.0));
       lines = pow(lines, 8.0);
-      color += soft_orange * lines * 0.3 * uProgress;
+      color += soft_orange * lines * 0.1 * uProgress;
 
-      // Radial warmth
+      // Radial warmth - reduced
       float dist = length(uv - 0.5);
       float radialWarm = exp(-dist * 2.0);
-      color += bright_gold * radialWarm * 0.2;
+      color += bright_gold * radialWarm * 0.08;
 
-      // Ambient glow
-      color += warm_amber * n3 * 0.1;
+      // Ambient glow - minimal
+      color += warm_amber * n3 * 0.03;
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -696,11 +690,11 @@ const createBgFragmentShader = (chapter: number) => {
       vec2 uv = vUv;
       vec2 center = vec2(0.5);
 
-      vec3 rock_black = vec3(0.03, 0.02, 0.02);
-      vec3 rock_brown = vec3(0.12, 0.08, 0.05);
-      vec3 lava_orange = vec3(1.0, 0.4, 0.1);
-      vec3 lightning_white = vec3(1.0, 0.95, 0.8);
-      vec3 lightning_gold = vec3(1.0, 0.8, 0.3);
+      vec3 rock_black = vec3(0.015, 0.01, 0.01);
+      vec3 rock_brown = vec3(0.05, 0.035, 0.025);
+      vec3 lava_orange = vec3(0.4, 0.15, 0.04);
+      vec3 lightning_white = vec3(0.6, 0.55, 0.45);
+      vec3 lightning_gold = vec3(0.5, 0.4, 0.15);
 
       // Rock texture
       float rock1 = snoise(vec3(uv * 5.0, 0.0));
@@ -708,14 +702,14 @@ const createBgFragmentShader = (chapter: number) => {
       float rock3 = snoise(vec3(uv * 30.0, 2.0));
 
       vec3 color = mix(rock_black, rock_brown, rock1 * 0.5 + 0.4);
-      color += rock2 * 0.05;
+      color += rock2 * 0.02;
 
-      // Cracks with lava
+      // Cracks with lava - subtle
       float cracks = smoothstep(0.4, 0.5, rock2) * smoothstep(0.6, 0.5, rock2);
       float lavaPulse = sin(uTime * 2.0 + rock1 * 5.0) * 0.5 + 0.5;
-      color = mix(color, lava_orange, cracks * lavaPulse * 0.8 * uProgress);
+      color = mix(color, lava_orange, cracks * lavaPulse * 0.3 * uProgress);
 
-      // Lightning bolt effect
+      // Lightning bolt effect - dimmer
       float boltX = 0.5 + sin(uv.y * 20.0 + uTime * 5.0) * 0.1;
       float boltDist = abs(uv.x - boltX);
       float bolt = exp(-boltDist * 50.0) * step(0.3, uv.y) * step(uv.y, 0.9);
@@ -725,16 +719,16 @@ const createBgFragmentShader = (chapter: number) => {
       float branch1 = exp(-abs(uv.x - branch1X) * 40.0) * step(0.5, uv.y) * step(uv.y, 0.7);
 
       float lightningIntensity = (bolt + branch1 * 0.5) * uProgress;
-      color = mix(color, lightning_gold, lightningIntensity * 0.7);
-      color = mix(color, lightning_white, lightningIntensity * 0.3);
+      color = mix(color, lightning_gold, lightningIntensity * 0.4);
+      color = mix(color, lightning_white, lightningIntensity * 0.15);
 
-      // Flash effect
-      color = mix(color, lightning_white, uFlash * 0.8);
+      // Flash effect - reduced
+      color = mix(color, lightning_white, uFlash * 0.5);
 
-      // Central impact glow
+      // Central impact glow - subtle
       float dist = length(uv - vec2(0.5, 0.4));
       float impact = exp(-dist * 4.0) * uProgress;
-      color += lightning_gold * impact * 0.5;
+      color += lightning_gold * impact * 0.2;
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -751,17 +745,17 @@ const createBgFragmentShader = (chapter: number) => {
 
     void main() {
       vec2 uv = vUv;
-      float horizon = 0.45 + uMouse.y * 0.1;
+      float horizon = 0.45;
 
-      // Sky colors
-      vec3 sky_high = vec3(0.1, 0.08, 0.2);
-      vec3 sky_low = vec3(0.6, 0.4, 0.2);
-      vec3 sun_gold = vec3(1.0, 0.85, 0.5);
+      // Sky colors - much darker
+      vec3 sky_high = vec3(0.02, 0.015, 0.05);
+      vec3 sky_low = vec3(0.12, 0.08, 0.04);
+      vec3 sun_gold = vec3(0.35, 0.28, 0.15);
 
-      // Water colors
-      vec3 water_deep = vec3(0.02, 0.06, 0.12);
-      vec3 water_mid = vec3(0.05, 0.15, 0.25);
-      vec3 water_surface = vec3(0.1, 0.25, 0.35);
+      // Water colors - darker
+      vec3 water_deep = vec3(0.01, 0.025, 0.05);
+      vec3 water_mid = vec3(0.02, 0.05, 0.1);
+      vec3 water_surface = vec3(0.04, 0.1, 0.15);
 
       vec3 color;
 
@@ -770,23 +764,23 @@ const createBgFragmentShader = (chapter: number) => {
         float skyGrad = (uv.y - horizon) / (1.0 - horizon);
         color = mix(sky_low, sky_high, pow(skyGrad, 0.7));
 
-        // Clouds
+        // Clouds - very subtle
         float cloud1 = snoise(vec3(uv.x * 3.0 + uTime * 0.05, uv.y * 2.0, uTime * 0.02));
         float cloud2 = snoise(vec3(uv.x * 6.0 + uTime * 0.08, uv.y * 4.0, uTime * 0.03));
         float clouds = smoothstep(0.2, 0.8, cloud1 * 0.5 + cloud2 * 0.3 + 0.3);
-        color = mix(color, sky_low * 1.3, clouds * 0.3 * (1.0 - skyGrad));
+        color = mix(color, sky_low * 1.2, clouds * 0.15 * (1.0 - skyGrad));
 
-        // Sun/light source
+        // Sun/light source - reduced
         vec2 sunPos = vec2(0.7, 0.75);
         float sunDist = length(uv - sunPos);
         float sunGlow = exp(-sunDist * 4.0);
         float sunCore = exp(-sunDist * 15.0);
-        color += sun_gold * sunGlow * 0.6;
-        color += vec3(1.0) * sunCore * 0.4;
+        color += sun_gold * sunGlow * 0.2;
+        color += vec3(0.4, 0.35, 0.25) * sunCore * 0.15;
 
-        // Stars (faint in upper sky)
+        // Stars (faint)
         float stars = pow(max(0.0, snoise(vec3(uv * 100.0, 0.0))), 25.0);
-        color += stars * skyGrad * 0.8;
+        color += stars * skyGrad * 0.25;
 
       } else {
         // WATER
@@ -801,27 +795,27 @@ const createBgFragmentShader = (chapter: number) => {
         float n2 = snoise(vec3(uv.x * 8.0, waveY * 12.0, uTime * 0.4));
 
         color = mix(water_deep, water_mid, waterGrad);
-        color = mix(color, water_surface, smoothstep(0.7, 1.0, waterGrad) + n1 * 0.2);
+        color = mix(color, water_surface, smoothstep(0.7, 1.0, waterGrad) + n1 * 0.1);
 
-        // Caustics
+        // Caustics - subtle
         float caustic = pow(max(0.0, n2), 3.0);
-        color += vec3(0.1, 0.2, 0.3) * caustic * 0.4;
+        color += vec3(0.03, 0.06, 0.1) * caustic * 0.2;
 
-        // Reflection of sun
+        // Reflection of sun - reduced
         float reflectX = 0.7 + sin(uTime + uv.y * 20.0) * 0.05;
         float reflection = exp(-abs(uv.x - reflectX) * 10.0) * waterGrad;
-        color += sun_gold * reflection * 0.4;
+        color += sun_gold * reflection * 0.15;
 
-        // Fish silhouettes (subtle)
+        // Fish silhouettes
         float fishX = fract(uv.x * 3.0 + uTime * 0.1);
         float fishY = sin(fishX * 6.28) * 0.05;
         float fish = smoothstep(0.02, 0.0, abs(uv.y - 0.2 - fishY)) * smoothstep(0.1, 0.0, abs(fishX - 0.5));
-        color = mix(color, water_deep, fish * 0.3 * uProgress);
+        color = mix(color, water_deep, fish * 0.2 * uProgress);
       }
 
-      // Horizon glow
+      // Horizon glow - reduced
       float horizonGlow = exp(-abs(uv.y - horizon) * 15.0);
-      color += sun_gold * horizonGlow * 0.4;
+      color += sun_gold * horizonGlow * 0.12;
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -842,16 +836,16 @@ const createBgFragmentShader = (chapter: number) => {
       float dist = length(uv - center);
       float angle = atan(uv.y - 0.5, uv.x - 0.5);
 
-      vec3 void_warm = vec3(0.06, 0.03, 0.02);
-      vec3 deep_purple = vec3(0.08, 0.03, 0.1);
-      vec3 gold_thread = vec3(1.0, 0.8, 0.4);
-      vec3 soft_white = vec3(1.0, 0.98, 0.95);
+      vec3 void_warm = vec3(0.02, 0.012, 0.008);
+      vec3 deep_purple = vec3(0.03, 0.012, 0.04);
+      vec3 gold_thread = vec3(0.35, 0.28, 0.14);
+      vec3 soft_white = vec3(0.4, 0.38, 0.35);
 
-      // Warm void base
+      // Warm void base - very dark
       float n1 = snoise(vec3(uv * 2.0, uTime * 0.05));
       vec3 color = mix(void_warm, deep_purple, n1 * 0.3 + 0.3);
 
-      // Eternal ring/ouroboros
+      // Eternal ring/ouroboros - subtle
       float ringRadius = 0.32 + sin(angle * 3.0 + uTime * 0.5) * 0.02;
       float ringDist = abs(dist - ringRadius);
       float ring = exp(-ringDist * 40.0);
@@ -862,21 +856,21 @@ const createBgFragmentShader = (chapter: number) => {
       // Animate ring brightness
       float ringPulse = sin(angle * 2.0 - uTime * 1.5) * 0.5 + 0.5;
 
-      color += gold_thread * ring * (0.7 + ringPulse * 0.3);
-      color += gold_thread * ringGlow * 0.3;
+      color += gold_thread * ring * (0.25 + ringPulse * 0.1);
+      color += gold_thread * ringGlow * 0.1;
 
-      // Inner warmth
+      // Inner warmth - reduced
       float innerGlow = exp(-dist * 3.0);
-      color += gold_thread * innerGlow * 0.2;
+      color += gold_thread * innerGlow * 0.06;
 
       // Faint stars returning
       float stars = pow(max(0.0, snoise(vec3(uv * 60.0, 1.0))), 15.0);
       float twinkle = sin(uTime * 2.0 + angle * 10.0) * 0.5 + 0.5;
-      color += soft_white * stars * twinkle * 0.6;
+      color += soft_white * stars * twinkle * 0.15;
 
       // Gentle vignette
       float vignette = smoothstep(0.8, 0.3, dist);
-      color *= 0.7 + vignette * 0.3;
+      color *= 0.6 + vignette * 0.4;
 
       gl_FragColor = vec4(color, 1.0);
     }
