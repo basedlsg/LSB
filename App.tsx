@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
+import OurPhilosophy from './components/OurPhilosophy';
 
 // --- COMPONENTS ---
 
@@ -50,7 +51,7 @@ const SidebarNav = ({ progress }: { progress: number }) => {
   );
 };
 
-export default function App() {
+function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   // Use ref for mouse position to avoid re-renders
@@ -194,11 +195,22 @@ export default function App() {
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
               <span className="relative text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
-                Initiate Protocol
+                Learn More
               </span>
             </button>
 
-            <div className="mt-24 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
+            <a
+              href="#/philosophy"
+              className="group relative mt-4 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+            >
+              <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+              <span className="relative text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
+                Our Philosophy &rarr;
+              </span>
+            </a>
+
+            <div className="mt-16 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
               <span>San Francisco — CA</span>
               <span>&copy; Walking Stick Labs</span>
             </div>
@@ -208,4 +220,25 @@ export default function App() {
       </div>
     </div>
   );
+}
+
+// Simple hash-based router
+export default function App() {
+  const [route, setRoute] = useState(window.location.hash);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setRoute(window.location.hash);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Route to different pages based on hash
+  if (route === '#/philosophy') {
+    return <OurPhilosophy />;
+  }
+
+  return <HomePage />;
 }
