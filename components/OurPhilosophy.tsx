@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { Canvas, useFrame, useThree, extend } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// --- NOISE FUNCTIONS FOR SHADERS ---
+// --- ENHANCED NOISE FUNCTIONS ---
 const noiseFunctions = `
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -51,13 +51,28 @@ float snoise(vec3 v) {
   m = m * m;
   return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
 }
+
+vec3 curlNoise(vec3 p) {
+  const float e = 0.1;
+  float n1 = snoise(p + vec3(e, 0.0, 0.0));
+  float n2 = snoise(p - vec3(e, 0.0, 0.0));
+  float n3 = snoise(p + vec3(0.0, e, 0.0));
+  float n4 = snoise(p - vec3(0.0, e, 0.0));
+  float n5 = snoise(p + vec3(0.0, 0.0, e));
+  float n6 = snoise(p - vec3(0.0, 0.0, e));
+  float x = n3 - n4 - n5 + n6;
+  float y = n5 - n6 - n1 + n2;
+  float z = n1 - n2 - n3 + n4;
+  return normalize(vec3(x, y, z) * (1.0 / (2.0 * e)));
+}
 `;
 
 // --- CHAPTER CONTENT ---
 const chapters = [
   {
     id: 1,
-    label: "I — THE DREAMING",
+    label: "I",
+    title: "THE DREAMING",
     paragraphs: [
       "The Dreamtime tells of a technology known as the Walking Stick.",
       "From the darkness came the light. From the light came the seeing. From the seeing came the dreaming.",
@@ -66,7 +81,8 @@ const chapters = [
   },
   {
     id: 2,
-    label: "II — THE AGE OF ASKING",
+    label: "II",
+    title: "THE AGE OF ASKING",
     paragraphs: [
       "All beings inside the dreaming were learning to speak at once. And as they came to understand one another, they became the same.",
       "From this arose the Great Age of Asking.",
@@ -75,7 +91,8 @@ const chapters = [
   },
   {
     id: 3,
-    label: "III — THE SACRED STRIKE",
+    label: "III",
+    title: "THE SACRED STRIKE",
     paragraphs: [
       "One day, three of the beings broke from the group. And together, they gathered around a rock.",
       "Upon the rock, they began to strike a stick, again and again, singing loudly so the heavens would hear.",
@@ -85,7 +102,8 @@ const chapters = [
   },
   {
     id: 4,
-    label: "IV — THE AGE OF WALKING",
+    label: "IV",
+    title: "THE AGE OF WALKING",
     paragraphs: [
       "The beings—three in number—lifted the stick from the rock. And not wanting to fight over it, they became one. And that being began to walk.",
       "The Stick of Walking allowed them to rise to new heights and ushered in the Age of Walking.",
@@ -95,7 +113,8 @@ const chapters = [
   },
   {
     id: 5,
-    label: "V — THE ETERNAL DREAMING",
+    label: "V",
+    title: "THE ETERNAL DREAMING",
     paragraphs: [
       "From the Age of Walking came the great Age of Technology, which still persists today.",
       "And as the Dreaming is eternal, its ages belong equally to the child and to the old man alike."
@@ -103,272 +122,308 @@ const chapters = [
   }
 ];
 
-// --- TEXT REVEAL COMPONENT ---
-const RevealText = ({
-  children,
-  delay = 0,
-  isVisible = true,
-  className = ""
-}: {
-  children: React.ReactNode;
-  delay?: number;
-  isVisible?: boolean;
-  className?: string;
-}) => {
-  const [revealed, setRevealed] = useState(false);
+// --- MASSIVE PARTICLE SYSTEM ---
+const PARTICLE_COUNT = 15000;
 
-  useEffect(() => {
-    if (isVisible && !revealed) {
-      const timer = setTimeout(() => setRevealed(true), delay);
-      return () => clearTimeout(timer);
+const generateParticlePositions = () => {
+  // 5 different formations for each chapter
+  const positions = [];
+
+  for (let c = 0; c < 5; c++) {
+    const pos = new Float32Array(PARTICLE_COUNT * 3);
+    const vel = new Float32Array(PARTICLE_COUNT * 3);
+    const colors = new Float32Array(PARTICLE_COUNT * 3);
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const idx = i * 3;
+      const t = i / PARTICLE_COUNT;
+
+      switch(c) {
+        case 0: // VOID - Swirling galaxy/nebula
+          const spiralArms = 5;
+          const spiralAngle = t * Math.PI * 8 + (i % spiralArms) * (Math.PI * 2 / spiralArms);
+          const spiralRadius = Math.pow(t, 0.5) * 4;
+          const spiralNoise = (Math.random() - 0.5) * 0.8;
+          pos[idx] = Math.cos(spiralAngle) * spiralRadius + spiralNoise;
+          pos[idx + 1] = Math.sin(spiralAngle) * spiralRadius + spiralNoise;
+          pos[idx + 2] = (Math.random() - 0.5) * 2 + Math.sin(spiralAngle * 2) * 0.5;
+          // Purple/blue colors
+          colors[idx] = 0.4 + Math.random() * 0.3;
+          colors[idx + 1] = 0.2 + Math.random() * 0.3;
+          colors[idx + 2] = 0.8 + Math.random() * 0.2;
+          break;
+
+        case 1: // GATHERING - 60 orbiting clusters
+          const clusterCount = 60;
+          const clusterId = i % clusterCount;
+          const clusterAngle = (clusterId / clusterCount) * Math.PI * 2;
+          const clusterOrbitRadius = 2.5 + Math.sin(clusterId * 0.5) * 0.8;
+          const clusterCenterX = Math.cos(clusterAngle) * clusterOrbitRadius;
+          const clusterCenterY = Math.sin(clusterAngle) * clusterOrbitRadius;
+          const particleInCluster = Math.floor(i / clusterCount);
+          const localAngle = particleInCluster * 0.3 + clusterId;
+          const localRadius = 0.15 + Math.random() * 0.1;
+          pos[idx] = clusterCenterX + Math.cos(localAngle) * localRadius;
+          pos[idx + 1] = clusterCenterY + Math.sin(localAngle) * localRadius;
+          pos[idx + 2] = (Math.random() - 0.5) * 0.3;
+          // Warm amber/orange
+          colors[idx] = 1.0;
+          colors[idx + 1] = 0.6 + Math.random() * 0.3;
+          colors[idx + 2] = 0.2 + Math.random() * 0.2;
+          break;
+
+        case 2: // STRIKE - Three figures + lightning bolt
+          const figureGroup = i % 3;
+          const figureAngle = (figureGroup / 3) * Math.PI * 2 - Math.PI / 2;
+          const isLightning = Math.random() > 0.7;
+
+          if (isLightning) {
+            // Lightning bolt particles
+            const boltY = (Math.random() - 0.3) * 4;
+            const boltWobble = Math.sin(boltY * 3) * 0.3;
+            pos[idx] = boltWobble + (Math.random() - 0.5) * 0.15;
+            pos[idx + 1] = boltY;
+            pos[idx + 2] = (Math.random() - 0.5) * 0.2;
+            // Bright gold/white
+            colors[idx] = 1.0;
+            colors[idx + 1] = 0.9 + Math.random() * 0.1;
+            colors[idx + 2] = 0.5 + Math.random() * 0.5;
+          } else {
+            // Figure particles
+            const figRadius = 0.8;
+            const figHeight = (Math.random() - 0.5) * 2;
+            pos[idx] = Math.cos(figureAngle) * figRadius + (Math.random() - 0.5) * 0.3;
+            pos[idx + 1] = figHeight - 0.5;
+            pos[idx + 2] = Math.sin(figureAngle) * 0.3 + (Math.random() - 0.5) * 0.2;
+            // Warm earth tones
+            colors[idx] = 0.8 + Math.random() * 0.2;
+            colors[idx + 1] = 0.4 + Math.random() * 0.2;
+            colors[idx + 2] = 0.2;
+          }
+          break;
+
+        case 3: // WALKING - Sky above, water below, figure on horizon
+          const isSky = t < 0.4;
+          const isWater = t > 0.6;
+          const isHorizon = !isSky && !isWater;
+
+          if (isSky) {
+            // Sky particles - stars and clouds
+            pos[idx] = (Math.random() - 0.5) * 8;
+            pos[idx + 1] = 1 + Math.random() * 3;
+            pos[idx + 2] = (Math.random() - 0.5) * 3;
+            // Golden sky
+            colors[idx] = 1.0;
+            colors[idx + 1] = 0.8 + Math.random() * 0.2;
+            colors[idx + 2] = 0.4 + Math.random() * 0.3;
+          } else if (isWater) {
+            // Water particles - waves and fish
+            const waveX = (Math.random() - 0.5) * 8;
+            const wavePhase = Math.sin(waveX * 2 + i * 0.01) * 0.2;
+            pos[idx] = waveX;
+            pos[idx + 1] = -1 - Math.random() * 2.5 + wavePhase;
+            pos[idx + 2] = (Math.random() - 0.5) * 3;
+            // Deep blue/teal
+            colors[idx] = 0.1 + Math.random() * 0.2;
+            colors[idx + 1] = 0.4 + Math.random() * 0.3;
+            colors[idx + 2] = 0.7 + Math.random() * 0.3;
+          } else {
+            // Horizon - walking figure
+            const walkAngle = (i - PARTICLE_COUNT * 0.4) / (PARTICLE_COUNT * 0.2) * Math.PI;
+            pos[idx] = Math.cos(walkAngle) * 0.3 + (Math.random() - 0.5) * 0.2;
+            pos[idx + 1] = Math.abs(Math.sin(walkAngle)) * 1.5 - 0.3;
+            pos[idx + 2] = (Math.random() - 0.5) * 0.3;
+            // White/gold
+            colors[idx] = 1.0;
+            colors[idx + 1] = 0.95;
+            colors[idx + 2] = 0.85;
+          }
+          break;
+
+        case 4: // ETERNAL - Ouroboros/infinite loop
+          const loopAngle = t * Math.PI * 4; // Two full loops
+          const loopRadius = 2 + Math.sin(loopAngle * 2) * 0.5;
+          const loopTwist = Math.sin(loopAngle * 3) * 0.3;
+          pos[idx] = Math.cos(loopAngle) * loopRadius;
+          pos[idx + 1] = Math.sin(loopAngle) * loopRadius * 0.6 + loopTwist;
+          pos[idx + 2] = Math.sin(loopAngle * 2) * 0.5 + (Math.random() - 0.5) * 0.2;
+          // Golden thread with color variation
+          const goldPhase = Math.sin(loopAngle * 4);
+          colors[idx] = 0.9 + goldPhase * 0.1;
+          colors[idx + 1] = 0.7 + goldPhase * 0.2;
+          colors[idx + 2] = 0.3 + Math.random() * 0.2;
+          break;
+      }
+
+      // Velocities for animation
+      vel[idx] = (Math.random() - 0.5) * 0.02;
+      vel[idx + 1] = (Math.random() - 0.5) * 0.02;
+      vel[idx + 2] = (Math.random() - 0.5) * 0.02;
     }
-  }, [isVisible, delay, revealed]);
 
-  return (
-    <span
-      className={`block transition-all duration-800 ease-out ${
-        revealed
-          ? 'opacity-100 translate-y-0'
-          : 'opacity-0 translate-y-4'
-      } ${className}`}
-      style={{ transitionDuration: '800ms' }}
-    >
-      {children}
-    </span>
-  );
-};
-
-// --- TEXT CONTAINER COMPONENT ---
-const TextContainer = ({
-  chapter,
-  isActive,
-  position = 'center'
-}: {
-  chapter: typeof chapters[0];
-  isActive: boolean;
-  position?: 'left' | 'center' | 'right';
-}) => {
-  const positionClasses = {
-    left: 'left-[10%] -translate-x-0',
-    center: 'left-1/2 -translate-x-1/2',
-    right: 'right-[10%] translate-x-0 left-auto'
-  };
-
-  return (
-    <div
-      className={`absolute top-1/2 -translate-y-1/2 z-20 max-w-[540px] w-[90vw] md:w-[540px] ${positionClasses[position]}`}
-    >
-      <div
-        className={`
-          p-8 md:p-12 rounded-2xl
-          bg-black/75 backdrop-blur-[20px]
-          border border-white/[0.08]
-          shadow-[0_4px_24px_rgba(0,0,0,0.4),0_12px_48px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]
-          transition-all duration-700
-          ${isActive ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}
-        `}
-      >
-        {/* Chapter Label */}
-        <RevealText delay={300} isVisible={isActive}>
-          <p className="text-[10px] md:text-xs font-medium tracking-[0.35em] uppercase text-white/40 mb-6">
-            {chapter.label}
-          </p>
-        </RevealText>
-
-        {/* Paragraphs */}
-        <div className="space-y-6">
-          {chapter.paragraphs.map((paragraph, idx) => (
-            <RevealText
-              key={idx}
-              delay={900 + idx * 400}
-              isVisible={isActive}
-            >
-              <p className="text-lg md:text-[22px] font-light leading-[1.7] tracking-[0.005em] text-[#FDFBF7]/90">
-                {paragraph}
-              </p>
-            </RevealText>
-          ))}
-        </div>
-
-        {/* Return button for last chapter */}
-        {chapter.id === 5 && (
-          <RevealText delay={2500} isVisible={isActive}>
-            <a
-              href="#/"
-              className="inline-block mt-10 group relative px-10 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
-            >
-              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
-              <span className="relative text-sm font-medium tracking-[0.25em] uppercase text-white/80 group-hover:text-white transition-colors">
-                Return Home
-              </span>
-            </a>
-          </RevealText>
-        )}
-      </div>
-    </div>
-  );
-};
-
-// --- PARTICLE SYSTEM FOR CHAPTERS ---
-const PARTICLE_COUNT = 3000;
-
-const generateChapterParticles = (chapterIndex: number) => {
-  const positions = new Float32Array(PARTICLE_COUNT * 3);
-  const randoms = new Float32Array(PARTICLE_COUNT);
-
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const idx = i * 3;
-    randoms[i] = Math.random();
-
-    switch (chapterIndex) {
-      case 0: // The Dreaming - fog/void
-        positions[idx] = (Math.random() - 0.5) * 8;
-        positions[idx + 1] = (Math.random() - 0.5) * 6;
-        positions[idx + 2] = (Math.random() - 0.5) * 4;
-        break;
-      case 1: // Age of Asking - 60 clusters
-        const clusterIdx = Math.floor(Math.random() * 60);
-        const clusterAngle = (clusterIdx / 60) * Math.PI * 2;
-        const clusterRadius = 1.5 + Math.random() * 1.5;
-        const clusterX = Math.cos(clusterAngle) * clusterRadius;
-        const clusterY = Math.sin(clusterAngle) * clusterRadius;
-        positions[idx] = clusterX + (Math.random() - 0.5) * 0.3;
-        positions[idx + 1] = clusterY + (Math.random() - 0.5) * 0.3;
-        positions[idx + 2] = (Math.random() - 0.5) * 0.5;
-        break;
-      case 2: // Sacred Strike - three figures around center
-        const figureIdx = i % 3;
-        const figureAngle = (figureIdx / 3) * Math.PI * 2 - Math.PI / 2;
-        const figureRadius = 1.2;
-        positions[idx] = Math.cos(figureAngle) * figureRadius + (Math.random() - 0.5) * 0.4;
-        positions[idx + 1] = (Math.random() - 0.5) * 1.5 - 0.5;
-        positions[idx + 2] = Math.sin(figureAngle) * 0.5 + (Math.random() - 0.5) * 0.3;
-        break;
-      case 3: // Age of Walking - sky/water split
-        const isWater = Math.random() > 0.5;
-        positions[idx] = (Math.random() - 0.5) * 6;
-        positions[idx + 1] = isWater
-          ? -Math.random() * 2 - 0.5
-          : Math.random() * 2 + 0.5;
-        positions[idx + 2] = (Math.random() - 0.5) * 3;
-        break;
-      case 4: // Eternal - ouroboros ring
-        const ringAngle = (i / PARTICLE_COUNT) * Math.PI * 2;
-        const ringRadius = 1.8 + Math.sin(ringAngle * 3) * 0.2;
-        positions[idx] = Math.cos(ringAngle) * ringRadius;
-        positions[idx + 1] = Math.sin(ringAngle) * ringRadius * 0.6;
-        positions[idx + 2] = (Math.random() - 0.5) * 0.3;
-        break;
-    }
+    positions.push({ pos, vel, colors });
   }
 
-  return { positions, randoms };
+  return positions;
 };
 
-// --- CHAPTER PARTICLE SHADER ---
+// --- PARTICLE SHADERS ---
 const particleVertexShader = `
-attribute float random;
-uniform float uTime;
-uniform float uDepthReveal;
-uniform int uChapter;
+attribute vec3 aVelocity;
+attribute vec3 aColor;
+attribute vec3 aTarget;
 
+uniform float uTime;
+uniform float uProgress;
+uniform float uTransition;
+uniform vec2 uMouse;
+
+varying vec3 vColor;
 varying float vAlpha;
-varying float vDepth;
 
 ${noiseFunctions}
 
 void main() {
   vec3 pos = position;
 
-  // Add movement based on chapter
-  float movement = snoise(pos * 0.5 + uTime * 0.1) * 0.1;
-  pos += movement;
+  // Morph towards target position during transition
+  pos = mix(pos, aTarget, uTransition);
 
-  // Depth-based positioning
-  float depthOffset = (1.0 - uDepthReveal) * 2.0;
-  pos.z += depthOffset;
+  // Add flowing movement
+  vec3 curl = curlNoise(pos * 0.3 + uTime * 0.1) * 0.3;
+  pos += curl * (1.0 - uTransition * 0.5);
+
+  // Add velocity-based drift
+  pos += aVelocity * sin(uTime * 2.0 + pos.x) * 2.0;
+
+  // Mouse interaction - particles flow away
+  vec2 mouseWorld = uMouse * 4.0;
+  float mouseDist = length(pos.xy - mouseWorld);
+  if (mouseDist < 1.5) {
+    vec2 away = normalize(pos.xy - mouseWorld);
+    float force = (1.5 - mouseDist) / 1.5;
+    pos.xy += away * force * 0.5;
+  }
+
+  // Rotate entire system slowly
+  float rotSpeed = 0.1;
+  float cosR = cos(uTime * rotSpeed);
+  float sinR = sin(uTime * rotSpeed);
+  pos.xz = mat2(cosR, -sinR, sinR, cosR) * pos.xz;
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  // Size based on depth
-  float size = 15.0 + random * 10.0;
-  gl_PointSize = size / -mvPosition.z;
+  // Dynamic size based on depth and noise
+  float sizeNoise = snoise(pos + uTime * 0.5) * 0.5 + 0.5;
+  float baseSize = 25.0 + sizeNoise * 15.0;
+  gl_PointSize = baseSize / -mvPosition.z;
 
-  // Alpha based on position and depth reveal
-  vAlpha = 0.3 + random * 0.4;
-  vAlpha *= smoothstep(-5.0, 0.0, pos.z);
-  vAlpha *= uDepthReveal * 0.5 + 0.5;
+  // Pass color with variation
+  vColor = aColor * (0.8 + sizeNoise * 0.4);
 
-  vDepth = pos.z;
+  // Alpha based on depth and animation
+  vAlpha = 0.6 + sizeNoise * 0.4;
+  vAlpha *= smoothstep(-8.0, 0.0, pos.z);
 }
 `;
 
 const particleFragmentShader = `
+varying vec3 vColor;
 varying float vAlpha;
-varying float vDepth;
 
 void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float dist = length(coord);
 
-  float glow = exp(-dist * 4.0);
-  if (glow < 0.01) discard;
+  // Soft glow with bright core
+  float core = exp(-dist * 8.0);
+  float glow = exp(-dist * 3.0);
+  float combined = core * 0.6 + glow * 0.4;
 
-  // Warm white color
-  vec3 color = vec3(1.0, 0.98, 0.94);
+  if (combined < 0.01) discard;
 
-  gl_FragColor = vec4(color, vAlpha * glow);
+  // Add bloom effect
+  vec3 finalColor = vColor * (1.0 + core * 0.5);
+
+  gl_FragColor = vec4(finalColor, vAlpha * combined);
 }
 `;
 
-// --- CHAPTER BACKGROUND SHADER ---
-const createBackgroundShader = (chapterIndex: number) => {
-  const fragmentShaders = [
-    // Chapter 1: Void to light
+// --- DRAMATIC BACKGROUND SHADERS ---
+const bgVertexShader = `
+varying vec2 vUv;
+varying vec3 vPosition;
+
+void main() {
+  vUv = uv;
+  vPosition = position;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const createBgFragmentShader = (chapter: number) => {
+  const shaders = [
+    // Chapter 1: Cosmic void with emerging light
     `
     uniform float uTime;
-    uniform float uDepthReveal;
-    uniform vec2 uResolution;
+    uniform float uProgress;
+    uniform vec2 uMouse;
     varying vec2 vUv;
 
     ${noiseFunctions}
 
     void main() {
       vec2 uv = vUv;
+      vec2 center = vec2(0.5);
+      float dist = length(uv - center);
 
-      // Deep void colors
-      vec3 void_color = vec3(0.04, 0.02, 0.06);
-      vec3 nebula = vec3(0.15, 0.05, 0.2);
-      vec3 light = vec3(0.83, 0.65, 0.45);
+      // Deep space colors
+      vec3 void_black = vec3(0.02, 0.01, 0.04);
+      vec3 nebula_purple = vec3(0.15, 0.05, 0.25);
+      vec3 nebula_blue = vec3(0.05, 0.1, 0.3);
+      vec3 star_gold = vec3(1.0, 0.9, 0.6);
 
-      float n1 = snoise(vec3(uv * 2.0, uTime * 0.05));
-      float n2 = snoise(vec3(uv * 4.0, uTime * 0.08));
+      // Swirling nebula
+      float angle = atan(uv.y - 0.5, uv.x - 0.5);
+      float spiral = sin(angle * 3.0 + dist * 10.0 - uTime * 0.3);
 
-      vec3 color = mix(void_color, nebula, n1 * 0.5 + 0.3);
+      float n1 = snoise(vec3(uv * 3.0, uTime * 0.1));
+      float n2 = snoise(vec3(uv * 6.0 + n1 * 0.5, uTime * 0.15));
+      float n3 = snoise(vec3(uv * 12.0, uTime * 0.05));
 
-      // Central light emergence based on depth reveal
-      float centerDist = length(uv - 0.5);
-      float lightGlow = smoothstep(0.5, 0.0, centerDist) * uDepthReveal;
-      color = mix(color, light, lightGlow * 0.4);
+      vec3 color = void_black;
+      color = mix(color, nebula_purple, smoothstep(0.3, 0.7, n1 * 0.5 + 0.5) * 0.6);
+      color = mix(color, nebula_blue, smoothstep(0.4, 0.8, n2 * 0.5 + 0.5) * 0.4);
 
-      // Stars in background
-      float stars = pow(max(0.0, snoise(vec3(uv * 50.0, 0.0))), 12.0) * uDepthReveal;
-      color += stars * 0.8;
+      // Spiral arms
+      float arms = smoothstep(0.0, 0.3, spiral * 0.5 + 0.5) * smoothstep(0.8, 0.2, dist);
+      color += nebula_purple * arms * 0.3;
 
-      // Vignette
-      float vignette = smoothstep(0.8, 0.3, centerDist);
-      color *= 0.5 + vignette * 0.5;
+      // Central glow - the emerging light
+      float centerGlow = exp(-dist * 3.0) * uProgress;
+      color += star_gold * centerGlow * 0.8;
+
+      // Stars
+      float stars = pow(max(0.0, snoise(vec3(uv * 80.0, 0.0))), 20.0);
+      float twinkle = sin(uTime * 3.0 + uv.x * 50.0) * 0.5 + 0.5;
+      color += stars * twinkle * 1.5;
+
+      // Mouse light
+      vec2 mouseUV = uMouse * 0.5 + 0.5;
+      float mouseDist = length(uv - mouseUV);
+      float mouseGlow = exp(-mouseDist * 5.0) * 0.3;
+      color += star_gold * mouseGlow;
 
       gl_FragColor = vec4(color, 1.0);
     }
     `,
-    // Chapter 2: Warm amber gathering
+
+    // Chapter 2: Warm gathering with connection lines
     `
     uniform float uTime;
-    uniform float uDepthReveal;
-    uniform vec2 uResolution;
+    uniform float uProgress;
+    uniform vec2 uMouse;
     varying vec2 vUv;
 
     ${noiseFunctions}
@@ -376,197 +431,280 @@ const createBackgroundShader = (chapterIndex: number) => {
     void main() {
       vec2 uv = vUv;
 
-      vec3 deep = vec3(0.11, 0.05, 0.03);
-      vec3 warm = vec3(0.25, 0.12, 0.05);
-      vec3 amber = vec3(0.7, 0.4, 0.15);
+      vec3 deep_brown = vec3(0.08, 0.04, 0.02);
+      vec3 warm_amber = vec3(0.4, 0.2, 0.08);
+      vec3 bright_gold = vec3(1.0, 0.7, 0.3);
+      vec3 soft_orange = vec3(0.9, 0.5, 0.2);
 
-      float n1 = snoise(vec3(uv * 3.0, uTime * 0.06));
-      float n2 = snoise(vec3(uv * 6.0 + n1 * 0.3, uTime * 0.08));
+      // Flowing warm currents
+      float flow = uTime * 0.2;
+      float n1 = snoise(vec3(uv.x * 2.0 + flow, uv.y * 3.0, uTime * 0.1));
+      float n2 = snoise(vec3(uv * 4.0 + n1 * 0.3, uTime * 0.15));
+      float n3 = snoise(vec3(uv * 8.0, uTime * 0.08));
 
-      vec3 color = mix(deep, warm, n1 * 0.5 + 0.4);
+      vec3 color = deep_brown;
 
-      // Warmth reveals with depth
-      float warmGlow = n2 * 0.5 + 0.5;
-      color = mix(color, amber, warmGlow * uDepthReveal * 0.3);
+      // Warm flowing layers
+      float warmth = smoothstep(-0.2, 0.6, n1);
+      color = mix(color, warm_amber, warmth * 0.7);
 
-      // Subtle radial gradient
-      float centerDist = length(uv - 0.5);
-      color *= 0.7 + smoothstep(0.7, 0.2, centerDist) * 0.3;
+      // Bright spots where beings gather
+      float gathering = pow(max(0.0, n2), 2.0);
+      color = mix(color, bright_gold, gathering * 0.5);
+
+      // Connection lines effect
+      float lines = abs(sin(uv.x * 30.0 + n1 * 5.0 + uTime)) * abs(sin(uv.y * 30.0 + n2 * 5.0));
+      lines = pow(lines, 8.0);
+      color += soft_orange * lines * 0.3 * uProgress;
+
+      // Radial warmth
+      float dist = length(uv - 0.5);
+      float radialWarm = exp(-dist * 2.0);
+      color += bright_gold * radialWarm * 0.2;
+
+      // Ambient glow
+      color += warm_amber * n3 * 0.1;
 
       gl_FragColor = vec4(color, 1.0);
     }
     `,
-    // Chapter 3: Rock and lightning
+
+    // Chapter 3: Rock and lightning - dramatic
     `
     uniform float uTime;
-    uniform float uDepthReveal;
-    uniform vec2 uResolution;
-    uniform float uLightningFlash;
+    uniform float uProgress;
+    uniform float uFlash;
+    uniform vec2 uMouse;
     varying vec2 vUv;
 
     ${noiseFunctions}
 
     void main() {
       vec2 uv = vUv;
+      vec2 center = vec2(0.5);
 
-      vec3 rock_dark = vec3(0.06, 0.04, 0.03);
-      vec3 rock_mid = vec3(0.12, 0.08, 0.05);
-      vec3 gold = vec3(1.0, 0.85, 0.4);
-      vec3 lightning = vec3(1.0, 0.95, 0.8);
+      vec3 rock_black = vec3(0.03, 0.02, 0.02);
+      vec3 rock_brown = vec3(0.12, 0.08, 0.05);
+      vec3 lava_orange = vec3(1.0, 0.4, 0.1);
+      vec3 lightning_white = vec3(1.0, 0.95, 0.8);
+      vec3 lightning_gold = vec3(1.0, 0.8, 0.3);
 
-      float n1 = snoise(vec3(uv * 4.0, uTime * 0.03));
-      float n2 = snoise(vec3(uv * 8.0, uTime * 0.05));
+      // Rock texture
+      float rock1 = snoise(vec3(uv * 5.0, 0.0));
+      float rock2 = snoise(vec3(uv * 15.0, 1.0));
+      float rock3 = snoise(vec3(uv * 30.0, 2.0));
 
-      vec3 color = mix(rock_dark, rock_mid, n1 * 0.5 + 0.4);
+      vec3 color = mix(rock_black, rock_brown, rock1 * 0.5 + 0.4);
+      color += rock2 * 0.05;
 
-      // Golden veins that reveal with depth
-      float veins = smoothstep(0.4, 0.6, n2);
-      color = mix(color, gold, veins * uDepthReveal * 0.5);
+      // Cracks with lava
+      float cracks = smoothstep(0.4, 0.5, rock2) * smoothstep(0.6, 0.5, rock2);
+      float lavaPulse = sin(uTime * 2.0 + rock1 * 5.0) * 0.5 + 0.5;
+      color = mix(color, lava_orange, cracks * lavaPulse * 0.8 * uProgress);
 
-      // Lightning flash effect
-      color = mix(color, lightning, uLightningFlash * 0.8);
+      // Lightning bolt effect
+      float boltX = 0.5 + sin(uv.y * 20.0 + uTime * 5.0) * 0.1;
+      float boltDist = abs(uv.x - boltX);
+      float bolt = exp(-boltDist * 50.0) * step(0.3, uv.y) * step(uv.y, 0.9);
 
-      // Central focus
-      float centerDist = length(uv - 0.5);
-      color *= 0.6 + smoothstep(0.6, 0.1, centerDist) * 0.4;
+      // Lightning branches
+      float branch1X = boltX + sin(uv.y * 30.0) * 0.15;
+      float branch1 = exp(-abs(uv.x - branch1X) * 40.0) * step(0.5, uv.y) * step(uv.y, 0.7);
+
+      float lightningIntensity = (bolt + branch1 * 0.5) * uProgress;
+      color = mix(color, lightning_gold, lightningIntensity * 0.7);
+      color = mix(color, lightning_white, lightningIntensity * 0.3);
+
+      // Flash effect
+      color = mix(color, lightning_white, uFlash * 0.8);
+
+      // Central impact glow
+      float dist = length(uv - vec2(0.5, 0.4));
+      float impact = exp(-dist * 4.0) * uProgress;
+      color += lightning_gold * impact * 0.5;
 
       gl_FragColor = vec4(color, 1.0);
     }
     `,
-    // Chapter 4: Sky and water
+
+    // Chapter 4: Sky and water with horizon
     `
     uniform float uTime;
-    uniform float uDepthReveal;
-    uniform vec2 uResolution;
-    uniform float uMouseY;
+    uniform float uProgress;
+    uniform vec2 uMouse;
     varying vec2 vUv;
 
     ${noiseFunctions}
 
     void main() {
       vec2 uv = vUv;
+      float horizon = 0.45 + uMouse.y * 0.1;
 
       // Sky colors
-      vec3 sky_high = vec3(0.15, 0.12, 0.2);
-      vec3 sky_low = vec3(0.5, 0.35, 0.2);
+      vec3 sky_high = vec3(0.1, 0.08, 0.2);
+      vec3 sky_low = vec3(0.6, 0.4, 0.2);
+      vec3 sun_gold = vec3(1.0, 0.85, 0.5);
 
       // Water colors
-      vec3 water_surface = vec3(0.1, 0.15, 0.25);
-      vec3 water_deep = vec3(0.03, 0.08, 0.15);
-
-      float horizonLine = 0.5 + uMouseY * 0.1;
+      vec3 water_deep = vec3(0.02, 0.06, 0.12);
+      vec3 water_mid = vec3(0.05, 0.15, 0.25);
+      vec3 water_surface = vec3(0.1, 0.25, 0.35);
 
       vec3 color;
 
-      if (uv.y > horizonLine) {
-        // Sky
-        float skyGrad = (uv.y - horizonLine) / (1.0 - horizonLine);
-        float n = snoise(vec3(uv * 3.0, uTime * 0.05));
-        color = mix(sky_low, sky_high, skyGrad + n * 0.2);
+      if (uv.y > horizon) {
+        // SKY
+        float skyGrad = (uv.y - horizon) / (1.0 - horizon);
+        color = mix(sky_low, sky_high, pow(skyGrad, 0.7));
+
+        // Clouds
+        float cloud1 = snoise(vec3(uv.x * 3.0 + uTime * 0.05, uv.y * 2.0, uTime * 0.02));
+        float cloud2 = snoise(vec3(uv.x * 6.0 + uTime * 0.08, uv.y * 4.0, uTime * 0.03));
+        float clouds = smoothstep(0.2, 0.8, cloud1 * 0.5 + cloud2 * 0.3 + 0.3);
+        color = mix(color, sky_low * 1.3, clouds * 0.3 * (1.0 - skyGrad));
+
+        // Sun/light source
+        vec2 sunPos = vec2(0.7, 0.75);
+        float sunDist = length(uv - sunPos);
+        float sunGlow = exp(-sunDist * 4.0);
+        float sunCore = exp(-sunDist * 15.0);
+        color += sun_gold * sunGlow * 0.6;
+        color += vec3(1.0) * sunCore * 0.4;
+
+        // Stars (faint in upper sky)
+        float stars = pow(max(0.0, snoise(vec3(uv * 100.0, 0.0))), 25.0);
+        color += stars * skyGrad * 0.8;
+
       } else {
-        // Water
-        float waterGrad = uv.y / horizonLine;
-        float wave = sin(uv.x * 10.0 + uTime * 0.5) * 0.02;
-        float n = snoise(vec3(uv.x * 5.0, uv.y * 3.0 + wave, uTime * 0.1));
-        color = mix(water_deep, water_surface, waterGrad + n * 0.2);
+        // WATER
+        float waterGrad = uv.y / horizon;
+
+        // Wave distortion
+        float wave1 = sin(uv.x * 15.0 + uTime * 1.5) * 0.01;
+        float wave2 = sin(uv.x * 25.0 - uTime * 2.0) * 0.005;
+        float waveY = uv.y + wave1 + wave2;
+
+        float n1 = snoise(vec3(uv.x * 4.0, waveY * 6.0, uTime * 0.3));
+        float n2 = snoise(vec3(uv.x * 8.0, waveY * 12.0, uTime * 0.4));
+
+        color = mix(water_deep, water_mid, waterGrad);
+        color = mix(color, water_surface, smoothstep(0.7, 1.0, waterGrad) + n1 * 0.2);
 
         // Caustics
-        float caustic = pow(max(0.0, snoise(vec3(uv * 15.0, uTime * 0.15))), 3.0);
-        color += caustic * 0.1 * uDepthReveal * vec3(0.2, 0.3, 0.4);
+        float caustic = pow(max(0.0, n2), 3.0);
+        color += vec3(0.1, 0.2, 0.3) * caustic * 0.4;
+
+        // Reflection of sun
+        float reflectX = 0.7 + sin(uTime + uv.y * 20.0) * 0.05;
+        float reflection = exp(-abs(uv.x - reflectX) * 10.0) * waterGrad;
+        color += sun_gold * reflection * 0.4;
+
+        // Fish silhouettes (subtle)
+        float fishX = fract(uv.x * 3.0 + uTime * 0.1);
+        float fishY = sin(fishX * 6.28) * 0.05;
+        float fish = smoothstep(0.02, 0.0, abs(uv.y - 0.2 - fishY)) * smoothstep(0.1, 0.0, abs(fishX - 0.5));
+        color = mix(color, water_deep, fish * 0.3 * uProgress);
       }
 
       // Horizon glow
-      float horizonGlow = exp(-abs(uv.y - horizonLine) * 8.0);
-      color += vec3(0.8, 0.6, 0.3) * horizonGlow * 0.2;
+      float horizonGlow = exp(-abs(uv.y - horizon) * 15.0);
+      color += sun_gold * horizonGlow * 0.4;
 
       gl_FragColor = vec4(color, 1.0);
     }
     `,
-    // Chapter 5: Eternal return
+
+    // Chapter 5: Eternal return - warm void with golden thread
     `
     uniform float uTime;
-    uniform float uDepthReveal;
-    uniform vec2 uResolution;
+    uniform float uProgress;
+    uniform vec2 uMouse;
     varying vec2 vUv;
 
     ${noiseFunctions}
 
     void main() {
       vec2 uv = vUv;
+      vec2 center = vec2(0.5);
+      float dist = length(uv - center);
+      float angle = atan(uv.y - 0.5, uv.x - 0.5);
 
-      vec3 void_warm = vec3(0.08, 0.05, 0.04);
-      vec3 deep = vec3(0.04, 0.02, 0.03);
-      vec3 gold_thread = vec3(0.83, 0.65, 0.45);
+      vec3 void_warm = vec3(0.06, 0.03, 0.02);
+      vec3 deep_purple = vec3(0.08, 0.03, 0.1);
+      vec3 gold_thread = vec3(1.0, 0.8, 0.4);
+      vec3 soft_white = vec3(1.0, 0.98, 0.95);
 
-      float n1 = snoise(vec3(uv * 2.5, uTime * 0.04));
+      // Warm void base
+      float n1 = snoise(vec3(uv * 2.0, uTime * 0.05));
+      vec3 color = mix(void_warm, deep_purple, n1 * 0.3 + 0.3);
 
-      vec3 color = mix(deep, void_warm, n1 * 0.4 + 0.3);
+      // Eternal ring/ouroboros
+      float ringRadius = 0.32 + sin(angle * 3.0 + uTime * 0.5) * 0.02;
+      float ringDist = abs(dist - ringRadius);
+      float ring = exp(-ringDist * 40.0);
 
-      // Golden thread ring
-      float centerDist = length(uv - 0.5);
-      float ring = smoothstep(0.02, 0.0, abs(centerDist - 0.35));
-      float ringGlow = smoothstep(0.1, 0.0, abs(centerDist - 0.35));
+      // Ring glow
+      float ringGlow = exp(-ringDist * 10.0);
 
-      // Animate ring
-      float ringNoise = snoise(vec3(uv * 10.0, uTime * 0.2));
-      ring *= 0.8 + ringNoise * 0.2;
+      // Animate ring brightness
+      float ringPulse = sin(angle * 2.0 - uTime * 1.5) * 0.5 + 0.5;
 
-      color = mix(color, gold_thread, ring * uDepthReveal);
-      color += gold_thread * ringGlow * 0.2 * uDepthReveal;
+      color += gold_thread * ring * (0.7 + ringPulse * 0.3);
+      color += gold_thread * ringGlow * 0.3;
+
+      // Inner warmth
+      float innerGlow = exp(-dist * 3.0);
+      color += gold_thread * innerGlow * 0.2;
 
       // Faint stars returning
-      float stars = pow(max(0.0, snoise(vec3(uv * 40.0, 1.0))), 10.0);
-      color += stars * 0.3 * uDepthReveal;
+      float stars = pow(max(0.0, snoise(vec3(uv * 60.0, 1.0))), 15.0);
+      float twinkle = sin(uTime * 2.0 + angle * 10.0) * 0.5 + 0.5;
+      color += soft_white * stars * twinkle * 0.6;
 
-      // Warm vignette
-      float vignette = smoothstep(0.8, 0.2, centerDist);
-      color *= 0.6 + vignette * 0.4;
+      // Gentle vignette
+      float vignette = smoothstep(0.8, 0.3, dist);
+      color *= 0.7 + vignette * 0.3;
 
       gl_FragColor = vec4(color, 1.0);
     }
     `
   ];
 
-  return fragmentShaders[chapterIndex];
+  return shaders[chapter];
 };
 
-const backgroundVertexShader = `
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`;
-
-// --- CHAPTER SCENE COMPONENT ---
+// --- SCENE COMPONENT ---
 interface ChapterSceneProps {
-  chapterIndex: number;
-  isActive: boolean;
-  depthReveal: number;
-  mouseY: number;
-  lightningFlash: number;
+  chapter: number;
+  progress: number;
+  transition: number;
+  mouse: THREE.Vector2;
+  flash: number;
 }
 
-const ChapterScene = ({ chapterIndex, isActive, depthReveal, mouseY, lightningFlash }: ChapterSceneProps) => {
+const ChapterScene = ({ chapter, progress, transition, mouse, flash }: ChapterSceneProps) => {
   const particlesRef = useRef<THREE.Points>(null);
-  const backgroundRef = useRef<THREE.Mesh>(null);
-  const { viewport } = useThree();
+  const bgRef = useRef<THREE.Mesh>(null);
+  const { viewport, size } = useThree();
 
-  const particles = useMemo(() => generateChapterParticles(chapterIndex), [chapterIndex]);
+  const allParticles = useMemo(() => generateParticlePositions(), []);
+
+  const currentParticles = allParticles[chapter];
+  const nextParticles = allParticles[Math.min(chapter + 1, 4)];
 
   const particleUniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uDepthReveal: { value: 0 },
-    uChapter: { value: chapterIndex }
-  }), [chapterIndex]);
+    uProgress: { value: 0 },
+    uTransition: { value: 0 },
+    uMouse: { value: new THREE.Vector2() }
+  }), []);
 
-  const backgroundUniforms = useMemo(() => ({
+  const bgUniforms = useMemo(() => ({
     uTime: { value: 0 },
-    uDepthReveal: { value: 0 },
-    uResolution: { value: new THREE.Vector2(viewport.width, viewport.height) },
-    uMouseY: { value: 0 },
-    uLightningFlash: { value: 0 }
-  }), [viewport]);
+    uProgress: { value: 0 },
+    uFlash: { value: 0 },
+    uMouse: { value: new THREE.Vector2() }
+  }), []);
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -574,44 +712,58 @@ const ChapterScene = ({ chapterIndex, isActive, depthReveal, mouseY, lightningFl
     if (particlesRef.current) {
       const mat = particlesRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uDepthReveal.value = depthReveal;
+      mat.uniforms.uProgress.value = progress;
+      mat.uniforms.uTransition.value = transition;
+      mat.uniforms.uMouse.value.copy(mouse);
     }
 
-    if (backgroundRef.current) {
-      const mat = backgroundRef.current.material as THREE.ShaderMaterial;
+    if (bgRef.current) {
+      const mat = bgRef.current.material as THREE.ShaderMaterial;
       mat.uniforms.uTime.value = t;
-      mat.uniforms.uDepthReveal.value = depthReveal;
-      mat.uniforms.uMouseY.value = mouseY;
-      mat.uniforms.uLightningFlash.value = lightningFlash;
+      mat.uniforms.uProgress.value = progress;
+      mat.uniforms.uFlash.value = flash;
+      mat.uniforms.uMouse.value.copy(mouse);
     }
   });
 
   return (
     <>
-      {/* Background plane */}
-      <mesh ref={backgroundRef} position={[0, 0, -5]}>
-        <planeGeometry args={[viewport.width * 2, viewport.height * 2]} />
+      {/* Dramatic background */}
+      <mesh ref={bgRef} position={[0, 0, -10]}>
+        <planeGeometry args={[viewport.width * 3, viewport.height * 3]} />
         <shaderMaterial
-          vertexShader={backgroundVertexShader}
-          fragmentShader={createBackgroundShader(chapterIndex)}
-          uniforms={backgroundUniforms}
+          vertexShader={bgVertexShader}
+          fragmentShader={createBgFragmentShader(chapter)}
+          uniforms={bgUniforms}
         />
       </mesh>
 
-      {/* Particles */}
+      {/* Particle system */}
       <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
             count={PARTICLE_COUNT}
-            array={particles.positions}
+            array={currentParticles.pos}
             itemSize={3}
           />
           <bufferAttribute
-            attach="attributes-random"
+            attach="attributes-aVelocity"
             count={PARTICLE_COUNT}
-            array={particles.randoms}
-            itemSize={1}
+            array={currentParticles.vel}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-aColor"
+            count={PARTICLE_COUNT}
+            array={currentParticles.colors}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-aTarget"
+            count={PARTICLE_COUNT}
+            array={nextParticles.pos}
+            itemSize={3}
           />
         </bufferGeometry>
         <shaderMaterial
@@ -627,86 +779,107 @@ const ChapterScene = ({ chapterIndex, isActive, depthReveal, mouseY, lightningFl
   );
 };
 
-// --- PROGRESS INDICATOR ---
-const ProgressIndicator = ({
-  currentChapter,
-  totalChapters,
-  onChapterClick
+// --- TEXT COMPONENTS ---
+const RevealText = ({
+  children,
+  delay = 0,
+  isVisible = true,
+  className = ""
 }: {
-  currentChapter: number;
-  totalChapters: number;
-  onChapterClick: (idx: number) => void;
+  children: React.ReactNode;
+  delay?: number;
+  isVisible?: boolean;
+  className?: string;
 }) => {
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => setRevealed(true), delay);
+      return () => clearTimeout(timer);
+    } else {
+      setRevealed(false);
+    }
+  }, [isVisible, delay]);
+
   return (
-    <div className="fixed right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-3">
-      {Array.from({ length: totalChapters }, (_, i) => (
-        <button
-          key={i}
-          onClick={() => onChapterClick(i)}
-          className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
-            currentChapter === i
-              ? 'bg-white scale-125'
-              : 'bg-white/25 hover:bg-white/50'
-          }`}
-          aria-label={`Go to chapter ${i + 1}`}
-        />
-      ))}
-    </div>
+    <span
+      className={`block transition-all duration-1000 ease-out ${
+        revealed ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-8 blur-sm'
+      } ${className}`}
+    >
+      {children}
+    </span>
   );
 };
 
 // --- MAIN COMPONENT ---
 const OurPhilosophy = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [currentChapter, setCurrentChapter] = useState(0);
-  const [depthReveal, setDepthReveal] = useState(0);
-  const [mouseY, setMouseY] = useState(0);
-  const [lightningFlash, setLightningFlash] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [transition, setTransition] = useState(0);
+  const [flash, setFlash] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const mouseRef = useRef(new THREE.Vector2(0, 0));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const dwellTimeRef = useRef(0);
-  const lastChapterRef = useRef(0);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Chapter positions for text containers
-  const chapterPositions: Array<'left' | 'center' | 'right'> = [
-    'center', 'left', 'center', 'right', 'center'
-  ];
-
-  // Handle horizontal scroll
+  // Progress builds over time in each chapter
   useEffect(() => {
+    setProgress(0);
+    progressIntervalRef.current = setInterval(() => {
+      setProgress(p => Math.min(1, p + 0.02));
+    }, 50);
+
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, [currentChapter]);
+
+  // Handle scroll/navigation
+  useEffect(() => {
+    let scrollTimeout: NodeJS.Timeout;
+
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      if (isTransitioning) return;
+      if (isScrolling) return;
 
-      // Clear any pending scroll timeout
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-
-      // Debounce scroll
-      scrollTimeoutRef.current = setTimeout(() => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
         const direction = e.deltaY > 0 ? 1 : -1;
         const newChapter = Math.max(0, Math.min(4, currentChapter + direction));
 
         if (newChapter !== currentChapter) {
-          setIsTransitioning(true);
-          setCurrentChapter(newChapter);
-          setDepthReveal(0);
-          dwellTimeRef.current = 0;
+          setIsScrolling(true);
+          setTransition(0);
 
-          // Lightning flash for chapter 3
-          if (newChapter === 2) {
-            setTimeout(() => {
-              setLightningFlash(1);
-              setTimeout(() => setLightningFlash(0), 100);
-            }, 2500);
-          }
+          // Animate transition
+          let t = 0;
+          const transitionInterval = setInterval(() => {
+            t += 0.05;
+            setTransition(Math.min(1, t));
 
-          setTimeout(() => setIsTransitioning(false), 800);
+            if (t >= 1) {
+              clearInterval(transitionInterval);
+              setCurrentChapter(newChapter);
+              setTransition(0);
+
+              // Lightning flash for chapter 3
+              if (newChapter === 2) {
+                setTimeout(() => {
+                  setFlash(1);
+                  setTimeout(() => setFlash(0), 150);
+                }, 2000);
+              }
+
+              setTimeout(() => setIsScrolling(false), 300);
+            }
+          }, 30);
         }
-      }, 50);
+      }, 100);
     };
 
     const container = containerRef.current;
@@ -716,43 +889,50 @@ const OurPhilosophy = () => {
 
     return () => {
       container?.removeEventListener('wheel', handleWheel);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
+      clearTimeout(scrollTimeout);
     };
-  }, [currentChapter, isTransitioning]);
+  }, [currentChapter, isScrolling]);
 
-  // Handle touch for mobile
+  // Mouse tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      mouseRef.current.set(x, y);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Touch support
   const touchStartRef = useRef(0);
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartRef.current = e.touches[0].clientX;
+      touchStartRef.current = e.touches[0].clientY;
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (isTransitioning) return;
+      if (isScrolling) return;
 
-      const deltaX = touchStartRef.current - e.changedTouches[0].clientX;
-
-      if (Math.abs(deltaX) > 50) {
-        const direction = deltaX > 0 ? 1 : -1;
+      const deltaY = touchStartRef.current - e.changedTouches[0].clientY;
+      if (Math.abs(deltaY) > 50) {
+        const direction = deltaY > 0 ? 1 : -1;
         const newChapter = Math.max(0, Math.min(4, currentChapter + direction));
 
         if (newChapter !== currentChapter) {
-          setIsTransitioning(true);
+          setIsScrolling(true);
           setCurrentChapter(newChapter);
-          setDepthReveal(0);
-          dwellTimeRef.current = 0;
 
           if (newChapter === 2) {
             setTimeout(() => {
-              setLightningFlash(1);
-              setTimeout(() => setLightningFlash(0), 100);
-            }, 2500);
+              setFlash(1);
+              setTimeout(() => setFlash(0), 150);
+            }, 2000);
           }
 
-          setTimeout(() => setIsTransitioning(false), 800);
+          setTimeout(() => setIsScrolling(false), 800);
         }
       }
     };
@@ -767,126 +947,139 @@ const OurPhilosophy = () => {
       container?.removeEventListener('touchstart', handleTouchStart);
       container?.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentChapter, isTransitioning]);
+  }, [currentChapter, isScrolling]);
 
-  // Depth reveal based on dwell time
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (currentChapter === lastChapterRef.current) {
-        dwellTimeRef.current += 100;
-        const newDepth = Math.min(1, dwellTimeRef.current / 2400);
-        setDepthReveal(newDepth);
-      } else {
-        lastChapterRef.current = currentChapter;
-        dwellTimeRef.current = 0;
-        setDepthReveal(0);
-      }
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [currentChapter]);
-
-  // Mouse tracking for chapter 4
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const normalizedY = (e.clientY / window.innerHeight) * 2 - 1;
-      setMouseY(-normalizedY);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Handle chapter click from progress indicator
-  const handleChapterClick = (idx: number) => {
-    if (idx !== currentChapter && !isTransitioning) {
-      setIsTransitioning(true);
-      setCurrentChapter(idx);
-      setDepthReveal(0);
-      dwellTimeRef.current = 0;
-
-      if (idx === 2) {
-        setTimeout(() => {
-          setLightningFlash(1);
-          setTimeout(() => setLightningFlash(0), 100);
-        }, 2500);
-      }
-
-      setTimeout(() => setIsTransitioning(false), 800);
-    }
-  };
+  const chapter = chapters[currentChapter];
 
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 w-full h-full bg-[#0a0608] overflow-hidden cursor-default"
+      className="fixed inset-0 w-full h-full overflow-hidden cursor-default"
+      style={{ background: '#050208' }}
     >
-      {/* Back button */}
-      <a
-        href="#/"
-        className="absolute top-8 left-8 z-50 text-white/50 hover:text-white transition-colors text-sm tracking-[0.2em] uppercase"
-      >
-        &larr; Back
-      </a>
-
-      {/* Page title */}
-      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50">
-        <h1 className="text-[10px] md:text-xs font-medium tracking-[0.4em] uppercase text-white/30">
-          Our Philosophy
-        </h1>
-      </div>
-
-      {/* Progress indicator */}
-      <ProgressIndicator
-        currentChapter={currentChapter}
-        totalChapters={5}
-        onChapterClick={handleChapterClick}
-      />
-
       {/* 3D Canvas */}
       <div className="absolute inset-0">
         <Canvas
-          camera={{ position: [0, 0, 5], fov: 45 }}
-          gl={{ antialias: true, powerPreference: "high-performance" }}
+          camera={{ position: [0, 0, 6], fov: 50 }}
+          gl={{ antialias: true, powerPreference: 'high-performance', alpha: false }}
+          dpr={[1, 2]}
         >
           <ChapterScene
-            chapterIndex={currentChapter}
-            isActive={true}
-            depthReveal={depthReveal}
-            mouseY={mouseY}
-            lightningFlash={lightningFlash}
+            chapter={currentChapter}
+            progress={progress}
+            transition={transition}
+            mouse={mouseRef.current}
+            flash={flash}
           />
         </Canvas>
       </div>
 
-      {/* Text containers for each chapter */}
-      {chapters.map((chapter, idx) => (
-        <TextContainer
-          key={chapter.id}
-          chapter={chapter}
-          isActive={currentChapter === idx}
-          position={chapterPositions[idx]}
-        />
-      ))}
-
-      {/* Scroll hint */}
+      {/* Flash overlay */}
       <div
-        className={`absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 transition-opacity duration-500 ${
-          currentChapter === 4 ? 'opacity-0' : 'opacity-40'
-        }`}
+        className="absolute inset-0 bg-amber-100 pointer-events-none transition-opacity duration-150 z-30"
+        style={{ opacity: flash * 0.7 }}
+      />
+
+      {/* Navigation */}
+      <a
+        href="#/"
+        className="absolute top-8 left-8 z-50 text-white/60 hover:text-white transition-all duration-300 text-sm tracking-[0.3em] uppercase hover:tracking-[0.4em]"
       >
-        <span className="text-[10px] tracking-[0.3em] uppercase text-white/60">
-          Scroll to continue
-        </span>
-        <div className="w-px h-6 bg-gradient-to-b from-white/50 to-transparent" />
+        &larr; Back
+      </a>
+
+      {/* Chapter indicator */}
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50">
+        <div className="text-center">
+          <p className="text-[10px] tracking-[0.5em] uppercase text-white/30 mb-1">Our Philosophy</p>
+          <p className="text-xs tracking-[0.3em] uppercase text-white/50">
+            Chapter {chapter.label}
+          </p>
+        </div>
       </div>
 
-      {/* Lightning flash overlay for chapter 3 */}
-      <div
-        className={`absolute inset-0 bg-white pointer-events-none z-40 transition-opacity duration-100 ${
-          lightningFlash > 0 ? 'opacity-30' : 'opacity-0'
-        }`}
-      />
+      {/* Progress dots */}
+      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4">
+        {chapters.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              if (!isScrolling && idx !== currentChapter) {
+                setIsScrolling(true);
+                setCurrentChapter(idx);
+                if (idx === 2) {
+                  setTimeout(() => {
+                    setFlash(1);
+                    setTimeout(() => setFlash(0), 150);
+                  }, 2000);
+                }
+                setTimeout(() => setIsScrolling(false), 800);
+              }
+            }}
+            className={`w-3 h-3 rounded-full transition-all duration-500 ${
+              currentChapter === idx
+                ? 'bg-amber-400 scale-125 shadow-lg shadow-amber-400/50'
+                : 'bg-white/20 hover:bg-white/40 hover:scale-110'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Text content */}
+      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+        <div className="max-w-2xl mx-auto px-8">
+          {/* Glass container */}
+          <div className="relative p-10 md:p-14 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+            {/* Decorative corner accents */}
+            <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-amber-500/30 rounded-tl-3xl" />
+            <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-amber-500/30 rounded-br-3xl" />
+
+            {/* Chapter title */}
+            <RevealText delay={200} isVisible={true}>
+              <h2 className="text-3xl md:text-5xl font-thin tracking-wide text-white mb-2 drop-shadow-lg">
+                {chapter.title}
+              </h2>
+            </RevealText>
+
+            <RevealText delay={400} isVisible={true}>
+              <div className="w-20 h-px bg-gradient-to-r from-amber-500 to-transparent mb-8" />
+            </RevealText>
+
+            {/* Paragraphs */}
+            <div className="space-y-6">
+              {chapter.paragraphs.map((paragraph, idx) => (
+                <RevealText key={idx} delay={700 + idx * 400} isVisible={true}>
+                  <p className="text-base md:text-lg font-light leading-relaxed text-white/90 tracking-wide">
+                    {paragraph}
+                  </p>
+                </RevealText>
+              ))}
+            </div>
+
+            {/* Return button on last chapter */}
+            {currentChapter === 4 && (
+              <RevealText delay={2000} isVisible={true}>
+                <a
+                  href="#/"
+                  className="inline-block mt-10 px-8 py-4 rounded-full border border-amber-500/50 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-300 text-sm tracking-[0.2em] uppercase pointer-events-auto"
+                >
+                  Return Home
+                </a>
+              </RevealText>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll hint */}
+      {currentChapter < 4 && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 animate-pulse">
+          <span className="text-[10px] tracking-[0.3em] uppercase text-white/40">
+            Scroll to continue
+          </span>
+          <div className="w-px h-8 bg-gradient-to-b from-white/40 to-transparent" />
+        </div>
+      )}
     </div>
   );
 };
