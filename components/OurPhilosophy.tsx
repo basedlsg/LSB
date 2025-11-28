@@ -1043,10 +1043,26 @@ const OurPhilosophy = () => {
   const [progress, setProgress] = useState(0);
   const [transition, setTransition] = useState(0);
   const [flash, setFlash] = useState(0);
+  const [lightningRipple, setLightningRipple] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const mouseRef = useRef(new THREE.Vector2(0, 0));
   const containerRef = useRef<HTMLDivElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Dramatic lightning ripple effect for Chapter III
+  const triggerLightningRipple = useCallback(() => {
+    setLightningRipple(true);
+    // Multiple flashes in sequence
+    const flashSequence = [100, 200, 350, 500, 700];
+    flashSequence.forEach((delay, i) => {
+      setTimeout(() => {
+        setFlash(1 - i * 0.15); // Decreasing intensity
+        setTimeout(() => setFlash(0), 80);
+      }, delay);
+    });
+    // End ripple effect
+    setTimeout(() => setLightningRipple(false), 1200);
+  }, []);
 
   // Progress builds over time in each chapter
   useEffect(() => {
@@ -1091,12 +1107,9 @@ const OurPhilosophy = () => {
               setCurrentChapter(newChapter);
               setTransition(0);
 
-              // Lightning flash for chapter 3
+              // Lightning ripple for chapter 3 - immediate dramatic entrance
               if (newChapter === 2) {
-                setTimeout(() => {
-                  setFlash(1);
-                  setTimeout(() => setFlash(0), 150);
-                }, 2000);
+                triggerLightningRipple();
               }
 
               setTimeout(() => setIsScrolling(false), 300);
@@ -1150,10 +1163,7 @@ const OurPhilosophy = () => {
           setCurrentChapter(newChapter);
 
           if (newChapter === 2) {
-            setTimeout(() => {
-              setFlash(1);
-              setTimeout(() => setFlash(0), 150);
-            }, 2000);
+            triggerLightningRipple();
           }
 
           setTimeout(() => setIsScrolling(false), 800);
@@ -1171,7 +1181,7 @@ const OurPhilosophy = () => {
       container?.removeEventListener('touchstart', handleTouchStart);
       container?.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [currentChapter, isScrolling]);
+  }, [currentChapter, isScrolling, triggerLightningRipple]);
 
   const chapter = chapters[currentChapter];
 
@@ -1198,11 +1208,33 @@ const OurPhilosophy = () => {
         </Canvas>
       </div>
 
-      {/* Flash overlay */}
+      {/* Flash overlay - enhanced for lightning ripple */}
       <div
-        className="absolute inset-0 bg-amber-100 pointer-events-none transition-opacity duration-150 z-30"
-        style={{ opacity: flash * 0.7 }}
+        className="absolute inset-0 pointer-events-none z-30"
+        style={{
+          opacity: flash * 0.85,
+          background: lightningRipple
+            ? `radial-gradient(circle at 50% 30%, rgba(255,255,255,${flash}) 0%, rgba(255,220,150,${flash * 0.6}) 30%, rgba(0,0,0,0) 70%)`
+            : 'rgba(255,245,220,1)'
+        }}
       />
+      {/* Lightning bolt overlay during ripple */}
+      {lightningRipple && (
+        <div className="absolute inset-0 pointer-events-none z-31 overflow-hidden">
+          <svg className="absolute w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path
+              d="M48 0 L45 35 L55 35 L40 100 L50 55 L42 55 Z"
+              fill={`rgba(255,255,255,${flash * 0.9})`}
+              style={{ filter: 'blur(2px)' }}
+            />
+            <path
+              d="M52 0 L55 30 L48 30 L60 100 L48 50 L55 50 Z"
+              fill={`rgba(255,220,100,${flash * 0.7})`}
+              style={{ filter: 'blur(3px)' }}
+            />
+          </svg>
+        </div>
+      )}
 
       {/* Navigation */}
       <a
@@ -1232,10 +1264,7 @@ const OurPhilosophy = () => {
                 setIsScrolling(true);
                 setCurrentChapter(idx);
                 if (idx === 2) {
-                  setTimeout(() => {
-                    setFlash(1);
-                    setTimeout(() => setFlash(0), 150);
-                  }, 2000);
+                  triggerLightningRipple();
                 }
                 setTimeout(() => setIsScrolling(false), 800);
               }
@@ -1249,11 +1278,15 @@ const OurPhilosophy = () => {
         ))}
       </div>
 
-      {/* Text content */}
-      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-        <div className="max-w-2xl mx-auto px-8">
+      {/* Text content - positioned left for Chapter III to show rock in center */}
+      <div className={`absolute inset-0 flex items-center z-20 pointer-events-none ${
+        currentChapter === 2 ? 'justify-start pl-8' : 'justify-center'
+      }`}>
+        <div className={`px-8 ${currentChapter === 2 ? 'max-w-lg' : 'max-w-2xl mx-auto'}`}>
           {/* Glass container */}
-          <div className="relative p-10 md:p-14 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl">
+          <div className={`relative p-10 md:p-14 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl ${
+            currentChapter === 2 ? 'bg-black/60' : 'bg-black/40'
+          }`}>
             {/* Decorative corner accents */}
             <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-amber-500/30 rounded-tl-3xl" />
             <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-amber-500/30 rounded-br-3xl" />
