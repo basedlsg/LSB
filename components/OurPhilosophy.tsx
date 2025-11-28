@@ -325,38 +325,103 @@ const generateParticlePositions = () => {
         }
 
         case 3: {
-          // CHAPTER IV: THE AGE OF WALKING - Elegant ascending helix
-          const pathT = t;
-          const rotations = 2.5;
-          const angle = pathT * Math.PI * 2 * rotations;
+          // CHAPTER IV: THE AGE OF WALKING - Single figure with fish swimming across
+          const isFish = t > 0.7; // 30% fish, 70% person
 
-          // Smooth radius modulation
-          const baseRadius = 1.8 + Math.sin(pathT * Math.PI * 3) * 0.3;
-          const height = -2.8 + pathT * 5.6;
+          if (isFish) {
+            // FISH - elegant swimming across the background
+            const fishT = (t - 0.7) / 0.3;
+            const fishCount = 3;
+            const fishId = Math.floor(fishT * fishCount);
+            const fishProgress = (fishT * fishCount) % 1;
 
-          // Tight ribbon-like distribution
-          const ribbonWidth = 0.06 + pathT * 0.04;
-          pos[idx] = Math.cos(angle) * baseRadius + (smoothRandom(seed) - 0.5) * ribbonWidth;
-          pos[idx + 1] = height + (smoothRandom(seed + 1) - 0.5) * 0.08;
-          pos[idx + 2] = Math.sin(angle) * baseRadius * 0.45 + (smoothRandom(seed + 2) - 0.5) * ribbonWidth;
+            // Fish swim from right to left at different heights
+            const fishX = 4.0 - fishProgress * 8.0; // Swim across
+            const fishY = -0.5 + (fishId - 1) * 1.2; // Staggered heights
+            const swimWave = Math.sin(fishProgress * Math.PI * 4) * 0.15; // Swimming motion
 
-          // Seamless color gradient
-          const colorT = pathT;
-          if (colorT < 0.35) {
-            const ct = colorT / 0.35;
-            colors[idx] = 0.15 + ct * 0.35;
-            colors[idx + 1] = 0.35 + ct * 0.2;
-            colors[idx + 2] = 0.75 - ct * 0.15;
-          } else if (colorT < 0.7) {
-            const ct = (colorT - 0.35) / 0.35;
-            colors[idx] = 0.5 + ct * 0.4;
-            colors[idx + 1] = 0.55 + ct * 0.25;
-            colors[idx + 2] = 0.6 - ct * 0.35;
+            // Fish body shape - elegant elongated form
+            const bodyT = smoothRandom(seed);
+            let localX = 0, localY = 0;
+
+            if (bodyT < 0.6) {
+              // Main body - tapered oval
+              const bodyAngle = bodyT / 0.6 * Math.PI * 2;
+              const bodyLen = 0.4;
+              const bodyHeight = 0.12;
+              localX = Math.cos(bodyAngle) * bodyLen;
+              localY = Math.sin(bodyAngle) * bodyHeight;
+            } else if (bodyT < 0.85) {
+              // Tail fin - triangular
+              const tailT = (bodyT - 0.6) / 0.25;
+              localX = -0.4 - tailT * 0.25;
+              localY = (smoothRandom(seed + 1) - 0.5) * 0.2 * (1 - tailT);
+            } else {
+              // Dorsal fin
+              const finT = (bodyT - 0.85) / 0.15;
+              localX = (smoothRandom(seed + 2) - 0.5) * 0.2;
+              localY = 0.12 + finT * 0.1;
+            }
+
+            pos[idx] = fishX + localX;
+            pos[idx + 1] = fishY + localY + swimWave;
+            pos[idx + 2] = -1.5 + fishId * 0.3 + smoothRandom(seed + 3) * 0.1;
+
+            // Silvery blue fish
+            const shimmer = 0.85 + smoothRandom(seed + 4) * 0.15;
+            colors[idx] = 0.6 * shimmer;
+            colors[idx + 1] = 0.75 * shimmer;
+            colors[idx + 2] = 0.9 * shimmer;
           } else {
-            const ct = (colorT - 0.7) / 0.3;
-            colors[idx] = 0.9 + ct * 0.1;
-            colors[idx + 1] = 0.8 + ct * 0.15;
-            colors[idx + 2] = 0.25 + ct * 0.55;
+            // SINGLE PERSON - elegant standing figure with walking stick
+            const personT = t / 0.7;
+            let localX = 0, localY = 0;
+
+            if (personT < 0.15) {
+              // Head - refined circle
+              const headAngle = personT / 0.15 * Math.PI * 2;
+              const headR = 0.18 + smoothRandom(seed) * 0.04;
+              localX = Math.cos(headAngle) * headR;
+              localY = 2.4 + Math.sin(headAngle) * headR;
+            } else if (personT < 0.45) {
+              // Torso - elegant tapered form
+              const torsoT = (personT - 0.15) / 0.3;
+              const torsoWidth = 0.25 - torsoT * 0.08;
+              localX = (smoothRandom(seed) - 0.5) * torsoWidth;
+              localY = 1.2 + torsoT * 1.1;
+            } else if (personT < 0.65) {
+              // Legs
+              const legT = (personT - 0.45) / 0.2;
+              const legSide = smoothRandom(seed) > 0.5 ? 1 : -1;
+              localX = legSide * 0.08 + (smoothRandom(seed + 1) - 0.5) * 0.04;
+              localY = legT * 1.1;
+            } else if (personT < 0.85) {
+              // Arms - one reaching out
+              const armT = (personT - 0.65) / 0.2;
+              const isRightArm = smoothRandom(seed) > 0.5;
+              if (isRightArm) {
+                localX = 0.15 + armT * 0.3;
+                localY = 1.8 - armT * 0.2;
+              } else {
+                localX = -0.15 - armT * 0.1;
+                localY = 1.6 + armT * 0.1;
+              }
+            } else {
+              // Walking stick - held at angle
+              const stickT = (personT - 0.85) / 0.15;
+              localX = 0.4 + stickT * 0.15;
+              localY = 1.6 - stickT * 1.8;
+            }
+
+            pos[idx] = localX;
+            pos[idx + 1] = -1.2 + localY;
+            pos[idx + 2] = (smoothRandom(seed + 2) - 0.5) * 0.15;
+
+            // Warm golden figure
+            const warmth = 0.9 + smoothRandom(seed + 3) * 0.1;
+            colors[idx] = warmth;
+            colors[idx + 1] = 0.85 * warmth;
+            colors[idx + 2] = 0.6 * warmth;
           }
           break;
         }
@@ -456,11 +521,11 @@ void main() {
   gl_PointSize = baseSize / -mvPosition.z;
   vSize = sizeVar;
 
-  // Smooth color with subtle luminance variation
-  vColor = aColor * (0.95 + sizeVar * 0.1);
+  // Smooth color with subtle luminance variation (reduced 30%)
+  vColor = aColor * (0.7 + sizeVar * 0.08);
 
-  // Refined alpha - depth-based fade
-  vAlpha = 0.6 + sizeVar * 0.25;
+  // Refined alpha - depth-based fade (reduced 30%)
+  vAlpha = 0.42 + sizeVar * 0.18;
   vAlpha *= smoothstep(-10.0, -1.0, pos.z);
 }
 `;
@@ -487,12 +552,12 @@ void main() {
 
   if (combined < 0.005) discard;
 
-  // Subtle color enhancement at core
-  vec3 coreColor = vColor + vec3(0.1, 0.08, 0.05) * innerCore;
+  // Subtle color enhancement at core (reduced 30%)
+  vec3 coreColor = vColor + vec3(0.07, 0.056, 0.035) * innerCore;
 
-  // Final color with gentle bloom
-  vec3 finalColor = mix(vColor, coreColor, innerCore * 0.5);
-  finalColor *= (1.0 + innerCore * 0.3);
+  // Final color with gentle bloom (reduced)
+  vec3 finalColor = mix(vColor, coreColor, innerCore * 0.4);
+  finalColor *= (1.0 + innerCore * 0.2);
 
   gl_FragColor = vec4(finalColor, vAlpha * combined);
 }
@@ -1184,32 +1249,50 @@ const OurPhilosophy = () => {
       </div>
 
       {/* Text content - positioned left for ALL chapters so particle formations are visible */}
-      <div className="absolute inset-0 flex items-center z-20 pointer-events-none justify-start pl-8 md:pl-12">
+      <div className="absolute inset-0 flex items-center z-20 pointer-events-none justify-start pl-8 md:pl-16">
         <div className="px-4 md:px-8 max-w-md md:max-w-lg">
-          {/* Glass container */}
-          <div className={`relative p-10 md:p-14 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl ${
-            currentChapter === 2 ? 'bg-black/60' : 'bg-black/40'
-          }`}>
-            {/* Decorative corner accents */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-amber-500/30 rounded-tl-3xl" />
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-amber-500/30 rounded-br-3xl" />
+          {/* Premium glass container with layered shadows */}
+          <div
+            className={`relative p-10 md:p-14 rounded-2xl backdrop-blur-2xl border border-white/[0.08] ${
+              currentChapter === 2 ? 'bg-black/55' : 'bg-black/45'
+            }`}
+            style={{
+              boxShadow: `
+                0 4px 6px -1px rgba(0, 0, 0, 0.3),
+                0 10px 20px -5px rgba(0, 0, 0, 0.4),
+                0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 0 rgba(255, 255, 255, 0.05)
+              `
+            }}
+          >
+            {/* Subtle top highlight line */}
+            <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+            {/* Minimal corner accent - top left only */}
+            <div className="absolute top-4 left-4 w-8 h-8 border-l border-t border-amber-500/20 rounded-tl-lg" />
 
             {/* Chapter title */}
             <RevealText delay={200} isVisible={true}>
-              <h2 className="text-3xl md:text-5xl font-thin tracking-wide text-white mb-2 drop-shadow-lg">
+              <h2
+                className="text-3xl md:text-4xl font-extralight tracking-wider text-white mb-3"
+                style={{ textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}
+              >
                 {chapter.title}
               </h2>
             </RevealText>
 
             <RevealText delay={400} isVisible={true}>
-              <div className="w-20 h-px bg-gradient-to-r from-amber-500 to-transparent mb-8" />
+              <div className="w-12 h-px bg-gradient-to-r from-amber-500/60 to-transparent mb-8" />
             </RevealText>
 
             {/* Paragraphs */}
-            <div className="space-y-6">
+            <div className="space-y-5">
               {chapter.paragraphs.map((paragraph, idx) => (
                 <RevealText key={idx} delay={700 + idx * 400} isVisible={true}>
-                  <p className="text-base md:text-lg font-light leading-relaxed text-white/90 tracking-wide">
+                  <p
+                    className="text-[15px] md:text-base font-light leading-[1.8] text-white/80 tracking-wide"
+                    style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}
+                  >
                     {paragraph}
                   </p>
                 </RevealText>
@@ -1221,7 +1304,8 @@ const OurPhilosophy = () => {
               <RevealText delay={2000} isVisible={true}>
                 <a
                   href="#/"
-                  className="inline-block mt-10 px-8 py-4 rounded-full border border-amber-500/50 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-300 text-sm tracking-[0.2em] uppercase pointer-events-auto"
+                  className="inline-block mt-10 px-7 py-3 rounded-full border border-amber-500/30 text-amber-400/90 hover:bg-amber-500/10 hover:border-amber-400/50 transition-all duration-500 text-xs tracking-[0.25em] uppercase pointer-events-auto"
+                  style={{ boxShadow: '0 2px 10px rgba(0,0,0,0.2)' }}
                 >
                   Return Home
                 </a>
