@@ -186,11 +186,13 @@ function HomePage() {
 
         {/* 05 FUTURE */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
-          <div className="z-10 flex flex-col items-center gap-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
-            <h2 className="text-5xl md:text-7xl font-thin tracking-tighter">
-              Come walk with us.
-            </h2>
+          {/* Title - centered */}
+          <h2 className="z-10 text-5xl md:text-7xl font-thin tracking-tighter [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            Come walk with us.
+          </h2>
 
+          {/* Buttons - spaced left and right */}
+          <div className="z-10 w-full max-w-4xl flex justify-between items-center mt-16 px-8 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
             <button className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
@@ -201,7 +203,7 @@ function HomePage() {
 
             <a
               href="#/philosophy"
-              className="group relative mt-4 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+              className="group relative px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
             >
               <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
               <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
@@ -209,11 +211,12 @@ function HomePage() {
                 Our Philosophy &rarr;
               </span>
             </a>
+          </div>
 
-            <div className="mt-16 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
-              <span>San Francisco — CA</span>
-              <span>&copy; Walking Stick Labs</span>
-            </div>
+          {/* Footer - absolute bottom center */}
+          <div className="absolute bottom-8 left-0 right-0 z-10 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <span>San Francisco — CA, Beijing — CN</span>
+            <span>&copy; Walking Stick Labs</span>
           </div>
         </section>
 
