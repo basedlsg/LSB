@@ -60,6 +60,8 @@ function HomePage() {
   const scrollRef = useRef({ progress: 0 });
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const calculateProgress = () => {
       if (!scrollContainerRef.current) return 0;
       const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
@@ -69,9 +71,16 @@ function HomePage() {
     };
 
     const handleScroll = () => {
-      const progress = calculateProgress();
-      scrollRef.current.progress = progress;
-      setScrollProgress(progress);
+      // Always update ref immediately for 3D scene
+      scrollRef.current.progress = calculateProgress();
+
+      // Throttle React state updates with RAF to prevent jank during snap animation
+      if (rafId === null) {
+        rafId = requestAnimationFrame(() => {
+          setScrollProgress(scrollRef.current.progress);
+          rafId = null;
+        });
+      }
     };
 
     const container = scrollContainerRef.current;
@@ -81,6 +90,9 @@ function HomePage() {
     }
     return () => {
       container?.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
     };
   }, []);
 
@@ -111,7 +123,7 @@ function HomePage() {
       {/* Content Scroller */}
       <div 
         ref={scrollContainerRef}
-        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
+        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
       >
         
         {/* 01 ORIGIN */}
