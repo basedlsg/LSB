@@ -1,4 +1,159 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import * as THREE from 'three';
+
+// --- PARTICLE BACKGROUND ---
+const noiseFunctions = `
+vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+float snoise(vec3 v) {
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(
+    i.z + vec4(0.0, i1.z, i2.z, 1.0))
+    + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+    + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}
+`;
+
+const PARTICLE_COUNT = 8000;
+
+const generateParticlePositions = () => {
+  const positions = new Float32Array(PARTICLE_COUNT * 3);
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const idx = i * 3;
+    // Fibonacci sphere distribution
+    const phi = Math.acos(1 - 2 * (i + 0.5) / PARTICLE_COUNT);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+    const r = 2.0 + Math.random() * 0.5;
+    positions[idx] = r * Math.cos(theta) * Math.sin(phi);
+    positions[idx + 1] = r * Math.sin(theta) * Math.sin(phi);
+    positions[idx + 2] = r * Math.cos(phi);
+  }
+  return positions;
+};
+
+const particleVertexShader = `
+uniform float uTime;
+uniform float uScroll;
+varying float vAlpha;
+
+${noiseFunctions}
+
+vec2 rotate(vec2 v, float a) {
+  float s = sin(a);
+  float c = cos(a);
+  return mat2(c, -s, s, c) * v;
+}
+
+void main() {
+  vec3 pos = position;
+
+  // Gentle rotation
+  pos.xy = rotate(pos.xy, uTime * 0.02);
+  pos.xz = rotate(pos.xz, uTime * 0.015);
+
+  // Subtle drift
+  vec3 drift = vec3(
+    snoise(pos * 0.3 + uTime * 0.05),
+    snoise(pos * 0.3 + uTime * 0.06 + 10.0),
+    snoise(pos * 0.3 + uTime * 0.04 + 20.0)
+  ) * 0.15;
+  pos += drift;
+
+  vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+  gl_Position = projectionMatrix * mvPosition;
+  gl_PointSize = (15.0 / -mvPosition.z);
+
+  // Fade based on depth and add sparkle
+  float sparkle = snoise(pos * 5.0 + uTime * 1.5);
+  vAlpha = 0.4 + 0.3 * sparkle;
+  vAlpha *= smoothstep(-6.0, 1.0, pos.z);
+}
+`;
+
+const particleFragmentShader = `
+varying float vAlpha;
+
+void main() {
+  vec2 coord = gl_PointCoord - vec2(0.5);
+  float dist = length(coord);
+  float glow = exp(-dist * 5.0);
+  if (glow < 0.01) discard;
+  vec3 color = vec3(1.0, 0.98, 0.95);
+  gl_FragColor = vec4(color, vAlpha * glow * 0.6);
+}
+`;
+
+const ParticleField = () => {
+  const pointsRef = useRef<THREE.Points>(null);
+  const positions = useMemo(() => generateParticlePositions(), []);
+
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uScroll: { value: 0 }
+  }), []);
+
+  useFrame((state) => {
+    if (pointsRef.current) {
+      const mat = pointsRef.current.material as THREE.ShaderMaterial;
+      mat.uniforms.uTime.value = state.clock.getElapsedTime();
+    }
+  });
+
+  return (
+    <points ref={pointsRef}>
+      <bufferGeometry>
+        <bufferAttribute attach="attributes-position" count={PARTICLE_COUNT} array={positions} itemSize={3} />
+      </bufferGeometry>
+      <shaderMaterial
+        vertexShader={particleVertexShader}
+        fragmentShader={particleFragmentShader}
+        uniforms={uniforms}
+        transparent={true}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </points>
+  );
+};
 
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => {
   const [visible, setVisible] = useState(false);
@@ -28,7 +183,16 @@ const MetricCard = ({ value, label }: { value: string, label: string }) => (
 
 export default function CaseStudySpatialLab() {
   return (
-    <div className="min-h-screen bg-[#1a0c05] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
+    <div className="min-h-screen bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
+
+      {/* Particle Background - Fixed behind hero */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
+          <ParticleField />
+        </Canvas>
+        {/* Gradient overlay to fade particles as you scroll */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0603]/50 to-[#0d0603]" style={{ top: '50vh' }} />
+      </div>
 
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference">
@@ -46,20 +210,20 @@ export default function CaseStudySpatialLab() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20">
+      <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20 relative z-10">
         <FadeIn delay={200} className="text-center max-w-4xl">
-          <div className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6">
+          <div className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
             Case Study
           </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-thin tracking-tighter leading-[0.9]">
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-thin tracking-tighter leading-[0.9] [text-shadow:_0_2px_30px_rgba(0,0,0,0.9),_0_4px_60px_rgba(0,0,0,0.8)]">
             Spatial Lab
           </h1>
-          <p className="text-lg md:text-xl font-light tracking-wide opacity-70 mt-8 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl font-light tracking-wide opacity-80 mt-8 max-w-2xl mx-auto [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
             A research framework for multi-agent coordination with LLM-driven spatial reasoning
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-10">
             {['Python', 'LLM Integration', 'Multi-Agent Systems', 'Simulation'].map((tag) => (
-              <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase">
+              <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/20">
                 {tag}
               </span>
             ))}
@@ -68,6 +232,9 @@ export default function CaseStudySpatialLab() {
 
         <div className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
       </section>
+
+      {/* Content wrapper with solid background */}
+      <div className="relative z-10 bg-[#0d0603]">
 
       {/* The Question */}
       <section className="py-24 md:py-32 px-6 md:px-12">
@@ -417,6 +584,8 @@ export default function CaseStudySpatialLab() {
           <div>&copy; Walking Stick Labs</div>
         </div>
       </footer>
+
+      </div>{/* End content wrapper */}
     </div>
   );
 }
