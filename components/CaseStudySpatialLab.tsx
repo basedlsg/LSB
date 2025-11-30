@@ -224,10 +224,10 @@ export default function CaseStudySpatialLab() {
             Spatial Lab
           </h1>
           <p className="text-lg md:text-xl font-light tracking-wide opacity-80 mt-8 max-w-2xl mx-auto [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
-            A research framework for multi-agent coordination with LLM-driven spatial reasoning
+            Teaching AI to understand space — not through vision, but through reasoning
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-10">
-            {['Python', 'LLM Integration', 'Multi-Agent Systems', 'Simulation'].map((tag) => (
+            {['Python', 'AI Research', 'Spatial Intelligence', 'Simulation'].map((tag) => (
               <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30">
                 {tag}
               </span>
@@ -247,12 +247,12 @@ export default function CaseStudySpatialLab() {
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Question</div>
             <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
-              "Can language models reason about physical space well enough to coordinate multiple agents?"
+              "Can an AI that's only ever read words understand how to move through a room?"
             </blockquote>
             <p className="text-base md:text-lg font-light opacity-70 mt-10 max-w-2xl leading-relaxed [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
-              LLMs are trained on text. They've never walked through a warehouse or moved a box.
-              Yet they can often answer spatial questions correctly. Spatial Lab tests how far this capability extends
-              when applied to real coordination problems.
+              Language models learn from text alone — they've never walked through a room or moved an object.
+              Yet somehow, they can often answer spatial questions correctly. This experiment explores a simple question:
+              how far does that understanding actually go?
             </p>
           </FadeIn>
         </div>
@@ -316,59 +316,59 @@ export default function CaseStudySpatialLab() {
       <section className="py-24 md:py-32 px-6 md:px-12">
         <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Implementation</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What was built</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Building Blocks</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
           </FadeIn>
 
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
             <FadeIn delay={100}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Warehouse Simulation</h3>
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">A World to Live In</h3>
                 <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Procedural layout generation with configurable dimensions (20m-80m).
-                  Realistic shelf placement, aisle generation, and physics-based collision detection.
+                  A simulated grid environment where every position, obstacle, and path is visible.
+                  Small enough to hold in your head, detailed enough to reveal meaningful patterns.
                 </p>
                 <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
-                  environments/ — 1,200+ lines
+                  environments/ — simulation engine
                 </div>
               </div>
             </FadeIn>
 
             <FadeIn delay={200}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Fleet Coordination</h3>
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Movement & Coordination</h3>
                 <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Multi-robot management for 2-10 agents. Path planning with collision avoidance,
-                  inter-robot communication protocols, and task allocation.
+                  Multiple agents moving through shared space, avoiding collisions,
+                  finding paths, and working together — or getting in each other's way.
                 </p>
                 <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
-                  coordination/ — 800+ lines
+                  coordination/ — path planning
                 </div>
               </div>
             </FadeIn>
 
             <FadeIn delay={300}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">LLM Integration</h3>
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The AI Mind</h3>
                 <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Structured prompts for spatial reasoning. Supports GPT-4 and Gemini.
-                  Observation-action-reward loops for decision making under uncertainty.
+                  Language models (GPT-4, Gemini) receive descriptions of the world and decide how to act.
+                  They see coordinates and consequences. Then they choose.
                 </p>
                 <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
-                  llm/ — Gemini & OpenAI clients
+                  llm/ — reasoning engine
                 </div>
               </div>
             </FadeIn>
 
             <FadeIn delay={400}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Research Framework</h3>
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Measuring Truth</h3>
                 <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Statistical validation with control groups, significance testing,
-                  and effect size calculations. Built for reproducible experiments.
+                  Every experiment runs with controls, statistics, and reproducibility.
+                  The goal isn't to prove anything — it's to see what's actually there.
                 </p>
                 <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
-                  evaluation/ — 600+ lines
+                  evaluation/ — validation
                 </div>
               </div>
             </FadeIn>
@@ -382,53 +382,53 @@ export default function CaseStudySpatialLab() {
       <section className="py-24 md:py-32 px-6 md:px-12">
         <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Validation</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Results</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">What We Found</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
           </FadeIn>
 
           <FadeIn delay={200}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-16">
-              <MetricCard value="85%" label="Path Efficiency" />
-              <MetricCard value="92%" label="Collision Avoidance" />
-              <MetricCard value="81%" label="Coordination" />
-              <MetricCard value="18.7%" label="Improvement" />
+              <MetricCard value="85%" label="Found Good Paths" />
+              <MetricCard value="92%" label="Avoided Collisions" />
+              <MetricCard value="81%" label="Worked Together" />
+              <MetricCard value="+18.7%" label="vs. Baseline" />
             </div>
           </FadeIn>
 
           <FadeIn delay={300}>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="p-6 border border-white/10 rounded-lg">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4">Baseline Comparison</div>
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4">Compared to Others</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
-                    <span className="opacity-60">Random Agent</span>
-                    <span>30% efficiency, 80% collisions</span>
+                    <span className="opacity-60">Random (no thinking)</span>
+                    <span>30% success, many crashes</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Rule-Based Agent</span>
-                    <span>60% efficiency, 20% collisions</span>
+                    <span className="opacity-60">Simple rules</span>
+                    <span>60% success, some crashes</span>
                   </div>
                   <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
-                    <span className="opacity-60">Spatial Lab</span>
-                    <span className="text-white">85% efficiency, 8% collisions</span>
+                    <span className="opacity-60">With LLM reasoning</span>
+                    <span className="text-white">85% success, few crashes</span>
                   </div>
                 </div>
               </div>
 
               <div className="p-6 border border-white/10 rounded-lg">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4">Statistical Validation</div>
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4">Is it Real?</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
-                    <span className="opacity-60">Control Group Mean</span>
-                    <span>0.695</span>
+                    <span className="opacity-60">Without LLM reasoning</span>
+                    <span>69.5% average score</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Treatment Group Mean</span>
-                    <span>0.825</span>
+                    <span className="opacity-60">With LLM reasoning</span>
+                    <span>82.5% average score</span>
                   </div>
                   <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
-                    <span className="opacity-60">Effect Size</span>
-                    <span className="text-white">+18.7% (p &lt; 0.05)</span>
+                    <span className="opacity-60">Statistically significant?</span>
+                    <span className="text-white">Yes (p &lt; 0.05)</span>
                   </div>
                 </div>
               </div>
@@ -534,31 +534,61 @@ export default function CaseStudySpatialLab() {
       <section className="py-24 md:py-32 px-6 md:px-12">
         <div className={`max-w-4xl mx-auto text-center ${glassCardClass}`}>
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Takeaway</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this demonstrates</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Bigger Picture</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
-                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Systems Design</div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Building Complex Systems</div>
                 <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Architecting complex multi-component systems with clear separation of concerns
+                  Taking a big question and breaking it into pieces that can actually be tested and measured
                 </p>
               </div>
               <div>
-                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Research Rigor</div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Honest Inquiry</div>
                 <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Scientific methodology with proper statistical validation and reproducibility
+                  Designing experiments that could fail — and learning from what they reveal either way
                 </p>
               </div>
               <div>
-                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">AI Integration</div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Pushing AI Forward</div>
                 <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
-                  Practical application of LLMs beyond text — exploring spatial reasoning capabilities
+                  Exploring what language models can do beyond conversation — into understanding space itself
                 </p>
               </div>
             </div>
           </FadeIn>
         </div>
       </section>
+
+      <SectionDivider />
+
+      {/* Philosophical Blurb */}
+      <section className="py-24 md:py-32 px-6 md:px-12">
+        <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
+          <FadeIn>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Why This Exists</div>
+            <div className="space-y-8 text-base md:text-lg font-light leading-relaxed opacity-90 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
+              <p>
+                I started Spatial Lab with something small and honest: a simple grid and a representation of a tiny robot.
+                I had experimented with 3D before — it was fascinating from an RL angle, but too heavy to fully understand
+                end-to-end without outside tools. I wanted a world I could actually hold in my head, inspect, tweak, and
+                run a complete experiment inside. In that sense, the grid made the most sense. It's stripped down enough
+                that every mistake, every decision, every pattern becomes visible.
+              </p>
+              <p>
+                The real question underneath all of this is whether a language model can develop a sense of "self" inside a space.
+                Not philosophically — mechanically. If it lives on a board, can it reason as if it is the agent moving on that board?
+                Can it understand the difference between itself, the objects, and the grid that contains them? I wanted to watch how
+                an LLM behaves when its entire world is coordinates and consequences, when every action shifts the reality it depends on.
+                The experiment isn't about grand theories — it's about seeing what an AI actually does when you give it a world,
+                however small, and tell it: <em className="opacity-100">go live in it.</em>
+              </p>
+            </div>
+          </FadeIn>
+        </div>
+      </section>
+
+      <SectionDivider />
 
       {/* Footer CTA */}
       <section className="py-24 md:py-32 px-6 md:px-12">
