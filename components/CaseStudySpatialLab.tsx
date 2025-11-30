@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import Cursor from './Cursor';
 
 // --- PARTICLE BACKGROUND ---
 const noiseFunctions = `
@@ -181,9 +182,15 @@ const MetricCard = ({ value, label }: { value: string, label: string }) => (
   </div>
 );
 
+// Premium glass card style
+const glassCardClass = "backdrop-blur-md bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.1] shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)] p-8 md:p-12 rounded-2xl";
+
 export default function CaseStudySpatialLab() {
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
+
+      {/* Cursor */}
+      <Cursor />
 
       {/* Particle Background - Fixed across entire page */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -236,7 +243,7 @@ export default function CaseStudySpatialLab() {
 
       {/* The Question */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Question</div>
             <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
@@ -255,7 +262,7 @@ export default function CaseStudySpatialLab() {
 
       {/* Architecture */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">System Architecture</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How it works</h2>
@@ -307,7 +314,7 @@ export default function CaseStudySpatialLab() {
 
       {/* What Was Built */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Implementation</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What was built</h2>
@@ -373,7 +380,7 @@ export default function CaseStudySpatialLab() {
 
       {/* Results */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Validation</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Results</h2>
@@ -434,7 +441,7 @@ export default function CaseStudySpatialLab() {
 
       {/* Code Structure */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Structure</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
@@ -465,7 +472,7 @@ export default function CaseStudySpatialLab() {
 
       {/* Limitations */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Honest Assessment</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Limitations</h2>
@@ -525,7 +532,7 @@ export default function CaseStudySpatialLab() {
 
       {/* What This Demonstrates */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto text-center backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-4xl mx-auto text-center ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Takeaway</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this demonstrates</h2>
@@ -555,7 +562,7 @@ export default function CaseStudySpatialLab() {
 
       {/* Footer CTA */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
+        <div className={`max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 ${glassCardClass}`}>
           <div>
             <div className="text-2xl md:text-3xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Explore the code</div>
             <p className="text-sm font-light opacity-70 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">MIT Licensed. Open source.</p>
