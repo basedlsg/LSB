@@ -176,8 +176,8 @@ const SectionDivider = () => (
 
 const MetricCard = ({ value, label }: { value: string, label: string }) => (
   <div className="text-center">
-    <div className="text-3xl md:text-4xl font-thin tracking-tight">{value}</div>
-    <div className="text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-50 mt-2">{label}</div>
+    <div className="text-3xl md:text-4xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">{value}</div>
+    <div className="text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-60 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">{label}</div>
   </div>
 );
 
@@ -185,13 +185,11 @@ export default function CaseStudySpatialLab() {
   return (
     <div className="min-h-screen bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
 
-      {/* Particle Background - Fixed behind hero */}
+      {/* Particle Background - Fixed across entire page */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
           <ParticleField />
         </Canvas>
-        {/* Gradient overlay to fade particles as you scroll */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0d0603]/50 to-[#0d0603]" style={{ top: '50vh' }} />
       </div>
 
       {/* Navigation */}
@@ -223,7 +221,7 @@ export default function CaseStudySpatialLab() {
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-10">
             {['Python', 'LLM Integration', 'Multi-Agent Systems', 'Simulation'].map((tag) => (
-              <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/20">
+              <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30">
                 {tag}
               </span>
             ))}
@@ -233,18 +231,18 @@ export default function CaseStudySpatialLab() {
         <div className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
       </section>
 
-      {/* Content wrapper with solid background */}
-      <div className="relative z-10 bg-[#0d0603]">
+      {/* Content wrapper - transparent to show particles */}
+      <div className="relative z-10">
 
       {/* The Question */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">The Question</div>
-            <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight">
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Question</div>
+            <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
               "Can language models reason about physical space well enough to coordinate multiple agents?"
             </blockquote>
-            <p className="text-base md:text-lg font-light opacity-70 mt-10 max-w-2xl leading-relaxed">
+            <p className="text-base md:text-lg font-light opacity-70 mt-10 max-w-2xl leading-relaxed [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
               LLMs are trained on text. They've never walked through a warehouse or moved a box.
               Yet they can often answer spatial questions correctly. Spatial Lab tests how far this capability extends
               when applied to real coordination problems.
@@ -257,14 +255,14 @@ export default function CaseStudySpatialLab() {
 
       {/* Architecture */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">System Architecture</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16">How it works</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">System Architecture</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How it works</h2>
           </FadeIn>
 
           <FadeIn delay={200}>
-            <pre className="text-[10px] md:text-xs font-mono leading-relaxed opacity-80 overflow-x-auto">
+            <pre className="text-[10px] md:text-xs font-mono leading-relaxed opacity-80 overflow-x-auto [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
 {`
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
@@ -309,21 +307,21 @@ export default function CaseStudySpatialLab() {
 
       {/* What Was Built */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">Implementation</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16">What was built</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Implementation</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What was built</h2>
           </FadeIn>
 
           <div className="grid md:grid-cols-2 gap-12 md:gap-16">
             <FadeIn delay={100}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight">Warehouse Simulation</h3>
-                <p className="text-sm font-light opacity-60 leading-relaxed">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Warehouse Simulation</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Procedural layout generation with configurable dimensions (20m-80m).
                   Realistic shelf placement, aisle generation, and physics-based collision detection.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-40">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
                   environments/ — 1,200+ lines
                 </div>
               </div>
@@ -331,12 +329,12 @@ export default function CaseStudySpatialLab() {
 
             <FadeIn delay={200}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight">Fleet Coordination</h3>
-                <p className="text-sm font-light opacity-60 leading-relaxed">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Fleet Coordination</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Multi-robot management for 2-10 agents. Path planning with collision avoidance,
                   inter-robot communication protocols, and task allocation.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-40">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
                   coordination/ — 800+ lines
                 </div>
               </div>
@@ -344,12 +342,12 @@ export default function CaseStudySpatialLab() {
 
             <FadeIn delay={300}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight">LLM Integration</h3>
-                <p className="text-sm font-light opacity-60 leading-relaxed">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">LLM Integration</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Structured prompts for spatial reasoning. Supports GPT-4 and Gemini.
                   Observation-action-reward loops for decision making under uncertainty.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-40">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
                   llm/ — Gemini & OpenAI clients
                 </div>
               </div>
@@ -357,12 +355,12 @@ export default function CaseStudySpatialLab() {
 
             <FadeIn delay={400}>
               <div className="space-y-4">
-                <h3 className="text-xl font-light tracking-tight">Research Framework</h3>
-                <p className="text-sm font-light opacity-60 leading-relaxed">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Research Framework</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Statistical validation with control groups, significance testing,
                   and effect size calculations. Built for reproducible experiments.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-40">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
                   evaluation/ — 600+ lines
                 </div>
               </div>
@@ -374,11 +372,11 @@ export default function CaseStudySpatialLab() {
       <SectionDivider />
 
       {/* Results */}
-      <section className="py-24 md:py-32 px-6 md:px-12 bg-white/[0.02]">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 md:py-32 px-6 md:px-12">
+        <div className="max-w-5xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">Validation</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16">Results</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Validation</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Results</h2>
           </FadeIn>
 
           <FadeIn delay={200}>
@@ -436,14 +434,14 @@ export default function CaseStudySpatialLab() {
 
       {/* Code Structure */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">Structure</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12">Codebase</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Structure</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
           </FadeIn>
 
           <FadeIn delay={200}>
-            <pre className="text-xs md:text-sm font-mono leading-loose opacity-70">
+            <pre className="text-xs md:text-sm font-mono leading-loose opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
 {`spatial_lab/
 ├── environments/        # Warehouse simulation
 │   └── warehouse.py     # Layout generation, physics
@@ -467,17 +465,17 @@ export default function CaseStudySpatialLab() {
 
       {/* Limitations */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">Honest Assessment</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12">Limitations</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Honest Assessment</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Limitations</h2>
           </FadeIn>
 
           <FadeIn delay={200}>
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-6">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50">Current State</div>
-                <ul className="space-y-3 text-sm font-light opacity-70">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">Current State</div>
+                <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   <li className="flex items-start gap-3">
                     <span className="text-green-400 mt-0.5">✓</span>
                     <span>LLM integration framework operational</span>
@@ -498,8 +496,8 @@ export default function CaseStudySpatialLab() {
               </div>
 
               <div className="space-y-6">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50">In Progress</div>
-                <ul className="space-y-3 text-sm font-light opacity-70">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">In Progress</div>
+                <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   <li className="flex items-start gap-3">
                     <span className="text-amber-400 mt-0.5">○</span>
                     <span>Full A* pathfinding implementation</span>
@@ -527,26 +525,26 @@ export default function CaseStudySpatialLab() {
 
       {/* What This Demonstrates */}
       <section className="py-24 md:py-32 px-6 md:px-12">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <FadeIn>
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8">Takeaway</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12">What this demonstrates</h2>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Takeaway</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this demonstrates</h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
-                <div className="text-lg font-light mb-3">Systems Design</div>
-                <p className="text-sm font-light opacity-60">
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Systems Design</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Architecting complex multi-component systems with clear separation of concerns
                 </p>
               </div>
               <div>
-                <div className="text-lg font-light mb-3">Research Rigor</div>
-                <p className="text-sm font-light opacity-60">
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Research Rigor</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Scientific methodology with proper statistical validation and reproducibility
                 </p>
               </div>
               <div>
-                <div className="text-lg font-light mb-3">AI Integration</div>
-                <p className="text-sm font-light opacity-60">
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">AI Integration</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Practical application of LLMs beyond text — exploring spatial reasoning capabilities
                 </p>
               </div>
@@ -556,11 +554,11 @@ export default function CaseStudySpatialLab() {
       </section>
 
       {/* Footer CTA */}
-      <section className="py-24 md:py-32 px-6 md:px-12 border-t border-white/10">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+      <section className="py-24 md:py-32 px-6 md:px-12">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-sm bg-black/30 p-8 md:p-12 rounded-2xl">
           <div>
-            <div className="text-2xl md:text-3xl font-thin tracking-tight">Explore the code</div>
-            <p className="text-sm font-light opacity-60 mt-2">MIT Licensed. Open source.</p>
+            <div className="text-2xl md:text-3xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Explore the code</div>
+            <p className="text-sm font-light opacity-70 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">MIT Licensed. Open source.</p>
           </div>
           <a
             href="https://github.com/basedlsg/spatial-lab"
