@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
+import CaseStudySpatialLab from './components/CaseStudySpatialLab';
 
 // --- COMPONENTS ---
 
@@ -241,6 +242,10 @@ export default function App() {
   // Route to different pages based on hash
   if (route === '#/philosophy') {
     return <OurPhilosophy />;
+  }
+
+  if (route === '#/work/spatial-lab') {
+    return <CaseStudySpatialLab />;
   }
 
   return <HomePage />;
