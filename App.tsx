@@ -5,6 +5,7 @@ import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
 import CaseStudySpatialLab from './components/CaseStudySpatialLab';
+import CaseStudyWhatsInTheRoom from './components/CaseStudyWhatsInTheRoom';
 
 // --- COMPONENTS ---
 
@@ -248,6 +249,10 @@ export default function App() {
 
   if (route === '#/work/spatial-lab') {
     return <CaseStudySpatialLab />;
+  }
+
+  if (route === '#/work/whats-in-the-room') {
+    return <CaseStudyWhatsInTheRoom />;
   }
 
   return <HomePage />;
