@@ -229,15 +229,21 @@ function HomePage() {
 
 // Simple hash-based router
 export default function App() {
-  const [route, setRoute] = useState(window.location.hash || '#/');
+  const [route, setRoute] = useState(() => {
+    // Normalize hash on initial load
+    const hash = window.location.hash || '#/';
+    return hash.split('?')[0].split('&')[0]; // Remove query params if any
+  });
 
   useEffect(() => {
     const handleHashChange = () => {
-      setRoute(window.location.hash || '#/');
+      const hash = window.location.hash || '#/';
+      const cleanHash = hash.split('?')[0].split('&')[0]; // Remove query params
+      setRoute(cleanHash);
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    // Also handle initial load
+    // Handle initial load
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
