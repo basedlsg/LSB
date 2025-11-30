@@ -228,14 +228,16 @@ function HomePage() {
 
 // Simple hash-based router
 export default function App() {
-  const [route, setRoute] = useState(window.location.hash);
+  const [route, setRoute] = useState(window.location.hash || '#/');
 
   useEffect(() => {
     const handleHashChange = () => {
-      setRoute(window.location.hash);
+      setRoute(window.location.hash || '#/');
     };
 
     window.addEventListener('hashchange', handleHashChange);
+    // Also handle initial load
+    handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
