@@ -194,26 +194,44 @@ function HomePage() {
             Come walk with us.
           </h2>
 
-          {/* Subtle prompt */}
-          <a
-            href="#/work"
-            className="z-10 mt-12 md:mt-16 group flex flex-col items-center gap-3 transition-all hover:scale-105"
-          >
-            <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-40 group-hover:opacity-80 transition-opacity [text-shadow:_0_2px_20px_rgba(0,0,0,0.8)]">
-              See what we're building
-            </span>
-            <div className="w-px h-8 bg-gradient-to-b from-white/40 to-white/0 group-hover:from-white/80 transition-colors" />
-            <div className="w-2 h-2 rounded-full border border-white/30 group-hover:border-white/80 group-hover:bg-white/20 transition-all animate-pulse" />
-          </a>
+          {/* Three buttons - clean and readable */}
+          <div className="z-10 flex flex-col md:flex-row items-center gap-4 md:gap-6 mt-12 md:mt-16">
 
-          {/* Secondary links */}
-          <div className="z-10 flex items-center gap-8 mt-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8)]">
+            {/* Projects - Primary */}
+            <a
+              href="#/work"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/10 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/20"
+            >
+              <div className="absolute inset-0 border border-white/40 rounded-full group-hover:border-white/80 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Work
+              </span>
+            </a>
+
+            {/* Philosophy */}
             <a
               href="#/philosophy"
-              className="text-[10px] md:text-xs tracking-[0.25em] uppercase opacity-40 hover:opacity-100 transition-opacity"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/15"
             >
-              Our Philosophy
+              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/70 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Story
+              </span>
             </a>
+
+            {/* Learn More - External */}
+            <a
+              href="https://shiny-chipmunk-4c4.notion.site/Walking-Stick-Labs-76bf48c44fd34b43862f78a9d2bc3f08?pvs=74"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/15"
+            >
+              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/70 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Learn More
+              </span>
+            </a>
+
           </div>
 
           {/* Footer - absolute bottom center */}
