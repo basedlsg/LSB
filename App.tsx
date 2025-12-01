@@ -6,6 +6,7 @@ import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
 import CaseStudySpatialLab from './components/CaseStudySpatialLab';
 import CaseStudyWhatsInTheRoom from './components/CaseStudyWhatsInTheRoom';
+import Projects from './components/Projects';
 
 // --- COMPONENTS ---
 
@@ -193,25 +194,25 @@ function HomePage() {
             Come walk with us.
           </h2>
 
-          {/* Buttons - stacked on mobile, spaced on desktop */}
-          <div className="z-10 w-full flex flex-col md:flex-row items-center justify-center md:justify-between gap-6 md:gap-0 mt-10 md:mt-16 px-4 md:px-24 lg:px-32 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
-            <button className="group relative px-10 md:px-12 py-3 md:py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
-              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
-              <span className="relative text-xs md:text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
-                Learn More
-              </span>
-            </button>
+          {/* Subtle prompt */}
+          <a
+            href="#/work"
+            className="z-10 mt-12 md:mt-16 group flex flex-col items-center gap-3 transition-all hover:scale-105"
+          >
+            <span className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-40 group-hover:opacity-80 transition-opacity [text-shadow:_0_2px_20px_rgba(0,0,0,0.8)]">
+              See what we're building
+            </span>
+            <div className="w-px h-8 bg-gradient-to-b from-white/40 to-white/0 group-hover:from-white/80 transition-colors" />
+            <div className="w-2 h-2 rounded-full border border-white/30 group-hover:border-white/80 group-hover:bg-white/20 transition-all animate-pulse" />
+          </a>
 
+          {/* Secondary links */}
+          <div className="z-10 flex items-center gap-8 mt-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8)]">
             <a
               href="#/philosophy"
-              className="group relative px-6 md:px-8 py-2.5 md:py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+              className="text-[10px] md:text-xs tracking-[0.25em] uppercase opacity-40 hover:opacity-100 transition-opacity"
             >
-              <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-              <span className="relative text-[10px] md:text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
-                Our Philosophy &rarr;
-              </span>
+              Our Philosophy
             </a>
           </div>
 
@@ -259,6 +260,10 @@ export default function App() {
 
   if (route === '#/work/whats-in-the-room') {
     return <CaseStudyWhatsInTheRoom />;
+  }
+
+  if (route === '#/work') {
+    return <Projects />;
   }
 
   return <HomePage />;
