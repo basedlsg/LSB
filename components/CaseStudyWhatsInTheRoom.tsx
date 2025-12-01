@@ -3,6 +3,15 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import Cursor from './Cursor';
 
+// --- GRADIENT BACKGROUND SHADERS ---
+const bgVertexShader = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
 // --- PARTICLE BACKGROUND ---
 const noiseFunctions = `
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -148,6 +157,73 @@ const ParticleField = () => {
   );
 };
 
+// --- BEAUTIFUL GRADIENT BACKGROUND ---
+const bgFragmentShader = `
+uniform float uTime;
+varying vec2 vUv;
+
+${noiseFunctions}
+
+void main() {
+  vec2 uv = vUv;
+  vec2 center = vec2(0.5);
+  float dist = length(uv - center);
+
+  // Rich, warm dark tones
+  vec3 darkCore = vec3(0.015, 0.008, 0.012);
+  vec3 warmBrown = vec3(0.06, 0.025, 0.018);
+  vec3 deepAmber = vec3(0.1, 0.04, 0.015);
+
+  // Flowing noise layers
+  float n1 = snoise(vec3(uv * 2.0, uTime * 0.03));
+  float n2 = snoise(vec3(uv * 4.0 + n1 * 0.3, uTime * 0.05));
+  float n3 = snoise(vec3(uv * 8.0, uTime * 0.02));
+
+  // Base gradient
+  vec3 color = mix(darkCore, warmBrown, smoothstep(0.0, 0.8, dist));
+
+  // Flowing warm currents
+  float flow = n1 * 0.5 + 0.5;
+  color = mix(color, deepAmber, flow * 0.25 * (1.0 - dist * 0.5));
+
+  // Ambient texture
+  color += n3 * 0.015;
+
+  // Subtle vignette
+  float vignette = smoothstep(1.0, 0.2, dist);
+  color *= 0.6 + vignette * 0.4;
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+const GradientBackground = () => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { viewport } = useThree();
+
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 }
+  }), []);
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      const mat = meshRef.current.material as THREE.ShaderMaterial;
+      mat.uniforms.uTime.value = state.clock.getElapsedTime();
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, -5]}>
+      <planeGeometry args={[viewport.width * 2.5, viewport.height * 2.5]} />
+      <shaderMaterial
+        vertexShader={bgVertexShader}
+        fragmentShader={bgFragmentShader}
+        uniforms={uniforms}
+      />
+    </mesh>
+  );
+};
+
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -185,6 +261,7 @@ export default function CaseStudyWhatsInTheRoom() {
       {/* Particle Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
+          <GradientBackground />
           <ParticleField />
         </Canvas>
       </div>

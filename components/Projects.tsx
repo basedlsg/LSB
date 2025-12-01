@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import Cursor from './Cursor';
 
-// --- FLOWING PARTICLE FIELD ---
+// --- NOISE FUNCTIONS ---
 const noiseFunctions = `
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -153,6 +153,95 @@ const FlowingParticleField = ({ mouse }: { mouse: React.MutableRefObject<THREE.V
   );
 };
 
+// --- BEAUTIFUL GRADIENT BACKGROUND ---
+const bgVertexShader = `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const bgFragmentShader = `
+uniform float uTime;
+uniform vec2 uMouse;
+varying vec2 vUv;
+
+${noiseFunctions}
+
+void main() {
+  vec2 uv = vUv;
+  vec2 center = vec2(0.5);
+  float dist = length(uv - center);
+
+  // Rich, warm dark tones
+  vec3 darkCore = vec3(0.02, 0.01, 0.015);
+  vec3 warmBrown = vec3(0.08, 0.03, 0.02);
+  vec3 deepAmber = vec3(0.12, 0.05, 0.02);
+  vec3 subtleGold = vec3(0.15, 0.08, 0.03);
+
+  // Flowing noise layers
+  float n1 = snoise(vec3(uv * 2.0, uTime * 0.05));
+  float n2 = snoise(vec3(uv * 4.0 + n1 * 0.3, uTime * 0.08));
+  float n3 = snoise(vec3(uv * 8.0, uTime * 0.03));
+
+  // Base gradient - dark center, warm edges
+  vec3 color = mix(darkCore, warmBrown, smoothstep(0.0, 0.7, dist));
+
+  // Add flowing warm currents
+  float flow = n1 * 0.5 + 0.5;
+  color = mix(color, deepAmber, flow * 0.3 * (1.0 - dist * 0.5));
+
+  // Subtle golden highlights
+  float highlight = pow(max(0.0, n2), 3.0);
+  color = mix(color, subtleGold, highlight * 0.2);
+
+  // Ambient texture
+  color += n3 * 0.02;
+
+  // Mouse-reactive glow
+  vec2 mouseUV = uMouse * 0.5 + 0.5;
+  float mouseDist = length(uv - mouseUV);
+  float mouseGlow = exp(-mouseDist * 4.0) * 0.15;
+  color += subtleGold * mouseGlow;
+
+  // Vignette
+  float vignette = smoothstep(1.0, 0.3, dist);
+  color *= 0.7 + vignette * 0.3;
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+const GradientBackground = ({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { viewport } = useThree();
+
+  const uniforms = useMemo(() => ({
+    uTime: { value: 0 },
+    uMouse: { value: new THREE.Vector2(0, 0) }
+  }), []);
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      const mat = meshRef.current.material as THREE.ShaderMaterial;
+      mat.uniforms.uTime.value = state.clock.getElapsedTime();
+      mat.uniforms.uMouse.value.lerp(mouse.current, 0.02);
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, -5]}>
+      <planeGeometry args={[viewport.width * 2.5, viewport.height * 2.5]} />
+      <shaderMaterial
+        vertexShader={bgVertexShader}
+        fragmentShader={bgFragmentShader}
+        uniforms={uniforms}
+      />
+    </mesh>
+  );
+};
+
 const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
@@ -231,6 +320,7 @@ export default function Projects() {
       {/* Particle Background - Hero area */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
+          <GradientBackground mouse={mousePos} />
           <FlowingParticleField mouse={mousePos} />
         </Canvas>
       </div>
