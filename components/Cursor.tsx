@@ -50,16 +50,15 @@ const Cursor: React.FC<CursorProps> = ({ dim = false }) => {
        position: fixed;
        top: 0;
        left: 0;
-       width: 5px;
-       height: 5px;
-       background-color: rgba(253, 251, 247, 0.5);
+       width: 4px;
+       height: 4px;
+       background-color: rgba(253, 251, 247, 0.25);
        border-radius: 50%;
        z-index: 9999;
-       margin-left: -2.5px;
-       margin-top: -2.5px;
+       margin-left: -2px;
+       margin-top: -2px;
        mix-blend-mode: normal;
        transition: transform 0.05s linear;
-       box-shadow: 0 0 8px rgba(253, 251, 247, 0.3);
     }
   ` : `
     body { cursor: none !important; }

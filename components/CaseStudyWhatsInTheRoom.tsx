@@ -169,29 +169,50 @@ void main() {
   vec2 center = vec2(0.5);
   float dist = length(uv - center);
 
-  // Rich, warm dark tones
-  vec3 darkCore = vec3(0.015, 0.008, 0.012);
-  vec3 warmBrown = vec3(0.06, 0.025, 0.018);
-  vec3 deepAmber = vec3(0.1, 0.04, 0.015);
+  // Rich color palette
+  vec3 voidBlack = vec3(0.008, 0.004, 0.012);
+  vec3 deepIndigo = vec3(0.03, 0.015, 0.06);
+  vec3 warmAmber = vec3(0.15, 0.06, 0.02);
+  vec3 emberOrange = vec3(0.2, 0.08, 0.02);
+  vec3 cosmicPurple = vec3(0.08, 0.02, 0.12);
 
-  // Flowing noise layers
-  float n1 = snoise(vec3(uv * 2.0, uTime * 0.03));
-  float n2 = snoise(vec3(uv * 4.0 + n1 * 0.3, uTime * 0.05));
-  float n3 = snoise(vec3(uv * 8.0, uTime * 0.02));
+  // Multi-scale flowing noise
+  float t = uTime * 0.04;
+  float n1 = snoise(vec3(uv * 1.5, t));
+  float n2 = snoise(vec3(uv * 3.0 + n1 * 0.4, t * 1.3));
+  float n3 = snoise(vec3(uv * 6.0 + n2 * 0.3, t * 0.7));
+  float n4 = snoise(vec3(uv * 12.0, t * 0.5));
 
-  // Base gradient
-  vec3 color = mix(darkCore, warmBrown, smoothstep(0.0, 0.8, dist));
+  // Nebula layers
+  float nebula1 = pow(n1 * 0.5 + 0.5, 1.5);
+  float nebula2 = pow(n2 * 0.5 + 0.5, 2.0);
+  float nebula3 = pow(max(0.0, n3), 3.0);
 
-  // Flowing warm currents
-  float flow = n1 * 0.5 + 0.5;
-  color = mix(color, deepAmber, flow * 0.25 * (1.0 - dist * 0.5));
+  // Base: deep void with indigo undertones
+  vec3 color = mix(voidBlack, deepIndigo, nebula1 * 0.4);
 
-  // Ambient texture
-  color += n3 * 0.015;
+  // Warm nebula clouds flowing from edges
+  float warmFlow = smoothstep(0.3, 0.8, dist) * nebula2;
+  color = mix(color, warmAmber, warmFlow * 0.5);
 
-  // Subtle vignette
-  float vignette = smoothstep(1.0, 0.2, dist);
-  color *= 0.6 + vignette * 0.4;
+  // Ember hotspots
+  float embers = nebula3 * smoothstep(0.6, 0.3, dist);
+  color = mix(color, emberOrange, embers * 0.4);
+
+  // Cosmic purple wisps
+  float purpleWisp = pow(n2 * 0.5 + 0.5, 2.5) * (1.0 - dist * 0.8);
+  color = mix(color, cosmicPurple, purpleWisp * 0.3);
+
+  // Fine detail texture
+  color += n4 * 0.015;
+
+  // Soft star-like points
+  float stars = pow(max(0.0, snoise(vec3(uv * 50.0, t * 0.1))), 12.0);
+  color += vec3(1.0, 0.95, 0.9) * stars * 0.25;
+
+  // Deep vignette for depth
+  float vignette = smoothstep(1.2, 0.2, dist);
+  color *= 0.5 + vignette * 0.5;
 
   gl_FragColor = vec4(color, 1.0);
 }
