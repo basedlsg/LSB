@@ -104,10 +104,10 @@ void main() {
   pos += drift;
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
-  gl_PointSize = (15.0 / -mvPosition.z);
+  gl_PointSize = (20.0 / -mvPosition.z);
   float sparkle = snoise(pos * 5.0 + uTime * 1.5);
-  vAlpha = 0.4 + 0.3 * sparkle;
-  vAlpha *= smoothstep(-6.0, 1.0, pos.z);
+  vAlpha = 0.6 + 0.4 * sparkle;
+  vAlpha *= smoothstep(-6.0, 2.0, pos.z);
 }
 `;
 
@@ -120,7 +120,7 @@ void main() {
   float glow = exp(-dist * 5.0);
   if (glow < 0.01) discard;
   vec3 color = vec3(1.0, 0.98, 0.95);
-  gl_FragColor = vec4(color, vAlpha * glow * 0.6);
+  gl_FragColor = vec4(color, vAlpha * glow * 1.5);
 }
 `;
 

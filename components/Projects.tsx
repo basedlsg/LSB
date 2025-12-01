@@ -123,14 +123,14 @@ void main() {
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
 
-  // Size varies with distance and sparkle
+  // Size varies with distance and sparkle - larger particles
   float sparkle = snoise(vec3(pos.xy * 2.0, uTime * 2.0));
-  gl_PointSize = (10.0 / -mvPosition.z) * (0.8 + sparkle * 0.4 + mouseInfluence * 0.5);
+  gl_PointSize = (14.0 / -mvPosition.z) * (1.0 + sparkle * 0.4 + mouseInfluence * 0.5);
 
-  // Alpha based on radius and sparkle
-  vAlpha = 0.4 + 0.4 * sparkle;
-  vAlpha *= smoothstep(4.5, 2.0, radius); // Fade at edges
-  vAlpha *= 0.7 + mouseInfluence * 0.5;
+  // Alpha based on radius and sparkle - more visible
+  vAlpha = 0.6 + 0.4 * sparkle;
+  vAlpha *= smoothstep(4.5, 1.0, radius); // Less fade at edges
+  vAlpha *= 0.9 + mouseInfluence * 0.5;
 }
 `;
 
@@ -141,15 +141,15 @@ varying float vRadius;
 void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float dist = length(coord);
-  float glow = exp(-dist * 5.0);
+  float glow = exp(-dist * 4.0);
   if (glow < 0.01) discard;
 
   // Warm color gradient from center to edge
-  vec3 coreColor = vec3(1.0, 0.95, 0.85);
-  vec3 edgeColor = vec3(1.0, 0.8, 0.6);
+  vec3 coreColor = vec3(1.0, 0.98, 0.92);
+  vec3 edgeColor = vec3(1.0, 0.85, 0.65);
   vec3 color = mix(coreColor, edgeColor, smoothstep(0.0, 3.0, vRadius));
 
-  gl_FragColor = vec4(color, vAlpha * glow * 0.8);
+  gl_FragColor = vec4(color, vAlpha * glow * 1.5);
 }
 `;
 
