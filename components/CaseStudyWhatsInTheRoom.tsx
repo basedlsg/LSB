@@ -275,7 +275,7 @@ const glassCardClass = "backdrop-blur-md bg-gradient-to-br from-white/[0.08] to-
 
 export default function CaseStudyWhatsInTheRoom() {
   return (
-    <div className="min-h-screen bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
+    <div className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
 
       <Cursor />
 
@@ -303,7 +303,7 @@ export default function CaseStudyWhatsInTheRoom() {
       </nav>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20 relative z-10">
+      <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20 relative z-10 snap-start">
         <FadeIn delay={200} className="text-center max-w-4xl">
           <div className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
             Case Study
@@ -326,11 +326,8 @@ export default function CaseStudyWhatsInTheRoom() {
         <div className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
       </section>
 
-      {/* Content wrapper */}
-      <div className="relative z-10">
-
       {/* The Question */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Question</div>
@@ -346,10 +343,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* The Experiment */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Experiment</div>
@@ -410,10 +405,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* What Was Built */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Building Blocks</div>
@@ -476,10 +469,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Results */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-5xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">What We Found</div>
@@ -537,10 +528,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Code Structure */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Structure</div>
@@ -568,10 +557,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* What This Demonstrates */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-4xl mx-auto text-center ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The Bigger Picture</div>
@@ -600,10 +587,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Philosophical Blurb */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-4xl mx-auto ${glassCardClass}`}>
           <FadeIn>
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Why This Exists</div>
@@ -626,10 +611,8 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      <SectionDivider />
-
       {/* Footer CTA */}
-      <section className="py-24 md:py-32 px-6 md:px-12">
+      <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className={`max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8 ${glassCardClass}`}>
           <div>
             <div className="text-2xl md:text-3xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Explore the code</div>
@@ -650,15 +633,6 @@ export default function CaseStudyWhatsInTheRoom() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 md:px-12 text-center">
-        <div className="text-[9px] md:text-[10px] tracking-[0.3em] opacity-40 uppercase space-y-2">
-          <div>San Francisco — CA, Beijing — CN</div>
-          <div>&copy; Walking Stick Labs</div>
-        </div>
-      </footer>
-
-      </div>{/* End content wrapper */}
     </div>
   );
 }

@@ -54,16 +54,34 @@ float snoise(vec3 v) {
 }
 `;
 
-const PARTICLE_COUNT = 6000;
+const PARTICLE_COUNT = 8000;
+const NUM_ARMS = 5;
 
 const generateParticlePositions = () => {
   const positions = new Float32Array(PARTICLE_COUNT * 3);
   for (let i = 0; i < PARTICLE_COUNT; i++) {
     const idx = i * 3;
-    // Horizontal wave distribution
-    positions[idx] = (Math.random() - 0.5) * 8;
-    positions[idx + 1] = (Math.random() - 0.5) * 4;
-    positions[idx + 2] = (Math.random() - 0.5) * 3;
+
+    // Which arm this particle belongs to
+    const arm = i % NUM_ARMS;
+    const armAngle = (arm / NUM_ARMS) * Math.PI * 2;
+
+    // Distance from center (more particles near center)
+    const t = Math.pow(Math.random(), 0.6);
+    const radius = t * 4.0;
+
+    // Spiral angle increases with radius
+    const spiralTightness = 2.5;
+    const angle = armAngle + radius * spiralTightness + (Math.random() - 0.5) * 0.4;
+
+    // Spread increases with distance
+    const spread = radius * 0.15 + 0.05;
+    const offsetX = (Math.random() - 0.5) * spread;
+    const offsetY = (Math.random() - 0.5) * spread;
+
+    positions[idx] = Math.cos(angle) * radius + offsetX;
+    positions[idx + 1] = Math.sin(angle) * radius + offsetY;
+    positions[idx + 2] = (Math.random() - 0.5) * 0.5;
   }
   return positions;
 };
@@ -72,50 +90,66 @@ const particleVertexShader = `
 uniform float uTime;
 uniform vec2 uMouse;
 varying float vAlpha;
+varying float vRadius;
 
 ${noiseFunctions}
 
 void main() {
   vec3 pos = position;
 
-  // Flowing wave motion
-  float wave = sin(pos.x * 0.5 + uTime * 0.3) * 0.3;
-  wave += sin(pos.y * 0.8 + uTime * 0.2) * 0.2;
-  pos.z += wave;
+  // Calculate radius for rotation speed
+  float radius = length(pos.xy);
+  vRadius = radius;
 
-  // Gentle noise drift
-  vec3 drift = vec3(
-    snoise(pos * 0.2 + uTime * 0.08),
-    snoise(pos * 0.2 + uTime * 0.06 + 10.0),
-    snoise(pos * 0.2 + uTime * 0.04 + 20.0)
-  ) * 0.3;
-  pos += drift;
+  // Rotate - inner particles faster than outer
+  float rotationSpeed = 0.15 / (radius + 0.5);
+  float angle = atan(pos.y, pos.x) + uTime * rotationSpeed;
+  pos.x = cos(angle) * radius;
+  pos.y = sin(angle) * radius;
 
-  // Mouse influence
-  float mouseInfluence = smoothstep(2.0, 0.0, length(pos.xy - uMouse * 2.0));
-  pos.z += mouseInfluence * 0.5;
+  // Gentle breathing/pulsing
+  float pulse = sin(uTime * 0.5 + radius * 0.5) * 0.1;
+  pos.xy *= 1.0 + pulse;
+
+  // Subtle z-wave
+  pos.z += sin(angle * 3.0 + uTime * 0.3) * 0.15;
+
+  // Mouse interaction - gentle push
+  vec2 mouseWorld = uMouse * 3.0;
+  float mouseDist = length(pos.xy - mouseWorld);
+  float mouseInfluence = smoothstep(1.5, 0.0, mouseDist);
+  pos.xy += normalize(pos.xy - mouseWorld + 0.001) * mouseInfluence * 0.3;
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPosition;
-  gl_PointSize = (12.0 / -mvPosition.z) * (1.0 + mouseInfluence * 0.5);
 
-  // Sparkle effect
-  float sparkle = snoise(pos * 8.0 + uTime * 2.0);
-  vAlpha = 0.3 + 0.4 * sparkle + mouseInfluence * 0.3;
-  vAlpha *= smoothstep(-4.0, 1.0, pos.z);
+  // Size varies with distance and sparkle
+  float sparkle = snoise(vec3(pos.xy * 2.0, uTime * 2.0));
+  gl_PointSize = (10.0 / -mvPosition.z) * (0.8 + sparkle * 0.4 + mouseInfluence * 0.5);
+
+  // Alpha based on radius and sparkle
+  vAlpha = 0.4 + 0.4 * sparkle;
+  vAlpha *= smoothstep(4.5, 2.0, radius); // Fade at edges
+  vAlpha *= 0.7 + mouseInfluence * 0.5;
 }
 `;
 
 const particleFragmentShader = `
 varying float vAlpha;
+varying float vRadius;
 
 void main() {
   vec2 coord = gl_PointCoord - vec2(0.5);
   float dist = length(coord);
   float glow = exp(-dist * 5.0);
   if (glow < 0.01) discard;
-  vec3 color = vec3(1.0, 0.98, 0.95);
-  gl_FragColor = vec4(color, vAlpha * glow * 0.7);
+
+  // Warm color gradient from center to edge
+  vec3 coreColor = vec3(1.0, 0.95, 0.85);
+  vec3 edgeColor = vec3(1.0, 0.8, 0.6);
+  vec3 color = mix(coreColor, edgeColor, smoothstep(0.0, 3.0, vRadius));
+
+  gl_FragColor = vec4(color, vAlpha * glow * 0.8);
 }
 `;
 
