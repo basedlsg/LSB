@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Canvas, useFrame, useThree, extend } from '@react-three/fiber';
 import * as THREE from 'three';
+import Cursor from './Cursor';
 
 // --- ENHANCED NOISE FUNCTIONS ---
 const noiseFunctions = `
@@ -516,11 +517,11 @@ const createBgFragmentShader = (chapter: number) => {
       vec2 center = vec2(0.5);
       float dist = length(uv - center);
 
-      // Deep space colors
-      vec3 void_black = vec3(0.02, 0.01, 0.04);
-      vec3 nebula_purple = vec3(0.15, 0.05, 0.25);
-      vec3 nebula_blue = vec3(0.05, 0.1, 0.3);
-      vec3 star_gold = vec3(1.0, 0.9, 0.6);
+      // Deep premium space colors - richer, darker
+      vec3 void_black = vec3(0.01, 0.005, 0.02);
+      vec3 nebula_purple = vec3(0.08, 0.02, 0.15);
+      vec3 nebula_blue = vec3(0.02, 0.04, 0.12);
+      vec3 star_gold = vec3(1.0, 0.85, 0.5);
 
       // Swirling nebula
       float angle = atan(uv.y - 0.5, uv.x - 0.5);
@@ -767,8 +768,8 @@ const createBgFragmentShader = (chapter: number) => {
       float dist = length(uv - center);
       float angle = atan(uv.y - 0.5, uv.x - 0.5);
 
-      vec3 void_warm = vec3(0.06, 0.03, 0.02);
-      vec3 deep_purple = vec3(0.08, 0.03, 0.1);
+      vec3 void_warm = vec3(0.03, 0.015, 0.01);
+      vec3 deep_purple = vec3(0.04, 0.015, 0.06);
       vec3 gold_thread = vec3(1.0, 0.8, 0.4);
       vec3 soft_white = vec3(1.0, 0.98, 0.95);
 
@@ -1103,8 +1104,11 @@ const OurPhilosophy = () => {
     <div
       ref={containerRef}
       className="fixed inset-0 w-full h-full overflow-hidden cursor-default"
-      style={{ background: '#050208' }}
+      style={{ background: '#030106' }}
     >
+      {/* Dimmed cursor for this page */}
+      <Cursor dim />
+
       {/* 3D Canvas */}
       <div className="absolute inset-0">
         <Canvas

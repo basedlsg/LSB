@@ -4,6 +4,9 @@ import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
+import CaseStudySpatialLab from './components/CaseStudySpatialLab';
+import CaseStudyWhatsInTheRoom from './components/CaseStudyWhatsInTheRoom';
+import Projects from './components/Projects';
 
 // --- COMPONENTS ---
 
@@ -185,35 +188,56 @@ function HomePage() {
         </section>
 
         {/* 05 FUTURE */}
-        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
-          <div className="z-10 flex flex-col items-center gap-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
-            <h2 className="text-5xl md:text-7xl font-thin tracking-tighter">
-              Come walk with us.
-            </h2>
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-6 md:p-12">
+          {/* Title - centered */}
+          <h2 className="z-10 text-4xl md:text-5xl lg:text-7xl font-thin tracking-tighter text-center [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            Come walk with us.
+          </h2>
 
-            <button className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
-              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
-              <span className="relative text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
-                Learn More
-              </span>
-            </button>
+          {/* Three buttons - clean and readable */}
+          <div className="z-10 flex flex-col md:flex-row items-center gap-4 md:gap-6 mt-12 md:mt-16">
 
+            {/* Projects - Primary */}
             <a
-              href="#/philosophy"
-              className="group relative mt-4 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+              href="#/work"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/10 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/20"
             >
-              <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-r from-amber-900/20 to-orange-900/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-              <span className="relative text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
-                Our Philosophy &rarr;
+              <div className="absolute inset-0 border border-white/40 rounded-full group-hover:border-white/80 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Work
               </span>
             </a>
 
-            <div className="mt-16 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
-              <span>San Francisco — CA</span>
-              <span>&copy; Walking Stick Labs</span>
-            </div>
+            {/* Philosophy */}
+            <a
+              href="#/philosophy"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/15"
+            >
+              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/70 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Story
+              </span>
+            </a>
+
+            {/* Learn More - External */}
+            <a
+              href="https://shiny-chipmunk-4c4.notion.site/Walking-Stick-Labs-76bf48c44fd34b43862f78a9d2bc3f08?pvs=74"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-sm rounded-full overflow-hidden transition-all hover:scale-105 hover:bg-white/15"
+            >
+              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/70 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Learn More
+              </span>
+            </a>
+
+          </div>
+
+          {/* Footer - absolute bottom center */}
+          <div className="absolute bottom-6 md:bottom-8 left-0 right-0 z-10 text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-1 md:gap-2 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <span>San Francisco — CA, Beijing — CN</span>
+            <span>&copy; Walking Stick Labs</span>
           </div>
         </section>
 
@@ -224,20 +248,40 @@ function HomePage() {
 
 // Simple hash-based router
 export default function App() {
-  const [route, setRoute] = useState(window.location.hash);
+  const [route, setRoute] = useState(() => {
+    // Normalize hash on initial load
+    const hash = window.location.hash || '#/';
+    return hash.split('?')[0].split('&')[0]; // Remove query params if any
+  });
 
   useEffect(() => {
     const handleHashChange = () => {
-      setRoute(window.location.hash);
+      const hash = window.location.hash || '#/';
+      const cleanHash = hash.split('?')[0].split('&')[0]; // Remove query params
+      setRoute(cleanHash);
     };
 
     window.addEventListener('hashchange', handleHashChange);
+    // Handle initial load
+    handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   // Route to different pages based on hash
   if (route === '#/philosophy') {
     return <OurPhilosophy />;
+  }
+
+  if (route === '#/work/spatial-lab') {
+    return <CaseStudySpatialLab />;
+  }
+
+  if (route === '#/work/whats-in-the-room') {
+    return <CaseStudyWhatsInTheRoom />;
+  }
+
+  if (route === '#/work') {
+    return <Projects />;
   }
 
   return <HomePage />;
