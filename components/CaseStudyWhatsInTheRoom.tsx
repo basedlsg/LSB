@@ -462,7 +462,7 @@ export default function CaseStudyWhatsInTheRoom() {
             expandedContent={<div className="flex justify-center"><WhatsInTheRoomExperiment /></div>}
           >
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Experiment</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How we tested it</h2>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How we tested it</h2>
 
             <WhatsInTheRoomExperiment />
           </GlassWindow>
@@ -477,7 +477,7 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="Procedural generation engine, regional architecture rules, and deterministic seed system."
           >
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Building Blocks</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
 
             <div className="grid md:grid-cols-2 gap-12 md:gap-16">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
@@ -537,7 +537,7 @@ export default function CaseStudyWhatsInTheRoom() {
             expandedContent={<ResultsExpanded />}
           >
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">What We Found</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
 
             <motion.div
               initial={{ opacity: 0 }}
@@ -606,7 +606,7 @@ export default function CaseStudyWhatsInTheRoom() {
             expandedContent={<div className="p-8"><CodebaseTree data={codebaseData} /></div>}
           >
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Structure</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
 
             <CodebaseTree data={codebaseData} />
           </GlassWindow>
@@ -621,7 +621,7 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="Demonstrating the importance of synthetic benchmarks for testing AI perception."
           >
             <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Bigger Picture</div>
-            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
+            <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
                 <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Synthetic Benchmarks</div>

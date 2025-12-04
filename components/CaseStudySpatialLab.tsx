@@ -452,7 +452,7 @@ export default function CaseStudySpatialLab() {
             summary="Investigating if language models can understand spatial relationships without visual input."
             expandedContent={<HypothesisExpanded />}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Question</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Question</div>
             <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
               "Can an AI that's only ever read words understand how to move through a room?"
             </blockquote>
@@ -473,7 +473,7 @@ export default function CaseStudySpatialLab() {
             summary="Visualizing the flow from LLM reasoning to multi-agent simulation."
             expandedContent={<div className="flex justify-center"><SpatialLabArchitecture /></div>}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">System Architecture</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">System Architecture</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How it works</h2>
 
             <SpatialLabArchitecture />
@@ -488,7 +488,7 @@ export default function CaseStudySpatialLab() {
             path="~/spatial-lab/src"
             summary="Core modules: Simulation Environment, Multi-Agent Coordination, and LLM Reasoning Engine."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Building Blocks</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Building Blocks</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
 
             <div className="grid md:grid-cols-2 gap-12 md:gap-16">
@@ -548,7 +548,7 @@ export default function CaseStudySpatialLab() {
             summary="LLM-guided agents achieved 85% success rate, significantly outperforming baselines."
             expandedContent={<ResultsExpanded />}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">What We Found</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">What We Found</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
 
             <motion.div
@@ -617,7 +617,7 @@ export default function CaseStudySpatialLab() {
             summary="Browse the project structure: environments, coordination logic, and evaluation scripts."
             expandedContent={<div className="p-8"><CodebaseTree data={codebaseData} /></div>}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Structure</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Structure</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
 
             <CodebaseTree data={codebaseData} />
@@ -632,7 +632,7 @@ export default function CaseStudySpatialLab() {
             path="~/spatial-lab"
             summary="Current limitations include pathfinding optimization and production hardening."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Honest Assessment</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Honest Assessment</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Limitations</h2>
 
             <div className="grid md:grid-cols-2 gap-6">
@@ -691,7 +691,7 @@ export default function CaseStudySpatialLab() {
             path="~/spatial-lab/thoughts"
             summary="This project demonstrates the potential of LLMs to reason about complex physical systems."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Bigger Picture</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Bigger Picture</div>
             <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
@@ -724,7 +724,7 @@ export default function CaseStudySpatialLab() {
             path="~/personal/notes"
             summary="Exploring the mechanical sense of 'self' in artificial agents."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Why This Exists</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Why This Exists</div>
             <div className="space-y-8 text-base md:text-lg font-light leading-relaxed opacity-90 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
               <p>
                 I started Spatial Lab with something small and honest: a simple grid and a representation of a tiny robot.
