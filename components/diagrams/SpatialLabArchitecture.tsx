@@ -66,7 +66,7 @@ const Connection = ({ delay }: { delay: number }) => (
 
 export function SpatialLabArchitecture() {
     return (
-        <div className="flex flex-col items-center justify-center py-12 w-full max-w-3xl mx-auto">
+        <div className="flex flex-col items-center justify-center py-12 w-full max-w-3xl mx-auto scale-90 origin-top">
 
             {/* Level 1: Input */}
             <NanoNode

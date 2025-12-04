@@ -59,9 +59,20 @@ export function GlassWindow({
         );
     }
 
-    return (
+    // Scroll Lock Effect
+    React.useEffect(() => {
+        if (windowState === 'maximized') {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [windowState]);
+
+    const windowContent = (
         <motion.div
-            layout
             className={cn(
                 "group relative overflow-hidden rounded-xl transition-all duration-500",
                 // Ultra Glass Aesthetic
@@ -69,7 +80,7 @@ export function GlassWindow({
                 "bg-gradient-to-b from-white/[0.08] to-transparent",
                 "border border-white/10",
                 "shadow-2xl shadow-black/50",
-                windowState === 'maximized' ? "fixed inset-4 z-[100] m-0 w-auto h-auto bg-black/80 backdrop-blur-3xl" : "",
+                windowState === 'maximized' ? "fixed inset-4 md:inset-10 z-[9999] m-0 w-auto h-auto bg-black/90 backdrop-blur-3xl shadow-2xl" : "",
                 className
             )}
             style={{
@@ -79,10 +90,17 @@ export function GlassWindow({
             onMouseMove={handleMouseMove}
             initial={{ opacity: 0, y: 20, scale: 0.98 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, margin: "-10%" }} // Fix blinking by requiring 10% visibility
             transition={{
-                layout: { duration: 0.5, ease: [0.32, 0.72, 0, 1] },
+                duration: 0.5,
+                ease: [0.32, 0.72, 0, 1],
                 opacity: { duration: 0.4 }
+            }}
+            onClick={(e) => {
+                // Stop propagation at the container level to prevent parent Links from firing
+                if (windowState === 'maximized') {
+                    e.stopPropagation();
+                }
             }}
         >
             {/* Noise Texture Overlay */}
@@ -110,8 +128,9 @@ export function GlassWindow({
 
             {/* Window Chrome / Header */}
             <div
-                className="relative flex items-center justify-between px-4 py-3 border-b border-white/5 bg-white/[0.02] cursor-default select-none"
+                className="relative flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] cursor-default select-none"
                 onDoubleClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
                 }}
@@ -120,6 +139,7 @@ export function GlassWindow({
                 <div className="flex items-center gap-2 group/controls z-10">
                     <button
                         onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             setWindowState('closed');
                         }}
@@ -130,6 +150,7 @@ export function GlassWindow({
                     </button>
                     <button
                         onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             setWindowState(s => s === 'minimized' ? 'open' : 'minimized');
                         }}
@@ -140,6 +161,7 @@ export function GlassWindow({
                     </button>
                     <button
                         onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
                             setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
                         }}
@@ -174,7 +196,7 @@ export function GlassWindow({
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="px-4 py-3 bg-white/[0.01]"
+                            className="px-6 py-4 bg-white/[0.01]"
                         >
                             <p className="text-sm text-white/50 font-light italic truncate">
                                 {summary}
@@ -186,7 +208,7 @@ export function GlassWindow({
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="p-8 md:p-12 h-[calc(100vh-60px)] overflow-y-auto"
+                            className="p-10 md:p-16 h-[calc(100vh-120px)] overflow-y-auto"
                         >
                             <div className="max-w-7xl mx-auto">
                                 <div className="mb-12 pb-8 border-b border-white/10">
@@ -203,8 +225,8 @@ export function GlassWindow({
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             className={cn(
-                                "p-6 md:p-8 transition-all duration-500",
-                                windowState === 'maximized' ? "h-[calc(100vh-60px)] overflow-y-auto" : ""
+                                "p-8 md:p-10 transition-all duration-500",
+                                windowState === 'maximized' ? "h-[calc(100vh-120px)] overflow-y-auto" : ""
                             )}
                         >
                             {children}
@@ -214,4 +236,15 @@ export function GlassWindow({
             </div>
         </motion.div>
     );
+
+    if (windowState === 'maximized') {
+        return createPortal(
+            <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+                {windowContent}
+            </div>,
+            document.body
+        );
+    }
+
+    return windowContent;
 }
