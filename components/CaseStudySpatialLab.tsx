@@ -455,7 +455,7 @@ export default function CaseStudySpatialLab() {
   return (
     <div
       ref={scrollContainerRef}
-      className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white"
+      className="h-screen overflow-y-auto overflow-x-hidden scroll-smooth bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white"
     >
 
       <Cursor />
