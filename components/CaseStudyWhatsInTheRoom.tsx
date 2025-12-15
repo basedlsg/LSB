@@ -9,37 +9,44 @@ import { CodebaseTree } from './diagrams/CodebaseTree';
 
 // Custom hook for controlled scroll - one section at a time
 const useControlledScroll = (containerRef: React.RefObject<HTMLDivElement>) => {
-  const isScrolling = useRef(false);
-  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const lastScrollTime = useRef(0);
+  const currentSectionIndex = useRef(0);
+  const isAnimating = useRef(false);
 
   const handleWheel = useCallback((e: WheelEvent) => {
-    if (!containerRef.current || isScrolling.current) {
-      e.preventDefault();
+    e.preventDefault();
+
+    if (!containerRef.current) return;
+
+    const now = Date.now();
+    // Require at least 1000ms between scrolls
+    if (now - lastScrollTime.current < 1000 || isAnimating.current) {
       return;
     }
 
-    e.preventDefault();
-    isScrolling.current = true;
+    lastScrollTime.current = now;
+    isAnimating.current = true;
 
     const container = containerRef.current;
     const sections = container.querySelectorAll('.snap-start');
-    const containerRect = container.getBoundingClientRect();
-    const scrollTop = container.scrollTop;
-    const viewportHeight = container.clientHeight;
 
-    // Find current section index
-    let currentIndex = 0;
-    sections.forEach((section, index) => {
-      const sectionTop = (section as HTMLElement).offsetTop;
-      if (scrollTop >= sectionTop - viewportHeight / 2) {
-        currentIndex = index;
-      }
-    });
+    if (sections.length === 0) {
+      isAnimating.current = false;
+      return;
+    }
 
-    // Determine target section
+    // Determine direction and calculate target
     const direction = e.deltaY > 0 ? 1 : -1;
-    const targetIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
-    const targetSection = sections[targetIndex] as HTMLElement;
+    const nextIndex = Math.max(0, Math.min(sections.length - 1, currentSectionIndex.current + direction));
+
+    // If we're already at the target (at bounds), allow animation to complete
+    if (nextIndex === currentSectionIndex.current) {
+      isAnimating.current = false;
+      return;
+    }
+
+    currentSectionIndex.current = nextIndex;
+    const targetSection = sections[nextIndex] as HTMLElement;
 
     if (targetSection) {
       container.scrollTo({
@@ -48,10 +55,9 @@ const useControlledScroll = (containerRef: React.RefObject<HTMLDivElement>) => {
       });
     }
 
-    // Reset scrolling flag after animation
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      isScrolling.current = false;
+    // Reset animating flag after scroll completes
+    setTimeout(() => {
+      isAnimating.current = false;
     }, 800);
   }, [containerRef]);
 
@@ -62,7 +68,6 @@ const useControlledScroll = (containerRef: React.RefObject<HTMLDivElement>) => {
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       container.removeEventListener('wheel', handleWheel);
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
   }, [handleWheel, containerRef]);
 };
