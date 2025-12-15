@@ -105,7 +105,7 @@ export function GlassWindow({
                 displacementScale={windowState === 'maximized' ? 0.5 : 1.5}
                 blurAmount={0.15}
                 aberrationIntensity={0.5}
-                elasticity={0.08}
+                elasticity={0}
                 cornerRadius={12}
             >
                 {/* Edge Vignette - darker around edges for framing */}
@@ -125,7 +125,7 @@ export function GlassWindow({
                     style={{
                         background: useMotionTemplate`
                             radial-gradient(
-                                500px circle at ${mouseX}px ${mouseY}px,
+                                200px circle at ${mouseX}px ${mouseY}px,
                                 rgba(255,100,100,0.12) 0%,
                                 rgba(255,200,100,0.10) 15%,
                                 rgba(100,255,150,0.08) 30%,
@@ -144,7 +144,7 @@ export function GlassWindow({
                     style={{
                         background: useMotionTemplate`
                             radial-gradient(
-                                350px circle at ${mouseX}px ${mouseY}px,
+                                150px circle at ${mouseX}px ${mouseY}px,
                                 rgba(255,150,200,0.15) 0%,
                                 rgba(150,255,255,0.12) 25%,
                                 rgba(255,255,150,0.10) 50%,
