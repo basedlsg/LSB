@@ -87,6 +87,18 @@ export function GlassWindow({
                 }
             }}
         >
+            {/* Always-visible border glow for edge definition */}
+            <div
+                className="absolute -inset-[1px] rounded-xl pointer-events-none z-30"
+                style={{
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
+                    padding: '1px',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude'
+                }}
+            />
+
             <LiquidGlass
                 className="h-full w-full rounded-xl overflow-hidden"
                 padding="0"
@@ -107,33 +119,39 @@ export function GlassWindow({
                     }}
                 />
 
-                {/* Cursor Refraction Spotlight - follows mouse with prismatic effect */}
+                {/* Rainbow Refraction - prismatic effect following cursor */}
                 <motion.div
-                    className="pointer-events-none absolute inset-0 z-5 opacity-60"
+                    className="pointer-events-none absolute inset-0 z-5 opacity-70"
                     style={{
                         background: useMotionTemplate`
                             radial-gradient(
-                                400px circle at ${mouseX}px ${mouseY}px,
-                                rgba(255,255,255,0.08),
-                                transparent 60%
-                            )
-                        `,
-                        mixBlendMode: 'overlay'
-                    }}
-                />
-
-                {/* Chromatic aberration accent near cursor */}
-                <motion.div
-                    className="pointer-events-none absolute inset-0 z-5 opacity-30"
-                    style={{
-                        background: useMotionTemplate`
-                            radial-gradient(
-                                300px circle at ${mouseX}px ${mouseY}px,
-                                rgba(100,200,255,0.15),
-                                transparent 50%
+                                500px circle at ${mouseX}px ${mouseY}px,
+                                rgba(255,100,100,0.12) 0%,
+                                rgba(255,200,100,0.10) 15%,
+                                rgba(100,255,150,0.08) 30%,
+                                rgba(100,200,255,0.10) 45%,
+                                rgba(180,100,255,0.08) 60%,
+                                transparent 75%
                             )
                         `,
                         mixBlendMode: 'screen'
+                    }}
+                />
+
+                {/* Secondary rainbow arc for more prismatic depth */}
+                <motion.div
+                    className="pointer-events-none absolute inset-0 z-5 opacity-50"
+                    style={{
+                        background: useMotionTemplate`
+                            radial-gradient(
+                                350px circle at ${mouseX}px ${mouseY}px,
+                                rgba(255,150,200,0.15) 0%,
+                                rgba(150,255,255,0.12) 25%,
+                                rgba(255,255,150,0.10) 50%,
+                                transparent 70%
+                            )
+                        `,
+                        mixBlendMode: 'overlay'
                     }}
                 />
 
