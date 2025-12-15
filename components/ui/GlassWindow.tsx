@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Maximize2, Minimize2, X, Minus, Plus, RefreshCw } from 'lucide-react';
+import { Maximize2, Minimize2, X, Minus, RefreshCw } from 'lucide-react';
+import LiquidGlass from './LiquidGlass';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -72,169 +74,157 @@ export function GlassWindow({
     }, [windowState]);
 
     const windowContent = (
-        <motion.div
+        <div
             className={cn(
-                "group relative overflow-hidden rounded-xl transition-all duration-500",
-                // Ultra Glass Aesthetic
-                "backdrop-blur-2xl backdrop-saturate-150",
-                "bg-gradient-to-b from-white/[0.08] to-transparent",
-                "border border-white/10",
-                "shadow-2xl shadow-black/50",
-                windowState === 'maximized' ? "fixed inset-4 md:inset-10 z-[9999] m-0 w-auto h-auto bg-black/90 backdrop-blur-3xl shadow-2xl" : "",
+                "group relative rounded-xl",
+                windowState === 'maximized' ? "fixed inset-4 md:inset-10 z-[9999] m-0 w-auto h-auto shadow-2xl" : "",
                 className
             )}
-            style={{
-                // Specular inner rim light
-                boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.1)'
-            }}
             onMouseMove={handleMouseMove}
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: true, margin: "-10%" }} // Fix blinking by requiring 10% visibility
-            transition={{
-                duration: 0.5,
-                ease: [0.32, 0.72, 0, 1],
-                opacity: { duration: 0.4 }
-            }}
             onClick={(e) => {
-                // Stop propagation at the container level to prevent parent Links from firing
                 if (windowState === 'maximized') {
                     e.stopPropagation();
                 }
             }}
         >
-            {/* Noise Texture Overlay */}
-            <div
-                className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                    backgroundSize: '128px 128px'
-                }}
-            />
-
-            {/* Subtle Spotlight */}
-            <motion.div
-                className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-500 group-hover:opacity-100"
-                style={{
-                    background: useMotionTemplate`
-            radial-gradient(
-              800px circle at ${mouseX}px ${mouseY}px,
-              rgba(255,255,255,0.06),
-              transparent 80%
-            )
-          `,
-                }}
-            />
-
-            {/* Window Chrome / Header */}
-            <div
-                className="relative flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] cursor-default select-none"
-                onDoubleClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
-                }}
+            <LiquidGlass
+                className="h-full w-full rounded-xl overflow-hidden"
+                padding="0"
+                displacementScale={windowState === 'maximized' ? 0.5 : 1.5}
+                blurAmount={0.15}
+                aberrationIntensity={0.5}
+                elasticity={0.05}
+                cornerRadius={12}
             >
-                {/* Traffic Lights */}
-                <div className="flex items-center gap-2 group/controls z-10">
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setWindowState('closed');
-                        }}
-                        className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
-                        title="Close"
-                    >
-                        <X className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setWindowState(s => s === 'minimized' ? 'open' : 'minimized');
-                        }}
-                        className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
-                        title="Minimize"
-                    >
-                        <Minus className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
-                    </button>
-                    <button
-                        onClick={(e) => {
+                {/* Background Overlay for Readability */}
+                <div className="absolute inset-0 bg-black/30 pointer-events-none z-0" />
+
+                {/* Subtle Spotlight */}
+                <motion.div
+                    className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-500 group-hover:opacity-100 mix-blend-overlay z-10"
+                    style={{
+                        background: useMotionTemplate`
+                radial-gradient(
+                  800px circle at ${mouseX}px ${mouseY}px,
+                  rgba(255,255,255,0.06),
+                  transparent 80%
+                )
+              `,
+                    }}
+                />
+
+                <div className="relative z-20 h-full flex flex-col">
+                    {/* Window Chrome / Header */}
+                    <div
+                        className="relative flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] cursor-default select-none shrink-0"
+                        onDoubleClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
                         }}
-                        className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
-                        title="Maximize"
                     >
-                        {windowState === 'maximized' ? (
-                            <Minimize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
-                        ) : (
-                            <Maximize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
-                        )}
-                    </button>
-                </div>
+                        {/* Traffic Lights */}
+                        <div className="flex items-center gap-2 group/controls z-10">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState('closed');
+                                }}
+                                className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                title="Close"
+                            >
+                                <X className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState(s => s === 'minimized' ? 'open' : 'minimized');
+                                }}
+                                className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                title="Minimize"
+                            >
+                                <Minus className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
+                                }}
+                                className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                title="Maximize"
+                            >
+                                {windowState === 'maximized' ? (
+                                    <Minimize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                                ) : (
+                                    <Maximize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                                )}
+                            </button>
+                        </div>
 
-                {/* Title */}
-                <div className="absolute left-0 right-0 flex justify-center items-center gap-2 opacity-60 pointer-events-none">
-                    <span className="text-[11px] font-medium tracking-wide text-white/90 drop-shadow-md">{title}</span>
-                </div>
+                        {/* Title */}
+                        <div className="absolute left-0 right-0 flex justify-center items-center gap-2 opacity-60 pointer-events-none">
+                            <span className="text-[11px] font-medium tracking-wide text-white/90 drop-shadow-md">{title}</span>
+                        </div>
 
-                {/* Path */}
-                <div className="text-[10px] font-mono text-white/30 tracking-tight hidden sm:block z-10">
-                    {path}
-                </div>
-            </div>
+                        {/* Path */}
+                        <div className="text-[10px] font-mono text-white/30 tracking-tight hidden sm:block z-10">
+                            {path}
+                        </div>
+                    </div>
 
-            {/* Content Area */}
-            <div className="relative overflow-hidden">
-                <AnimatePresence mode="wait">
-                    {windowState === 'minimized' ? (
-                        <motion.div
-                            key="summary"
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="px-6 py-4 bg-white/[0.01]"
-                        >
-                            <p className="text-sm text-white/50 font-light italic truncate">
-                                {summary}
-                            </p>
-                        </motion.div>
-                    ) : windowState === 'maximized' && expandedContent ? (
-                        <motion.div
-                            key="expanded"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="p-10 md:p-16 h-[calc(100vh-120px)] overflow-y-auto"
-                        >
-                            <div className="max-w-7xl mx-auto">
-                                <div className="mb-12 pb-8 border-b border-white/10">
-                                    <h2 className="text-4xl md:text-5xl font-thin tracking-tight mb-4">{title}</h2>
-                                    <p className="text-xl text-white/60 font-light">{summary}</p>
-                                </div>
-                                {expandedContent}
-                            </div>
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="content"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className={cn(
-                                "p-8 md:p-10 transition-all duration-500",
-                                windowState === 'maximized' ? "h-[calc(100vh-120px)] overflow-y-auto" : ""
+                    {/* Content Area */}
+                    <div className="relative overflow-hidden flex-1">
+                        <AnimatePresence mode="wait">
+                            {windowState === 'minimized' ? (
+                                <motion.div
+                                    key="summary"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="px-6 py-4 bg-white/[0.01]"
+                                >
+                                    <p className="text-sm text-white/50 font-light italic truncate">
+                                        {summary}
+                                    </p>
+                                </motion.div>
+                            ) : windowState === 'maximized' && expandedContent ? (
+                                <motion.div
+                                    key="expanded"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="p-10 md:p-16 h-[calc(100vh-120px)] overflow-y-auto"
+                                >
+                                    <div className="max-w-7xl mx-auto">
+                                        <div className="mb-12 pb-8 border-b border-white/10">
+                                            <h2 className="text-4xl md:text-5xl font-thin tracking-tight mb-4">{title}</h2>
+                                            <p className="text-xl text-white/60 font-light">{summary}</p>
+                                        </div>
+                                        {expandedContent}
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="content"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className={cn(
+                                        "p-8 md:p-10 transition-all duration-500 h-full",
+                                        windowState === 'maximized' ? "overflow-y-auto" : ""
+                                    )}
+                                >
+                                    {children}
+                                </motion.div>
                             )}
-                        >
-                            {children}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-        </motion.div>
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </LiquidGlass>
+        </div>
     );
 
     if (windowState === 'maximized') {

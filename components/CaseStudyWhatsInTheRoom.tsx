@@ -390,46 +390,79 @@ export default function CaseStudyWhatsInTheRoom() {
         </Canvas>
       </div>
 
-      <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference">
-        <a href="#/" className="text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono">
-          &larr; Walking Stick Labs
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference"
+      >
+        <a href="#/" className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono">
+          <span>&larr; Walking Stick Labs</span>
+          <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
         </a>
         <a
           href="https://github.com/basedlsg/WhatsInTheRoom"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono"
+          className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono"
         >
-          View Code &rarr;
+          <span>View Code &rarr;</span>
+          <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
         </a>
-      </nav>
+      </motion.nav>
 
       <section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20 relative z-10 snap-start">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl"
-        >
-          <div className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)] font-mono">
+        <div className="text-center max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)] font-mono"
+          >
             Case Study
-          </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-thin tracking-tighter leading-[0.9] [text-shadow:_0_2px_30px_rgba(0,0,0,0.9),_0_4px_60px_rgba(0,0,0,0.8)]">
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30, filter: 'blur(15px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl md:text-7xl lg:text-8xl font-thin tracking-tighter leading-[0.9] [text-shadow:_0_2px_30px_rgba(0,0,0,0.9),_0_4px_60px_rgba(0,0,0,0.8)]"
+          >
             What's In The Room
-          </h1>
-          <p className="text-lg md:text-xl font-light tracking-wide opacity-80 mt-8 max-w-2xl mx-auto [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.0, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-lg md:text-xl font-light tracking-wide opacity-80 mt-8 max-w-2xl mx-auto [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]"
+          >
             Testing whether AI can understand architecture — by hiding one room and asking it to guess
-          </p>
-          <div className="flex flex-wrap justify-center gap-3 mt-10">
-            {['Python', 'Vision AI', 'Spatial Reasoning', 'Synthetic Data'].map((tag) => (
-              <span key={tag} className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30 font-mono">
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-wrap justify-center gap-3 mt-10"
+          >
+            {['Python', 'Vision AI', 'Spatial Reasoning', 'Synthetic Data'].map((tag, i) => (
+              <motion.span
+                key={tag}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
+                className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30 font-mono"
+              >
                 {tag}
-              </span>
+              </motion.span>
             ))}
-          </div>
-        </motion.div>
+          </motion.div>
+        </div>
 
-        <div className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5, delay: 1.5 }}
+          className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse"
+        />
       </section>
 
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
