@@ -93,30 +93,54 @@ export function GlassWindow({
                 displacementScale={windowState === 'maximized' ? 0.5 : 1.5}
                 blurAmount={0.15}
                 aberrationIntensity={0.5}
-                elasticity={0.05}
+                elasticity={0.08}
                 cornerRadius={12}
             >
-                {/* Background Overlay for Readability */}
-                <div className="absolute inset-0 bg-black/30 pointer-events-none z-0" />
+                {/* Edge Vignette - darker around edges for framing */}
+                <div
+                    className="absolute inset-0 pointer-events-none z-0"
+                    style={{
+                        background: `
+                            radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%),
+                            linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)
+                        `
+                    }}
+                />
 
-                {/* Subtle Spotlight */}
+                {/* Cursor Refraction Spotlight - follows mouse with prismatic effect */}
                 <motion.div
-                    className="pointer-events-none absolute -inset-px rounded-xl opacity-0 transition duration-500 group-hover:opacity-100 mix-blend-overlay z-10"
+                    className="pointer-events-none absolute inset-0 z-5 opacity-60"
                     style={{
                         background: useMotionTemplate`
-                radial-gradient(
-                  800px circle at ${mouseX}px ${mouseY}px,
-                  rgba(255,255,255,0.06),
-                  transparent 80%
-                )
-              `,
+                            radial-gradient(
+                                400px circle at ${mouseX}px ${mouseY}px,
+                                rgba(255,255,255,0.08),
+                                transparent 60%
+                            )
+                        `,
+                        mixBlendMode: 'overlay'
+                    }}
+                />
+
+                {/* Chromatic aberration accent near cursor */}
+                <motion.div
+                    className="pointer-events-none absolute inset-0 z-5 opacity-30"
+                    style={{
+                        background: useMotionTemplate`
+                            radial-gradient(
+                                300px circle at ${mouseX}px ${mouseY}px,
+                                rgba(100,200,255,0.15),
+                                transparent 50%
+                            )
+                        `,
+                        mixBlendMode: 'screen'
                     }}
                 />
 
                 <div className="relative z-20 h-full flex flex-col">
-                    {/* Window Chrome / Header */}
+                    {/* Window Chrome / Header - darker for framing */}
                     <div
-                        className="relative flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] cursor-default select-none shrink-0"
+                        className="relative flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40 backdrop-blur-sm cursor-default select-none shrink-0"
                         onDoubleClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
