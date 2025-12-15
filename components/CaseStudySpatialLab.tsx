@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useEffect, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { motion } from 'framer-motion';
@@ -6,6 +6,65 @@ import Cursor from './Cursor';
 import { GlassWindow } from './ui/GlassWindow';
 import { SpatialLabArchitecture } from './diagrams/SpatialLabArchitecture';
 import { CodebaseTree } from './diagrams/CodebaseTree';
+
+// Custom hook for controlled scroll - one section at a time
+const useControlledScroll = (containerRef: React.RefObject<HTMLDivElement>) => {
+  const isScrolling = useRef(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (!containerRef.current || isScrolling.current) {
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    isScrolling.current = true;
+
+    const container = containerRef.current;
+    const sections = container.querySelectorAll('.snap-start');
+    const scrollTop = container.scrollTop;
+    const viewportHeight = container.clientHeight;
+
+    // Find current section index
+    let currentIndex = 0;
+    sections.forEach((section, index) => {
+      const sectionTop = (section as HTMLElement).offsetTop;
+      if (scrollTop >= sectionTop - viewportHeight / 2) {
+        currentIndex = index;
+      }
+    });
+
+    // Determine target section
+    const direction = e.deltaY > 0 ? 1 : -1;
+    const targetIndex = Math.max(0, Math.min(sections.length - 1, currentIndex + direction));
+    const targetSection = sections[targetIndex] as HTMLElement;
+
+    if (targetSection) {
+      container.scrollTo({
+        top: targetSection.offsetTop,
+        behavior: 'smooth'
+      });
+    }
+
+    // Reset scrolling flag after animation
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      isScrolling.current = false;
+    }, 800);
+  }, [containerRef]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+  }, [handleWheel, containerRef]);
+};
 
 // --- GRADIENT BACKGROUND SHADERS ---
 const bgVertexShader = `
@@ -390,8 +449,14 @@ const ResultsExpanded = () => (
 );
 
 export default function CaseStudySpatialLab() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  useControlledScroll(scrollContainerRef);
+
   return (
-    <div className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
+    <div
+      ref={scrollContainerRef}
+      className="h-screen overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white"
+    >
 
       <Cursor />
 
