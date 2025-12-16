@@ -1138,7 +1138,7 @@ const OurPhilosophy = () => {
       {/* Navigation */}
       <a
         href="#/"
-        className="absolute top-8 left-8 z-50 text-white/60 hover:text-white transition-all duration-300 text-sm tracking-[0.3em] uppercase hover:tracking-[0.4em]"
+        className="absolute top-8 left-8 z-50 font-mono text-[10px] tracking-[0.4em] text-bone/50 hover:text-bone transition-all duration-500 uppercase"
       >
         &larr; Back
       </a>
@@ -1146,15 +1146,15 @@ const OurPhilosophy = () => {
       {/* Chapter indicator */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50">
         <div className="text-center">
-          <p className="text-[10px] tracking-[0.5em] uppercase text-white/30 mb-1">Our Philosophy</p>
-          <p className="text-xs tracking-[0.3em] uppercase text-white/50">
+          <p className="font-mono text-[9px] tracking-[0.5em] uppercase text-bone/25 mb-1">Our Philosophy</p>
+          <p className="font-display text-sm tracking-[0.2em] text-bone/40 italic">
             Chapter {chapter.label}
           </p>
         </div>
       </div>
 
       {/* Progress dots */}
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-4">
+      <div className="absolute right-8 md:right-12 top-1/2 -translate-y-1/2 z-50 flex flex-col gap-5">
         {chapters.map((_, idx) => (
           <button
             key={idx}
@@ -1168,42 +1168,48 @@ const OurPhilosophy = () => {
                 setTimeout(() => setIsScrolling(false), 800);
               }
             }}
-            className={`w-3 h-3 rounded-full transition-all duration-500 ${
+            className="relative group"
+          >
+            <div className={`w-2 h-2 rounded-full transition-all duration-700 ${
               currentChapter === idx
-                ? 'bg-amber-400 scale-125 shadow-lg shadow-amber-400/50'
-                : 'bg-white/20 hover:bg-white/40 hover:scale-110'
-            }`}
-          />
+                ? 'bg-amber-warm scale-150'
+                : idx < currentChapter
+                  ? 'bg-bone/30'
+                  : 'bg-bone/10 group-hover:bg-bone/30'
+            }`} />
+            {currentChapter === idx && (
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-warm/30 animate-ping" />
+            )}
+          </button>
         ))}
       </div>
 
       {/* Text content - positioned left for ALL chapters so particle formations are visible */}
-      <div className="absolute inset-0 flex items-center z-20 pointer-events-none justify-start pl-8 md:pl-12">
-        <div className="px-4 md:px-8 max-w-md md:max-w-lg">
+      <div className="absolute inset-0 flex items-center z-20 pointer-events-none justify-start pl-8 md:pl-16 lg:pl-24">
+        <div className="max-w-md md:max-w-lg">
           {/* Glass container */}
-          <div className={`relative p-10 md:p-14 rounded-3xl backdrop-blur-xl border border-white/10 shadow-2xl ${
-            currentChapter === 2 ? 'bg-black/60' : 'bg-black/40'
+          <div className={`relative p-10 md:p-14 rounded-3xl backdrop-blur-2xl border border-bone/[0.08] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.9)] ${
+            currentChapter === 2 ? 'bg-gradient-to-br from-black/70 to-black/50' : 'bg-gradient-to-br from-black/50 to-black/30'
           }`}>
-            {/* Decorative corner accents */}
-            <div className="absolute top-0 left-0 w-16 h-16 border-l-2 border-t-2 border-amber-500/30 rounded-tl-3xl" />
-            <div className="absolute bottom-0 right-0 w-16 h-16 border-r-2 border-b-2 border-amber-500/30 rounded-br-3xl" />
+            {/* Diagonal accent line */}
+            <div className="absolute top-0 left-0 w-24 h-px bg-gradient-to-r from-amber-warm/50 to-transparent transform origin-left -rotate-12 translate-y-6 translate-x-4" />
 
             {/* Chapter title */}
             <RevealText delay={200} isVisible={true}>
-              <h2 className="text-3xl md:text-5xl font-thin tracking-wide text-white mb-2 drop-shadow-lg">
+              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-bone mb-3 italic">
                 {chapter.title}
               </h2>
             </RevealText>
 
             <RevealText delay={400} isVisible={true}>
-              <div className="w-20 h-px bg-gradient-to-r from-amber-500 to-transparent mb-8" />
+              <div className="w-16 h-px bg-gradient-to-r from-amber-warm/60 to-transparent mb-10" />
             </RevealText>
 
             {/* Paragraphs */}
             <div className="space-y-6">
               {chapter.paragraphs.map((paragraph, idx) => (
                 <RevealText key={idx} delay={700 + idx * 400} isVisible={true}>
-                  <p className="text-base md:text-lg font-light leading-relaxed text-white/90 tracking-wide">
+                  <p className="font-body text-base md:text-lg font-extralight leading-relaxed text-bone/80 tracking-wide">
                     {paragraph}
                   </p>
                 </RevealText>
@@ -1215,7 +1221,7 @@ const OurPhilosophy = () => {
               <RevealText delay={2000} isVisible={true}>
                 <a
                   href="#/"
-                  className="inline-block mt-10 px-8 py-4 rounded-full border border-amber-500/50 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all duration-300 text-sm tracking-[0.2em] uppercase pointer-events-auto"
+                  className="inline-block mt-12 px-10 py-4 rounded-full border border-amber-warm/40 text-amber-warm hover:bg-amber-warm/10 hover:border-amber-warm/70 transition-all duration-500 font-mono text-[11px] tracking-[0.3em] uppercase pointer-events-auto"
                 >
                   Return Home
                 </a>
@@ -1227,11 +1233,11 @@ const OurPhilosophy = () => {
 
       {/* Scroll hint */}
       {currentChapter < 4 && (
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 animate-pulse">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-white/40">
-            Scroll to continue
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-pulse">
+          <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-bone/25">
+            Scroll
           </span>
-          <div className="w-px h-8 bg-gradient-to-b from-white/40 to-transparent" />
+          <div className="w-px h-12 bg-gradient-to-b from-bone/30 to-transparent" />
         </div>
       )}
     </div>

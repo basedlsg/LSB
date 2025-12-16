@@ -5,24 +5,129 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Walking Stick Labs</title>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Distinctive Typography: Editorial + Refined -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Crimson+Pro:ital,wght@0,200;0,300;0,400;0,500;1,200;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+
     <style>
+      :root {
+        /* Color System - Warm Void */
+        --void-black: #050302;
+        --ember-dark: #0a0604;
+        --ember-glow: #1a0d08;
+        --amber-deep: #8B4513;
+        --amber-warm: #D4A574;
+        --gold-soft: #E8D5B7;
+        --bone-white: #FDFBF7;
+
+        /* Typography */
+        --font-display: 'Cormorant Garamond', serif;
+        --font-body: 'Crimson Pro', serif;
+        --font-mono: 'JetBrains Mono', monospace;
+      }
+
       body {
         margin: 0;
         padding: 0;
-        background-color: #6D3413; /* Deep Burnt Umber */
+        background-color: var(--void-black);
         overflow-x: hidden;
-        cursor: none; /* Hide default cursor */
-        font-family: 'Inter', sans-serif;
+        cursor: none;
+        font-family: var(--font-body);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      /* Custom scrollbar hiding */
+
+      /* Hide scrollbar but allow scrolling */
       ::-webkit-scrollbar {
         width: 0px;
         background: transparent;
       }
+
+      /* Selection styling */
+      ::selection {
+        background: rgba(212, 165, 116, 0.4);
+        color: var(--bone-white);
+      }
+
+      /* Smooth scroll */
+      html {
+        scroll-behavior: smooth;
+      }
+
+      /* Custom animation keyframes */
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+
+      @keyframes pulse-glow {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.8; }
+      }
+
+      @keyframes reveal-up {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+          filter: blur(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
+        }
+      }
+
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .animate-pulse-glow {
+        animation: pulse-glow 3s ease-in-out infinite;
+      }
+
+      .animate-reveal {
+        animation: reveal-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
     </style>
+
+    <script>
+      // Tailwind config with custom theme
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'display': ['Cormorant Garamond', 'serif'],
+              'body': ['Crimson Pro', 'serif'],
+              'mono': ['JetBrains Mono', 'monospace'],
+            },
+            colors: {
+              'void': '#050302',
+              'ember': {
+                'dark': '#0a0604',
+                'glow': '#1a0d08',
+              },
+              'amber': {
+                'deep': '#8B4513',
+                'warm': '#D4A574',
+              },
+              'gold': {
+                'soft': '#E8D5B7',
+              },
+              'bone': '#FDFBF7',
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+              'reveal': 'reveal-up 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            }
+          }
+        }
+      }
+    </script>
+
   <script type="importmap">
 {
   "imports": {

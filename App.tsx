@@ -8,87 +8,79 @@ import CaseStudySpatialLab from './components/CaseStudySpatialLab';
 import CaseStudyWhatsInTheRoom from './components/CaseStudyWhatsInTheRoom';
 import Projects from './components/Projects';
 
-// --- COMPONENTS ---
-
-const FadeText = ({ children, delay = 0, className = "" }: { children?: React.ReactNode, delay?: number, className?: string }) => {
+// --- ANIMATED TEXT COMPONENT ---
+const RevealText = ({
+  children,
+  delay = 0,
+  className = "",
+  as: Component = "span"
+}: {
+  children?: React.ReactNode;
+  delay?: number;
+  className?: string;
+  as?: keyof JSX.IntrinsicElements;
+}) => {
   const [visible, setVisible] = useState(false);
+
   useEffect(() => {
     const timer = setTimeout(() => setVisible(true), delay);
     return () => clearTimeout(timer);
   }, [delay]);
+
   return (
-    <span className={`inline-block transition-all duration-1200 ease-out ${visible ? 'opacity-100 translate-y-0 blur-0' : 'opacity-0 translate-y-6 blur-sm'} ${className}`}>
+    <Component
+      className={`block transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        visible
+          ? 'opacity-100 translate-y-0 blur-0'
+          : 'opacity-0 translate-y-8 blur-[2px]'
+      } ${className}`}
+    >
       {children}
-    </span>
+    </Component>
   );
 };
 
-const SidebarNav = ({ progress }: { progress: number }) => {
-  const chapters = [
-    { id: 0, label: "ORIGIN" },
-    { id: 1, label: "TOOL" },
-    { id: 2, label: "WISDOM" },
-    { id: 3, label: "SYSTEM" },
-    { id: 4, label: "FUTURE" },
-  ];
+// --- MINIMAL CHAPTER INDICATOR ---
+const ChapterIndicator = ({ progress }: { progress: number }) => {
+  const chapters = ['I', 'II', 'III', 'IV', 'V'];
+  const currentIndex = Math.min(Math.floor(progress * 5), 4);
 
   return (
-    <div className="fixed right-6 md:right-10 top-1/2 -translate-y-1/2 z-50 flex flex-col items-end gap-5">
-      {/* Vertical line */}
-      <div className="absolute right-[5px] top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+    <div className="fixed right-8 md:right-12 top-1/2 -translate-y-1/2 z-50">
+      <div className="flex flex-col items-center gap-6">
+        {chapters.map((num, idx) => {
+          const isActive = idx === currentIndex;
+          const isPast = idx < currentIndex;
 
-      {chapters.map((chapter, idx) => {
-        const target = idx / 4;
-        const isActive = Math.abs(progress - target) < 0.125;
-        const isPast = progress > target + 0.1;
-
-        return (
-          <div key={chapter.id} className="flex items-center gap-3 transition-all duration-700">
-            <span className={`text-[9px] tracking-[0.25em] font-light transition-all duration-700 ${
-              isActive ? 'opacity-90 translate-x-0' : 'opacity-0 translate-x-4'
-            }`}>
-              {chapter.label}
-            </span>
-            <div className={`relative w-2.5 h-2.5 rounded-full transition-all duration-500 ${
-              isActive
-                ? 'bg-amber-400/90 scale-110'
-                : isPast
-                  ? 'bg-white/30 scale-75'
-                  : 'bg-white/10 scale-75'
-            }`}>
+          return (
+            <div key={num} className="relative group">
+              {/* Dot */}
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-700 ${
+                  isActive
+                    ? 'bg-amber-warm scale-150'
+                    : isPast
+                      ? 'bg-bone/40'
+                      : 'bg-bone/15'
+                }`}
+              />
+              {/* Glow ring for active */}
               {isActive && (
-                <div className="absolute inset-0 rounded-full bg-amber-400/40 animate-ping" />
+                <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-warm/30 animate-ping" />
               )}
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };
 
-// Minimal navigation
-const TopNav = () => (
-  <nav className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center">
-    <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 font-light">
-      Walking Stick Labs
-    </div>
-    <div className="flex gap-6">
-      <a href="#/work" className="text-[10px] tracking-[0.3em] uppercase opacity-40 hover:opacity-90 transition-opacity font-light">
-        Work
-      </a>
-      <a href="#/philosophy" className="text-[10px] tracking-[0.3em] uppercase opacity-40 hover:opacity-90 transition-opacity font-light">
-        Story
-      </a>
-    </div>
-  </nav>
-);
-
+// --- MAIN HOMEPAGE ---
 function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
   const mousePos = useRef(new THREE.Vector2(0, 0));
-  const scrollRef = useRef({ progress: 0 });
 
   useEffect(() => {
     const calculateProgress = () => {
@@ -100,9 +92,7 @@ function HomePage() {
     };
 
     const handleScroll = () => {
-      const progress = calculateProgress();
-      scrollRef.current.progress = progress;
-      setScrollProgress(progress);
+      setScrollProgress(calculateProgress());
     };
 
     const container = scrollContainerRef.current;
@@ -110,185 +100,226 @@ function HomePage() {
       container.addEventListener('scroll', handleScroll, { passive: true });
       handleScroll();
     }
-    return () => {
-      container?.removeEventListener('scroll', handleScroll);
-    };
+    return () => container?.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      mousePos.current.set(x, y);
+      mousePos.current.set(
+        (e.clientX / window.innerWidth) * 2 - 1,
+        -(e.clientY / window.innerHeight) * 2 + 1
+      );
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#080406] text-[#FDFBF7] font-sans selection:bg-amber-600/50 selection:text-white">
-
+    <div className="relative w-full h-screen overflow-hidden bg-void text-bone font-body">
       <Cursor />
-      <TopNav />
-      <SidebarNav progress={scrollProgress} />
+      <ChapterIndicator progress={scrollProgress} />
 
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <Canvas camera={{ position: [0, 0, 5], fov: 45 }} gl={{ antialias: false, powerPreference: "high-performance" }}>
-          <LivingRockExperience scrollProgress={scrollProgress} mouse={mousePos.current} scrollContainerRef={scrollContainerRef} />
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 45 }}
+          gl={{ antialias: false, powerPreference: "high-performance" }}
+        >
+          <LivingRockExperience
+            scrollProgress={scrollProgress}
+            mouse={mousePos.current}
+            scrollContainerRef={scrollContainerRef}
+          />
         </Canvas>
       </div>
 
-      {/* Content Scroller */}
+      {/* Content */}
       <div
         ref={scrollContainerRef}
-        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
+        className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory"
       >
 
-        {/* 01 ORIGIN - The Void */}
-        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-6 md:px-12">
-          <div className="max-w-2xl text-center space-y-10">
-            <div className="space-y-3">
-              <FadeText delay={300}>
-                <span className="text-[10px] tracking-[0.5em] uppercase opacity-40 font-light">Chapter I</span>
-              </FadeText>
-              <FadeText delay={500}>
-                <span className="block text-[10px] tracking-[0.4em] uppercase opacity-60 font-medium">The Dreamtime</span>
-              </FadeText>
-            </div>
+        {/* ═══════════════════════════════════════════════════════════════
+            CHAPTER I — THE VOID
+        ═══════════════════════════════════════════════════════════════ */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-8 md:px-16">
+          <div className="max-w-3xl text-center">
+            {/* Chapter marker */}
+            <RevealText delay={200} className="mb-8">
+              <span className="font-mono text-[10px] tracking-[0.5em] text-amber-warm/60 uppercase">
+                Chapter I
+              </span>
+            </RevealText>
 
-            <div className="space-y-2">
-              <FadeText delay={800}>
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-extralight tracking-tight leading-[1.1]">
-                  In the beginning,
-                </h1>
-              </FadeText>
-              <FadeText delay={1200}>
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-extralight tracking-tight leading-[1.1] opacity-60">
-                  there was void.
-                </h1>
-              </FadeText>
-            </div>
+            {/* Title */}
+            <RevealText delay={400} as="h1" className="font-display text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-[0.95] mb-4">
+              In the beginning,
+            </RevealText>
 
-            <FadeText delay={1800}>
-              <p className="text-sm md:text-base font-light tracking-[0.15em] opacity-50 pt-4">
+            <RevealText delay={700} as="h1" className="font-display text-5xl md:text-7xl lg:text-8xl font-light tracking-tight leading-[0.95] text-bone/50 italic">
+              there was void.
+            </RevealText>
+
+            {/* Subtext */}
+            <RevealText delay={1200} className="mt-16">
+              <p className="font-body text-lg md:text-xl font-extralight tracking-wide text-bone/40">
                 From the void came humans.
               </p>
-            </FadeText>
+            </RevealText>
           </div>
 
-          {/* Scroll indicator */}
-          <div className="absolute bottom-12 flex flex-col items-center gap-3">
-            <span className="text-[9px] tracking-[0.3em] uppercase opacity-30">Scroll</span>
-            <div className="w-px h-12 bg-gradient-to-b from-white/40 to-transparent animate-pulse" />
-          </div>
-        </section>
-
-        {/* 02 TOOL - The Stick */}
-        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-6 md:px-12">
-          <div className="max-w-3xl text-center space-y-12">
-            <p className="text-lg md:text-xl font-light tracking-wide opacity-60">
-              And from humans came the first technology:
-            </p>
-
-            <h2 className="text-6xl md:text-8xl lg:text-9xl font-thin tracking-[-0.02em] bg-gradient-to-b from-white via-white/90 to-white/40 bg-clip-text text-transparent">
-              THE STICK
-            </h2>
-
-            <div className="w-16 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mx-auto" />
-
-            <p className="text-base md:text-lg font-light tracking-wide opacity-70 max-w-lg mx-auto leading-relaxed">
-              A tool that let us leave the ground, cross new terrain,
-              and discover what we couldn't reach alone.
-            </p>
+          {/* Scroll cue */}
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
+            <span className="font-mono text-[9px] tracking-[0.4em] text-bone/20 uppercase">
+              Scroll
+            </span>
+            <div className="w-px h-16 bg-gradient-to-b from-bone/30 to-transparent animate-pulse" />
           </div>
         </section>
 
-        {/* 03 WISDOM - Shared Learning */}
-        <section className="h-screen w-full flex items-center snap-start relative px-6 md:px-12 lg:px-24">
-          <div className="max-w-lg space-y-8 backdrop-blur-xl bg-black/30 border border-white/[0.08] p-8 md:p-12 rounded-2xl shadow-2xl">
-            <div className="w-10 h-px bg-gradient-to-r from-amber-500/60 to-transparent" />
+        {/* ═══════════════════════════════════════════════════════════════
+            CHAPTER II — THE STICK
+        ═══════════════════════════════════════════════════════════════ */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-8 md:px-16">
+          <div className="max-w-4xl text-center space-y-12">
+            <RevealText delay={0}>
+              <p className="font-body text-xl md:text-2xl font-extralight tracking-wide text-bone/50">
+                And from humans came the first technology:
+              </p>
+            </RevealText>
 
-            <p className="text-[10px] tracking-[0.4em] uppercase opacity-50 font-medium">
-              Shared Learning
-            </p>
+            {/* THE STICK - dramatic typography */}
+            <RevealText delay={200} as="h2">
+              <span className="font-display text-7xl md:text-9xl lg:text-[12rem] font-light tracking-[-0.02em] leading-none">
+                <span className="bg-gradient-to-b from-bone via-bone/80 to-bone/30 bg-clip-text text-transparent">
+                  THE STICK
+                </span>
+              </span>
+            </RevealText>
 
-            <blockquote className="text-2xl md:text-3xl lg:text-4xl font-extralight leading-snug tracking-tight">
-              "A tool learns from the world through us."
-            </blockquote>
+            {/* Decorative line */}
+            <div className="flex justify-center">
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-amber-warm/40 to-transparent" />
+            </div>
 
-            <p className="text-sm md:text-base font-light opacity-60 leading-relaxed">
-              As we reached higher, we learned something simple and powerful.
-              Through shared learning, it carries us beyond our old limits.
-            </p>
+            <RevealText delay={500}>
+              <p className="font-body text-lg md:text-xl font-extralight leading-relaxed text-bone/60 max-w-xl mx-auto">
+                A tool that let us leave the ground, cross new terrain,
+                and discover what we couldn't reach alone.
+              </p>
+            </RevealText>
           </div>
         </section>
 
-        {/* 04 SYSTEM - Walking Stick Labs */}
-        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-6 md:px-12">
-          {/* Orbital rings */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-            <div className="w-[60vw] h-[60vw] max-w-[600px] max-h-[600px] border border-white/[0.03] rounded-full" />
-            <div className="absolute w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] border border-white/[0.02] rounded-full" />
-            <div className="absolute w-[100vw] h-[100vw] max-w-[1000px] max-h-[1000px] border border-white/[0.01] rounded-full" />
+        {/* ═══════════════════════════════════════════════════════════════
+            CHAPTER III — SHARED LEARNING
+        ═══════════════════════════════════════════════════════════════ */}
+        <section className="h-screen w-full flex items-center snap-start relative px-8 md:px-16 lg:px-24">
+          {/* Asymmetric layout - content on left */}
+          <div className="max-w-xl">
+            {/* Glass card with diagonal accent */}
+            <div className="relative p-10 md:p-14 rounded-3xl backdrop-blur-2xl bg-gradient-to-br from-white/[0.06] to-white/[0.01] border border-white/[0.08] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.8)]">
+              {/* Diagonal accent line */}
+              <div className="absolute top-0 left-0 w-32 h-px bg-gradient-to-r from-amber-warm/60 to-transparent transform origin-left -rotate-12 translate-y-8 translate-x-4" />
+
+              <RevealText delay={0} className="mb-2">
+                <span className="font-mono text-[10px] tracking-[0.4em] text-amber-warm/50 uppercase">
+                  Chapter III
+                </span>
+              </RevealText>
+
+              <RevealText delay={200} as="blockquote" className="font-display text-3xl md:text-4xl lg:text-5xl font-light leading-[1.15] tracking-tight mb-8 italic">
+                "A tool learns from the world through us."
+              </RevealText>
+
+              <RevealText delay={500}>
+                <p className="font-body text-base md:text-lg font-extralight leading-relaxed text-bone/50">
+                  As we reached higher, we learned something simple and powerful.
+                  Through shared learning, it carries us beyond our old limits.
+                </p>
+              </RevealText>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════════
+            CHAPTER IV — WALKING STICK LABS
+        ═══════════════════════════════════════════════════════════════ */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-8 md:px-16">
+          {/* Orbital rings - atmospheric depth */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[50vw] h-[50vw] max-w-[500px] max-h-[500px] border border-bone/[0.02] rounded-full" />
+            <div className="absolute w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] border border-bone/[0.015] rounded-full" />
+            <div className="absolute w-[90vw] h-[90vw] max-w-[900px] max-h-[900px] border border-bone/[0.01] rounded-full" />
           </div>
 
-          <div className="max-w-3xl text-center z-10 space-y-8">
-            <h3 className="text-4xl md:text-5xl lg:text-6xl font-extralight tracking-tight">
+          <div className="max-w-3xl text-center z-10 space-y-10">
+            <RevealText delay={0} as="h3" className="font-display text-5xl md:text-6xl lg:text-7xl font-light tracking-tight">
               Walking Stick Labs
-            </h3>
+            </RevealText>
 
-            <p className="text-[10px] tracking-[0.5em] uppercase opacity-40">
-              System Architecture & Intelligence
-            </p>
+            <RevealText delay={200}>
+              <span className="font-mono text-[10px] tracking-[0.5em] text-bone/30 uppercase">
+                System Architecture & Intelligence
+              </span>
+            </RevealText>
 
-            <div className="w-12 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto" />
+            <RevealText delay={400}>
+              <div className="w-16 h-px bg-gradient-to-r from-transparent via-bone/20 to-transparent mx-auto" />
+            </RevealText>
 
-            <p className="max-w-xl mx-auto text-base md:text-lg font-light opacity-60 leading-relaxed pt-4">
-              Today, we're building the next version of that tool.
-              One that pushes us beyond our current limits and into new realities.
-            </p>
+            <RevealText delay={600}>
+              <p className="font-body text-lg md:text-xl font-extralight leading-relaxed text-bone/50 max-w-xl mx-auto">
+                Today, we're building the next version of that tool.
+                One that pushes us beyond our current limits and into new realities.
+              </p>
+            </RevealText>
           </div>
         </section>
 
-        {/* 05 FUTURE - Come Walk With Us */}
-        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-6 md:px-12">
-          <div className="text-center space-y-12">
-            <h2 className="text-4xl md:text-5xl lg:text-7xl font-extralight tracking-tight">
+        {/* ═══════════════════════════════════════════════════════════════
+            CHAPTER V — COME WALK WITH US
+        ═══════════════════════════════════════════════════════════════ */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-8 md:px-16">
+          <div className="text-center space-y-16">
+            <RevealText delay={0} as="h2" className="font-display text-5xl md:text-6xl lg:text-8xl font-light tracking-tight italic">
               Come walk with us.
-            </h2>
+            </RevealText>
 
-            {/* Action buttons */}
-            <div className="flex flex-col md:flex-row items-center gap-4">
+            {/* Navigation buttons */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-5">
+              {/* Primary CTA */}
               <a
                 href="#/work"
-                className="group relative px-8 py-3.5 rounded-full overflow-hidden transition-all duration-500 hover:scale-105"
+                className="group relative px-10 py-4 rounded-full overflow-hidden transition-all duration-700 hover:scale-105"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/20 to-amber-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-amber-500/50 transition-colors duration-500" />
-                <span className="relative text-xs tracking-[0.25em] uppercase font-medium">
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-warm/20 to-amber-deep/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="absolute inset-0 border border-amber-warm/30 rounded-full group-hover:border-amber-warm/60 transition-colors duration-700" />
+                <span className="relative font-mono text-[11px] tracking-[0.3em] uppercase">
                   Our Work
                 </span>
               </a>
 
+              {/* Secondary */}
               <a
                 href="#/philosophy"
-                className="group relative px-8 py-3.5 rounded-full overflow-hidden transition-all duration-500 hover:scale-105"
+                className="group relative px-10 py-4 rounded-full overflow-hidden transition-all duration-700 hover:scale-105"
               >
-                <div className="absolute inset-0 border border-white/10 rounded-full group-hover:border-white/30 transition-colors duration-500" />
-                <span className="relative text-xs tracking-[0.25em] uppercase font-light opacity-70 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 border border-bone/10 rounded-full group-hover:border-bone/30 transition-colors duration-700" />
+                <span className="relative font-mono text-[11px] tracking-[0.3em] uppercase text-bone/60 group-hover:text-bone transition-colors">
                   Our Story
                 </span>
               </a>
 
+              {/* Tertiary */}
               <a
                 href="https://shiny-chipmunk-4c4.notion.site/Walking-Stick-Labs-76bf48c44fd34b43862f78a9d2bc3f08?pvs=74"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative px-8 py-3.5 rounded-full overflow-hidden transition-all duration-500 hover:scale-105"
+                className="group relative px-10 py-4 rounded-full overflow-hidden transition-all duration-700 hover:scale-105"
               >
-                <div className="absolute inset-0 border border-white/10 rounded-full group-hover:border-white/30 transition-colors duration-500" />
-                <span className="relative text-xs tracking-[0.25em] uppercase font-light opacity-70 group-hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 border border-bone/10 rounded-full group-hover:border-bone/30 transition-colors duration-700" />
+                <span className="relative font-mono text-[11px] tracking-[0.3em] uppercase text-bone/60 group-hover:text-bone transition-colors">
                   Learn More
                 </span>
               </a>
@@ -296,15 +327,13 @@ function HomePage() {
           </div>
 
           {/* Footer */}
-          <footer className="absolute bottom-8 left-0 right-0 text-center">
-            <div className="space-y-2">
-              <p className="text-[9px] tracking-[0.4em] uppercase opacity-30">
-                San Francisco — Beijing
-              </p>
-              <p className="text-[9px] tracking-[0.3em] uppercase opacity-20">
-                &copy; Walking Stick Labs
-              </p>
-            </div>
+          <footer className="absolute bottom-10 left-0 right-0 text-center">
+            <p className="font-mono text-[9px] tracking-[0.5em] text-bone/20 uppercase">
+              San Francisco — Beijing
+            </p>
+            <p className="font-mono text-[8px] tracking-[0.4em] text-bone/10 uppercase mt-2">
+              &copy; Walking Stick Labs
+            </p>
           </footer>
         </section>
 
@@ -313,7 +342,7 @@ function HomePage() {
   );
 }
 
-// Simple hash-based router
+// --- ROUTER ---
 export default function App() {
   const [route, setRoute] = useState(() => {
     const hash = window.location.hash || '#/';
@@ -323,30 +352,17 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash || '#/';
-      const cleanHash = hash.split('?')[0].split('&')[0];
-      setRoute(cleanHash);
+      setRoute(hash.split('?')[0].split('&')[0]);
     };
-
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  if (route === '#/philosophy') {
-    return <OurPhilosophy />;
-  }
-
-  if (route === '#/work/spatial-lab') {
-    return <CaseStudySpatialLab />;
-  }
-
-  if (route === '#/work/whats-in-the-room') {
-    return <CaseStudyWhatsInTheRoom />;
-  }
-
-  if (route === '#/work') {
-    return <Projects />;
-  }
+  if (route === '#/philosophy') return <OurPhilosophy />;
+  if (route === '#/work/spatial-lab') return <CaseStudySpatialLab />;
+  if (route === '#/work/whats-in-the-room') return <CaseStudyWhatsInTheRoom />;
+  if (route === '#/work') return <Projects />;
 
   return <HomePage />;
 }
