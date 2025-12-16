@@ -295,10 +295,22 @@ function HomePage() {
           </div>
 
           {/* Center content with title overlaid on sphere */}
-          <div className="text-center z-10">
+          <div className="text-center z-10 flex flex-col items-center gap-12">
             <RevealText delay={0} as="h2" className="font-display text-4xl md:text-5xl lg:text-7xl font-light tracking-tight italic [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
               Come Walk<br />With Us
             </RevealText>
+
+            {/* Bottom button */}
+            <a
+              href="#/work"
+              className="group relative px-10 py-4 rounded-full overflow-hidden transition-all duration-700 hover:scale-105"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-amber-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute inset-0 border border-amber-500/30 rounded-full group-hover:border-amber-500/60 transition-colors duration-700" />
+              <span className="relative font-mono text-[11px] tracking-[0.3em] uppercase text-white">
+                Our Work
+              </span>
+            </a>
           </div>
 
           {/* Right button */}
