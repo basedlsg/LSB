@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import * as THREE from 'three';
-import { AnimatePresence, motion } from 'framer-motion';
 import ParticleExperience from './components/ParticleExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
@@ -24,14 +23,14 @@ const FadeText = ({ children, delay = 0, className = "" }: { children?: React.Re
   );
 };
 
-const SidebarNav = ({ progress, onNavigate }: { progress: number; onNavigate: (index: number) => void }) => {
+const SidebarNav = ({ progress }: { progress: number }) => {
   const chapters = [
-    { id: 0, label: "ORIGIN" },
-    { id: 1, label: "TOOL" },
-    { id: 2, label: "ASCENT" },
-    { id: 3, label: "SYSTEM" },
+    { id: 0, label: "DREAMTIME" },
+    { id: 1, label: "TEACHER" },
+    { id: 2, label: "LEARNING" },
+    { id: 3, label: "NEW TEACHER" },
     { id: 4, label: "LAB" },
-    { id: 5, label: "FUTURE" },
+    { id: 5, label: "PATH" },
   ];
 
   return (
@@ -43,16 +42,12 @@ const SidebarNav = ({ progress, onNavigate }: { progress: number; onNavigate: (i
         const isActive = Math.abs(progress - target) < 0.125;
 
         return (
-          <button
-            key={chapter.id}
-            onClick={() => onNavigate(idx)}
-            className="flex items-center gap-4 transition-all duration-500 cursor-pointer group"
-          >
-            <span className={`text-[10px] tracking-[0.2em] font-medium transition-all duration-500 group-hover:opacity-100 ${isActive ? 'opacity-100' : 'opacity-0 translate-x-4'}`}>
-              {String(chapter.id + 1).padStart(2, '0')} {chapter.label}
+          <div key={chapter.id} className="flex items-center gap-4 transition-all duration-500">
+            <span className={`text-[10px] tracking-[0.2em] font-medium transition-opacity duration-500 ${isActive ? 'opacity-100' : 'opacity-0 translate-x-4'}`}>
+              {chapter.id + 1} . {chapter.label}
             </span>
-            <div className={`w-2.5 h-2.5 rounded-full border border-white transition-all duration-500 group-hover:scale-100 group-hover:opacity-80 ${isActive ? 'bg-white scale-100' : 'bg-transparent scale-75 opacity-40'}`} />
-          </button>
+            <div className={`w-2.5 h-2.5 rounded-full border border-white transition-all duration-500 ${isActive ? 'bg-white scale-100' : 'bg-transparent scale-75 opacity-40'}`} />
+          </div>
         );
       })}
       <div className="w-px h-32 bg-white/20 absolute right-[5px] -bottom-32" />
@@ -60,38 +55,13 @@ const SidebarNav = ({ progress, onNavigate }: { progress: number; onNavigate: (i
   );
 };
 
-// Header component with logo
-const Header = () => (
-  <header className="fixed top-0 left-0 right-0 z-50 px-8 py-6 flex items-center justify-between mix-blend-difference">
-    <a href="#/" className="text-[#FDFBF7] text-xs tracking-[0.3em] font-medium uppercase hover:opacity-70 transition-opacity">
-      Walking Stick Labs
-    </a>
-    <nav className="hidden md:flex items-center gap-8">
-      <a href="#/work" className="text-[#FDFBF7] text-[10px] tracking-[0.2em] uppercase hover:opacity-70 transition-opacity">
-        Research
-      </a>
-      <a href="#/philosophy" className="text-[#FDFBF7] text-[10px] tracking-[0.2em] uppercase hover:opacity-70 transition-opacity">
-        Philosophy
-      </a>
-    </nav>
-  </header>
-);
-
 function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
   const [scrollProgress, setScrollProgress] = useState(0);
   // Use ref for mouse position to avoid re-renders
   const mousePos = useRef(new THREE.Vector2(0, 0));
   // Store scroll container ref for direct access in animation loop
   const scrollRef = useRef({ progress: 0 });
-
-  const navigateToSection = (index: number) => {
-    const section = sectionRefs.current[index];
-    if (section && scrollContainerRef.current) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   useEffect(() => {
     const calculateProgress = () => {
@@ -133,11 +103,7 @@ function HomePage() {
     <div className="relative w-full h-screen overflow-hidden bg-[#1a0c05] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white">
 
       <Cursor />
-      <Header />
-      <SidebarNav progress={scrollProgress} onNavigate={navigateToSection} />
-
-      {/* Subtle gradient overlay for depth */}
-      <div className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-b from-black/30 via-transparent to-black/40" />
+      <SidebarNav progress={scrollProgress} />
 
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -152,285 +118,145 @@ function HomePage() {
         className="relative z-10 w-full h-full overflow-y-auto overflow-x-hidden snap-y snap-mandatory scroll-smooth"
       >
 
-        {/* 01 ORIGIN - The Dreamtime */}
-        <section
-          ref={(el) => sectionRefs.current[0] = el}
-          className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-8 md:p-12"
-        >
-          <div className="max-w-3xl text-center space-y-10">
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 0.5, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="text-[10px] md:text-xs tracking-[0.4em] uppercase font-medium"
-            >
-              Chapter I
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, delay: 0.4 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-extralight leading-[1.05] tracking-tight"
-            >
-              In the beginning,<br />
-              <span className="opacity-70 italic">there was void.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              transition={{ duration: 1, delay: 1 }}
-              className="text-base md:text-lg font-light leading-relaxed max-w-xl mx-auto"
-            >
-              From the void came humans.
-            </motion.p>
+        {/* 01 DREAMTIME */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
+          <div className="max-w-2xl text-center space-y-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <h1 className="text-xs font-bold tracking-[0.4em] uppercase opacity-60">
+              <FadeText delay={200}>Chapter I : The Dreamtime</FadeText>
+            </h1>
+            <p className="text-4xl md:text-6xl font-thin leading-[1.1] tracking-tight italic">
+              <FadeText delay={500}>In the beginning,</FadeText><br />
+              <span className="opacity-80"><FadeText delay={1000}>there was space.</FadeText></span>
+            </p>
+            <p className="text-sm md:text-base font-light leading-relaxed opacity-70 mt-8">
+              <FadeText delay={1500}>Before paths. Before edges. Before maps.</FadeText><br />
+              <FadeText delay={2000}>And into this space, humans arrived.</FadeText>
+            </p>
           </div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 2 }}
-            className="absolute bottom-8 md:bottom-12 flex flex-col items-center gap-3"
-          >
-            <span className="text-[9px] tracking-[0.3em] uppercase opacity-40">Scroll</span>
-            <div className="w-px h-12 bg-gradient-to-b from-white/60 to-transparent animate-pulse" />
-          </motion.div>
+          <div className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse" />
         </section>
 
-        {/* 02 TOOL - The Stick */}
-        <section
-          ref={(el) => sectionRefs.current[1] = el}
-          className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-8 md:p-12"
-        >
-          <div className="max-w-5xl text-center space-y-12 z-10">
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.5 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="text-sm md:text-base tracking-[0.2em] uppercase font-light"
-            >
-              And from humans came the first technology
-            </motion.p>
-            <motion.h2
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, delay: 0.3 }}
-              className="text-7xl md:text-[10rem] lg:text-[14rem] font-extralight tracking-tighter leading-none"
-            >
+        {/* 02 THE STICK */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
+          <div className="max-w-6xl text-center space-y-16 z-10 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <h2 className="text-8xl md:text-[12rem] lg:text-[16rem] font-thin tracking-tight leading-none opacity-0">
               THE STICK
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 0.7, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-lg md:text-xl font-light leading-relaxed max-w-2xl mx-auto"
-            >
-              A tool that let us leave the ground,<br />
-              cross new terrain,<br />
-              and discover what we couldn't reach alone.
-            </motion.p>
+            </h2>
+            <p className="text-xl md:text-2xl font-light opacity-60 tracking-wide">
+              The first tool.
+            </p>
           </div>
         </section>
 
-        {/* 03 ASCENT - Shared Learning */}
-        <section
-          ref={(el) => sectionRefs.current[2] = el}
-          className="h-screen w-full flex items-center justify-center snap-start relative p-8 md:p-12"
-        >
-          <div className="max-w-4xl text-center z-10 space-y-12">
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.4 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-[10px] tracking-[0.4em] uppercase"
-            >
-              Shared Learning
-            </motion.div>
-            <motion.blockquote
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="text-3xl md:text-5xl lg:text-6xl font-extralight leading-[1.2] tracking-tight"
-            >
-              <span className="italic">"A tool learns from<br />the world through us."</span>
-            </motion.blockquote>
-            <motion.p
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.6 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-base md:text-lg font-light max-w-xl mx-auto leading-relaxed"
-            >
-              As we reached higher, we learned something simple and powerful.<br />
-              Through shared learning, it carries us beyond our old limits.
-            </motion.p>
+        {/* 03 THE GROUND */}
+        <section className="h-screen w-full flex items-center justify-center snap-start relative p-12">
+          <div className="max-w-5xl text-center z-10 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <blockquote className="text-4xl md:text-6xl lg:text-7xl font-light leading-[1.2] tracking-tight italic">
+              "Through the stick,<br />
+              the ground taught us<br />
+              its shape."
+            </blockquote>
           </div>
         </section>
 
-        {/* 04 SYSTEM - Evolution */}
-        <section
-          ref={(el) => sectionRefs.current[3] = el}
-          className="h-screen w-full flex items-center justify-center snap-start relative p-8 md:p-12"
-        >
-          <div className="max-w-5xl text-center space-y-16 z-10">
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.4 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-[10px] tracking-[0.4em] uppercase"
-            >
-              System Architecture
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.9 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2 }}
-              className="text-2xl md:text-4xl lg:text-5xl font-extralight tracking-wide"
-            >
-              <span className="inline-flex items-center gap-3 md:gap-6 flex-wrap justify-center">
-                <span>stick</span>
-                <span className="text-white/40">→</span>
-                <span>map</span>
-                <span className="text-white/40">→</span>
-                <span>compass</span>
-                <span className="text-white/40">→</span>
-                <span>lens</span>
-                <span className="text-white/40">→</span>
-                <span className="text-[#B06520]">?</span>
-              </span>
-            </motion.div>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 0.6, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-lg md:text-xl font-light"
-            >
+        {/* 04 EVOLUTION */}
+        <section className="h-screen w-full flex items-center justify-center snap-start relative p-12">
+          <div className="max-w-6xl text-center space-y-20 z-10 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <div className="text-3xl md:text-5xl lg:text-6xl font-thin tracking-wider opacity-90">
+              stick → map → compass → lens → ?
+            </div>
+            <p className="text-xl md:text-2xl font-light opacity-60">
               Evolution continues.
-            </motion.p>
+            </p>
           </div>
         </section>
 
-        {/* 05 LAB - Walking Stick Labs */}
-        <section
-          ref={(el) => sectionRefs.current[4] = el}
-          className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-8 md:p-12"
-        >
-          <div className="max-w-5xl text-center z-10 space-y-12">
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 0.4 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-[10px] tracking-[0.4em] uppercase"
-            >
-              The Laboratory
-            </motion.div>
-            <motion.h3
-              initial={{ opacity: 0, y: 30, filter: 'blur(8px)' }}
-              whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, delay: 0.2 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-tight leading-none"
-            >
-              Walking Stick<br />Labs
-            </motion.h3>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 0.8, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.5 }}
-              className="text-xl md:text-2xl font-light leading-relaxed space-y-1"
-            >
+        {/* 05 THE LAB */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-12">
+          <div className="max-w-6xl text-center z-10 space-y-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]">
+            <h3 className="text-6xl md:text-8xl lg:text-9xl font-thin tracking-tight leading-none opacity-0">
+              Walking Stick Labs
+            </h3>
+            <div className="text-2xl md:text-3xl font-light opacity-80 leading-relaxed space-y-2">
               <p>Building tools</p>
-              <p className="opacity-80">that teach machines</p>
-              <p className="opacity-60">to understand space.</p>
-            </motion.div>
+              <p>that teach machines</p>
+              <p>to understand space.</p>
+            </div>
           </div>
         </section>
 
-        {/* 06 FUTURE - The Path */}
-        <section
-          ref={(el) => sectionRefs.current[5] = el}
-          className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-6 md:p-12"
-        >
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 0.4 }}
+        {/* 06 THE PATH */}
+        <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative p-6 md:p-12">
+          {/* Title - centered */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-[10px] tracking-[0.4em] uppercase mb-8"
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-xs font-bold tracking-[0.4em] uppercase opacity-60 mb-8 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8)]"
           >
-            Chapter VI
-          </motion.div>
-
+            Chapter VI : The Path
+          </motion.h1>
           <motion.h2
             initial={{ opacity: 0, y: 30, filter: 'blur(10px)' }}
             whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             viewport={{ once: true }}
-            transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="z-10 text-4xl md:text-6xl lg:text-7xl font-extralight tracking-tight text-center"
+            transition={{ duration: 1.0, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="z-10 text-4xl md:text-5xl lg:text-7xl font-thin tracking-tighter text-center [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]"
           >
-            Come walk with us.
+            Come Walk With Us.
           </motion.h2>
 
-          {/* CTA Buttons */}
+          {/* Two buttons - clean and readable */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
             className="z-10 flex flex-col md:flex-row items-center gap-4 md:gap-6 mt-12 md:mt-16"
           >
-            {/* Primary CTA */}
+
+            {/* Our Research - Primary CTA */}
             <motion.a
               href="#/work"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative px-10 md:px-12 py-4 bg-white text-[#1a0c05] rounded-full overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)]"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/10 backdrop-blur-sm rounded-full overflow-hidden transition-colors duration-300 hover:bg-white/20"
             >
-              <span className="relative text-xs md:text-sm font-medium tracking-[0.15em] uppercase">
-                Explore Our Research
+              <div className="absolute inset-0 border border-white/40 rounded-full group-hover:border-white/80 transition-colors duration-300" />
+              {/* Shine effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Research
               </span>
             </motion.a>
 
-            {/* Secondary CTA */}
+            {/* Our Story - Secondary CTA */}
             <motion.a
               href="#/philosophy"
-              whileHover={{ scale: 1.02 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="group relative px-10 md:px-12 py-4 bg-transparent rounded-full overflow-hidden transition-all duration-300 border border-white/40 hover:border-white/80 hover:bg-white/5"
+              className="group relative px-8 md:px-10 py-3 md:py-4 bg-white/5 backdrop-blur-sm rounded-full overflow-hidden transition-colors duration-300 hover:bg-white/15"
             >
-              <span className="relative text-xs md:text-sm font-medium tracking-[0.15em] uppercase">
-                Our Philosophy
+              <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/70 transition-colors duration-300" />
+              <span className="relative text-xs md:text-sm font-medium tracking-[0.2em] uppercase [text-shadow:_0_1px_10px_rgba(0,0,0,0.8)]">
+                Our Story
               </span>
             </motion.a>
+
           </motion.div>
 
-          {/* Footer */}
-          <motion.footer
+          {/* Footer - absolute bottom center */}
+          <motion.div
             initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            whileInView={{ opacity: 0.4 }}
             viewport={{ once: true }}
-            transition={{ duration: 1.0, delay: 1 }}
-            className="absolute bottom-6 md:bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-2"
+            transition={{ duration: 1.0, delay: 1.2 }}
+            className="absolute bottom-6 md:bottom-8 left-0 right-0 z-10 text-[9px] md:text-[10px] tracking-[0.2em] md:tracking-[0.3em] uppercase flex flex-col items-center gap-1 md:gap-2 [text-shadow:_0_2px_20px_rgba(0,0,0,0.8),_0_4px_40px_rgba(0,0,0,0.6)]"
           >
-            <div className="flex items-center gap-6 text-[10px] tracking-[0.2em] uppercase opacity-40">
-              <span>San Francisco</span>
-              <span className="w-1 h-1 rounded-full bg-white/40" />
-              <span>Beijing</span>
-            </div>
-            <span className="text-[9px] tracking-[0.2em] uppercase opacity-30">
-              © 2024 Walking Stick Labs
-            </span>
-          </motion.footer>
+            <span>San Francisco — Beijing</span>
+            <span>&copy; Walking Stick Labs</span>
+          </motion.div>
         </section>
 
       </div>
@@ -439,6 +265,7 @@ function HomePage() {
 }
 
 // Simple hash-based router
+import { AnimatePresence, motion } from 'framer-motion';
 
 const PageWrapper = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
   <motion.div
