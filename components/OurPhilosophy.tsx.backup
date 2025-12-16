@@ -1138,7 +1138,7 @@ const OurPhilosophy = () => {
       {/* Navigation */}
       <a
         href="#/"
-        className="absolute top-8 left-8 z-50 font-mono text-[10px] tracking-[0.4em] text-white/50 hover:text-white transition-all duration-500 uppercase"
+        className="absolute top-8 left-8 z-50 font-mono text-[10px] tracking-[0.4em] text-bone/50 hover:text-bone transition-all duration-500 uppercase"
       >
         &larr; Back
       </a>
@@ -1146,8 +1146,8 @@ const OurPhilosophy = () => {
       {/* Chapter indicator */}
       <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50">
         <div className="text-center">
-          <p className="font-mono text-[9px] tracking-[0.5em] uppercase text-white/25 mb-1">Our Philosophy</p>
-          <p className="font-display text-sm tracking-[0.2em] text-white/40 italic">
+          <p className="font-mono text-[9px] tracking-[0.5em] uppercase text-bone/25 mb-1">Our Philosophy</p>
+          <p className="font-display text-sm tracking-[0.2em] text-bone/40 italic">
             Chapter {chapter.label}
           </p>
         </div>
@@ -1172,13 +1172,13 @@ const OurPhilosophy = () => {
           >
             <div className={`w-2 h-2 rounded-full transition-all duration-700 ${
               currentChapter === idx
-                ? 'bg-amber-500 scale-150'
+                ? 'bg-amber-warm scale-150'
                 : idx < currentChapter
                   ? 'bg-bone/30'
                   : 'bg-bone/10 group-hover:bg-bone/30'
             }`} />
             {currentChapter === idx && (
-              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-500/30 animate-ping" />
+              <div className="absolute inset-0 w-2 h-2 rounded-full bg-amber-warm/30 animate-ping" />
             )}
           </button>
         ))}
@@ -1192,24 +1192,24 @@ const OurPhilosophy = () => {
             currentChapter === 2 ? 'bg-gradient-to-br from-black/70 to-black/50' : 'bg-gradient-to-br from-black/50 to-black/30'
           }`}>
             {/* Diagonal accent line */}
-            <div className="absolute top-0 left-0 w-24 h-px bg-gradient-to-r from-amber-500/50 to-transparent transform origin-left -rotate-12 translate-y-6 translate-x-4" />
+            <div className="absolute top-0 left-0 w-24 h-px bg-gradient-to-r from-amber-warm/50 to-transparent transform origin-left -rotate-12 translate-y-6 translate-x-4" />
 
             {/* Chapter title */}
             <RevealText delay={200} isVisible={true}>
-              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-white mb-3 italic">
+              <h2 className="font-display text-4xl md:text-5xl lg:text-6xl font-light tracking-tight text-bone mb-3 italic">
                 {chapter.title}
               </h2>
             </RevealText>
 
             <RevealText delay={400} isVisible={true}>
-              <div className="w-16 h-px bg-gradient-to-r from-amber-500/60 to-transparent mb-10" />
+              <div className="w-16 h-px bg-gradient-to-r from-amber-warm/60 to-transparent mb-10" />
             </RevealText>
 
             {/* Paragraphs */}
             <div className="space-y-6">
               {chapter.paragraphs.map((paragraph, idx) => (
                 <RevealText key={idx} delay={700 + idx * 400} isVisible={true}>
-                  <p className="font-body text-base md:text-lg font-extralight leading-relaxed text-white/80 tracking-wide">
+                  <p className="font-body text-base md:text-lg font-extralight leading-relaxed text-bone/80 tracking-wide">
                     {paragraph}
                   </p>
                 </RevealText>
@@ -1221,7 +1221,7 @@ const OurPhilosophy = () => {
               <RevealText delay={2000} isVisible={true}>
                 <a
                   href="#/"
-                  className="inline-block mt-12 px-10 py-4 rounded-full border border-amber-500/40 text-amber-warm hover:bg-amber-500/10 hover:border-amber-500/70 transition-all duration-500 font-mono text-[11px] tracking-[0.3em] uppercase pointer-events-auto"
+                  className="inline-block mt-12 px-10 py-4 rounded-full border border-amber-warm/40 text-amber-warm hover:bg-amber-warm/10 hover:border-amber-warm/70 transition-all duration-500 font-mono text-[11px] tracking-[0.3em] uppercase pointer-events-auto"
                 >
                   Return Home
                 </a>
@@ -1234,7 +1234,7 @@ const OurPhilosophy = () => {
       {/* Scroll hint */}
       {currentChapter < 4 && (
         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 animate-pulse">
-          <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/25">
+          <span className="font-mono text-[9px] tracking-[0.4em] uppercase text-bone/25">
             Scroll
           </span>
           <div className="w-px h-12 bg-gradient-to-b from-bone/30 to-transparent" />
