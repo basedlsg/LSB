@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
+import OmbrixaProject from './components/OmbrixaProject';
 
 // --- COMPONENTS ---
 
@@ -238,6 +239,10 @@ export default function App() {
   // Route to different pages based on hash
   if (route === '#/philosophy') {
     return <OurPhilosophy />;
+  }
+
+  if (route === '#/projects/ombrixa') {
+    return <OmbrixaProject />;
   }
 
   return <HomePage />;
