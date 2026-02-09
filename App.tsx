@@ -201,7 +201,20 @@ function HomePage() {
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
               <span className="relative text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
-                Learn More
+                Our Projects
+              </span>
+            </a>
+
+            <a
+              href="https://notion.so/walkingsticklabs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative mt-4 px-8 py-3 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+            >
+              <div className="absolute inset-0 border border-white/20 rounded-full group-hover:border-white/60 transition-colors duration-500" />
+              <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
+              <span className="relative text-xs font-medium tracking-[0.25em] uppercase opacity-70 group-hover:opacity-100 transition-opacity">
+                Learn More &rarr;
               </span>
             </a>
 

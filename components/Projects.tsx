@@ -406,7 +406,7 @@ export default function Projects() {
             subtitle="AI Spatial Reasoning"
             description="Teaching AI to understand space — not through vision, but through reasoning. Can a language model develop a sense of 'self' inside a grid world?"
             tags={['Python', 'AI Research', 'Simulation']}
-            href="#/work/spatial-lab"
+            href="#/projects/spatial-lab"
             delay={400}
           />
 
@@ -415,8 +415,17 @@ export default function Projects() {
             subtitle="VLM Perception"
             description="If you hide one room in a floorplan, can AI figure out what it is just by looking at everything else? Testing the limits of visual understanding."
             tags={['Python', 'Vision AI', 'Synthetic Data']}
-            href="#/work/whats-in-the-room"
+            href="#/projects/whats-in-the-room"
             delay={500}
+          />
+
+          <ProjectCard
+            title="Ombrixa"
+            subtitle="Mobile AI for Situational Awareness"
+            description="A mobile-first PWA that transforms smartphones into tactical awareness devices, turning short video clips into structured, searchable intelligence."
+            tags={['React', 'Gemini AI', 'PWA', 'Privacy-First']}
+            href="#/projects/ombrixa"
+            delay={600}
           />
 
         </div>
