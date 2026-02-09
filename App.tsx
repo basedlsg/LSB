@@ -5,6 +5,8 @@ import LivingRockExperience from './components/LivingRockExperience';
 import Cursor from './components/Cursor';
 import OurPhilosophy from './components/OurPhilosophy';
 import OmbrixaProject from './components/OmbrixaProject';
+import Projects from './components/Projects';
+import CaseStudySpatialLab from './components/CaseStudySpatialLab';
 
 // --- COMPONENTS ---
 
@@ -192,13 +194,16 @@ function HomePage() {
               Come walk with us.
             </h2>
 
-            <button className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105">
+            <a
+              href="#/projects"
+              className="group relative px-12 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+            >
               <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
               <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
               <span className="relative text-sm font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">
                 Learn More
               </span>
-            </button>
+            </a>
 
             <a
               href="#/philosophy"
@@ -212,7 +217,7 @@ function HomePage() {
             </a>
 
             <div className="mt-16 text-[10px] tracking-[0.3em] opacity-40 uppercase flex flex-col items-center gap-2">
-              <span>San Francisco — CA</span>
+              <span>San Francisco — CA, Beijing — CN</span>
               <span>&copy; Walking Stick Labs</span>
             </div>
           </div>
@@ -239,6 +244,14 @@ export default function App() {
   // Route to different pages based on hash
   if (route === '#/philosophy') {
     return <OurPhilosophy />;
+  }
+
+  if (route === '#/projects') {
+    return <Projects />;
+  }
+
+  if (route === '#/projects/spatial-lab') {
+    return <CaseStudySpatialLab />;
   }
 
   if (route === '#/projects/ombrixa') {
