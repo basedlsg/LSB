@@ -188,7 +188,7 @@ void main() {
   float dist = length(coord);
   float glow = exp(-dist * 5.0);
   if (glow < 0.01) discard;
-  vec3 color = vec3(1.0, 0.98, 0.95);
+  vec3 color = vec3(0.72, 0.98, 0.96);
   gl_FragColor = vec4(color, vAlpha * glow * 1.5);
 }
 `;
@@ -237,11 +237,11 @@ void main() {
   vec2 center = vec2(0.5);
   float dist = length(uv - center);
 
-  vec3 voidBlack = vec3(0.008, 0.004, 0.012);
-  vec3 deepIndigo = vec3(0.03, 0.015, 0.06);
-  vec3 warmAmber = vec3(0.15, 0.06, 0.02);
-  vec3 emberOrange = vec3(0.2, 0.08, 0.02);
-  vec3 cosmicPurple = vec3(0.08, 0.02, 0.12);
+  vec3 abyssBlack = vec3(0.003, 0.012, 0.016);
+  vec3 deepTeal = vec3(0.010, 0.070, 0.090);
+  vec3 cyanAurora = vec3(0.020, 0.240, 0.280);
+  vec3 aquaGlow = vec3(0.050, 0.360, 0.340);
+  vec3 frostBlue = vec3(0.200, 0.520, 0.580);
 
   float t = uTime * 0.04;
   float n1 = snoise(vec3(uv * 1.5, t));
@@ -253,16 +253,16 @@ void main() {
   float nebula2 = pow(n2 * 0.5 + 0.5, 2.0);
   float nebula3 = pow(max(0.0, n3), 3.0);
 
-  vec3 color = mix(voidBlack, deepIndigo, nebula1 * 0.4);
-  float warmFlow = smoothstep(0.3, 0.8, dist) * nebula2;
-  color = mix(color, warmAmber, warmFlow * 0.5);
-  float embers = nebula3 * smoothstep(0.6, 0.3, dist);
-  color = mix(color, emberOrange, embers * 0.4);
-  float purpleWisp = pow(n2 * 0.5 + 0.5, 2.5) * (1.0 - dist * 0.8);
-  color = mix(color, cosmicPurple, purpleWisp * 0.3);
-  color += n4 * 0.015;
+  vec3 color = mix(abyssBlack, deepTeal, nebula1 * 0.5);
+  float cyanFlow = smoothstep(0.25, 0.85, dist) * nebula2;
+  color = mix(color, cyanAurora, cyanFlow * 0.45);
+  float highlights = nebula3 * smoothstep(0.7, 0.25, dist);
+  color = mix(color, aquaGlow, highlights * 0.38);
+  float coldMist = pow(n2 * 0.5 + 0.5, 2.4) * (1.0 - dist * 0.78);
+  color = mix(color, frostBlue, coldMist * 0.28);
+  color += n4 * 0.012;
   float stars = pow(max(0.0, snoise(vec3(uv * 50.0, t * 0.1))), 12.0);
-  color += vec3(1.0, 0.95, 0.9) * stars * 0.25;
+  color += vec3(0.78, 0.99, 1.0) * stars * 0.2;
   float vignette = smoothstep(1.2, 0.2, dist);
   color *= 0.5 + vignette * 0.5;
 
@@ -363,24 +363,24 @@ const HypothesisExpanded = () => (
         using coordinate-based prompts to build an internal "mental map."
       </p>
     </div>
-    <div className="bg-white/5 rounded-xl p-6 border border-white/10">
+    <div className="bg-cyan-400/5 rounded-xl p-6 border border-cyan-300/20">
       <h4 className="text-xs font-mono uppercase tracking-widest opacity-50 mb-4">Experimental Setup</h4>
       <ul className="space-y-4 text-sm font-mono">
-        <li className="flex justify-between border-b border-white/5 pb-2">
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
           <span>Model</span>
-          <span className="text-white/70">GPT-4 / Gemini Pro</span>
+          <span className="text-cyan-50/80">GPT-4 / Gemini Pro</span>
         </li>
-        <li className="flex justify-between border-b border-white/5 pb-2">
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
           <span>Input</span>
-          <span className="text-white/70">JSON Grid State</span>
+          <span className="text-cyan-50/80">JSON Grid State</span>
         </li>
-        <li className="flex justify-between border-b border-white/5 pb-2">
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
           <span>Output</span>
-          <span className="text-white/70">Action Vector (x, y)</span>
+          <span className="text-cyan-50/80">Action Vector (x, y)</span>
         </li>
         <li className="flex justify-between pb-2">
           <span>Metric</span>
-          <span className="text-white/70">Path Optimality %</span>
+          <span className="text-cyan-50/80">Path Optimality %</span>
         </li>
       </ul>
     </div>
@@ -390,7 +390,7 @@ const HypothesisExpanded = () => (
 const ResultsExpanded = () => (
   <div className="space-y-12">
     <div className="grid md:grid-cols-3 gap-6">
-      <div className="bg-white/5 p-6 rounded-xl border border-white/10">
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
         <div className="h-32 flex items-end gap-2 mb-4">
           <div className="w-1/3 bg-white/10 rounded-t-sm h-[30%]" />
           <div className="w-1/3 bg-white/20 rounded-t-sm h-[60%]" />
@@ -407,7 +407,7 @@ const ResultsExpanded = () => (
         </div>
       </div>
 
-      <div className="bg-white/5 p-6 rounded-xl border border-white/10">
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
         <div className="h-32 flex items-end gap-2 mb-4">
           <div className="w-1/3 bg-white/10 rounded-t-sm h-[40%]" />
           <div className="w-1/3 bg-white/20 rounded-t-sm h-[55%]" />
@@ -424,11 +424,11 @@ const ResultsExpanded = () => (
         </div>
       </div>
 
-      <div className="bg-white/5 p-6 rounded-xl border border-white/10">
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
         <div className="h-32 flex items-end gap-2 mb-4">
           <div className="w-1/3 bg-white/10 rounded-t-sm h-[20%]" />
           <div className="w-1/3 bg-white/20 rounded-t-sm h-[45%]" />
-          <div className="w-1/3 bg-amber-500/50 rounded-t-sm h-[81%]" />
+          <div className="w-1/3 bg-cyan-400/60 rounded-t-sm h-[81%]" />
         </div>
         <div className="flex justify-between text-[10px] font-mono uppercase opacity-50">
           <span>Random</span>
@@ -461,7 +461,7 @@ export default function CaseStudySpatialLab() {
   return (
     <div
       ref={scrollContainerRef}
-      className="h-screen overflow-y-auto overflow-x-hidden bg-[#0d0603] text-[#FDFBF7] font-sans selection:bg-[#B06520] selection:text-white"
+      className="h-screen overflow-y-auto overflow-x-hidden bg-[#01090c] text-[#E8FBFF] font-sans selection:bg-cyan-300/30 selection:text-white"
     >
 
       <Cursor />
@@ -477,9 +477,9 @@ export default function CaseStudySpatialLab() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference"
+        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center"
       >
-        <a href="#/" className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono">
+        <a href="#/" className="group relative text-xs tracking-[0.3em] uppercase text-cyan-100/75 hover:text-cyan-50 transition-colors font-mono">
           <span>&larr; Walking Stick Labs</span>
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
         </a>
@@ -487,7 +487,7 @@ export default function CaseStudySpatialLab() {
           href="https://github.com/basedlsg/spatial-lab"
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono"
+          className="group relative text-xs tracking-[0.3em] uppercase text-cyan-100/75 hover:text-cyan-50 transition-colors font-mono"
         >
           <span>View Code &rarr;</span>
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
@@ -500,7 +500,7 @@ export default function CaseStudySpatialLab() {
             initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)] font-mono"
+            className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-1.5 text-[10px] md:text-xs tracking-[0.35em] uppercase text-cyan-100/90 mb-6 [text-shadow:_0_0_18px_rgba(18,221,201,0.6)] font-mono"
           >
             Case Study
           </motion.div>
@@ -532,7 +532,7 @@ export default function CaseStudySpatialLab() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
-                className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30 font-mono"
+                className="px-4 py-1.5 border border-cyan-300/30 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-cyan-400/10 text-cyan-100/90 font-mono"
               >
                 {tag}
               </motion.span>
@@ -544,13 +544,14 @@ export default function CaseStudySpatialLab() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5, delay: 1.5 }}
-          className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-white/0 via-white/50 to-white/0 animate-pulse"
+          className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-cyan-200/0 via-cyan-200/70 to-cyan-200/0 animate-pulse"
         />
       </section>
 
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="Hypothesis.md"
             path="~/spatial-lab/docs"
             summary="Investigating if language models can understand spatial relationships without visual input."
@@ -572,6 +573,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-5xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="System_Architecture.canvas"
             path="~/spatial-lab/design"
             summary="Visualizing the flow from LLM reasoning to multi-agent simulation."
@@ -588,6 +590,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-5xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="Components.json"
             path="~/spatial-lab/src"
             summary="Core modules: Simulation Environment, Multi-Agent Coordination, and LLM Reasoning Engine."
@@ -602,7 +605,7 @@ export default function CaseStudySpatialLab() {
                   A simulated grid environment where every position, obstacle, and path is visible.
                   Small enough to hold in your head, detailed enough to reveal meaningful patterns.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
                   environments/ — simulation engine
                 </div>
               </motion.div>
@@ -613,7 +616,7 @@ export default function CaseStudySpatialLab() {
                   Multiple agents moving through shared space, avoiding collisions,
                   finding paths, and working together — or getting in each other's way.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
                   coordination/ — path planning
                 </div>
               </motion.div>
@@ -624,7 +627,7 @@ export default function CaseStudySpatialLab() {
                   Language models (GPT-4, Gemini) receive descriptions of the world and decide how to act.
                   They see coordinates and consequences. Then they choose.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
                   llm/ — reasoning engine
                 </div>
               </motion.div>
@@ -635,7 +638,7 @@ export default function CaseStudySpatialLab() {
                   Every experiment runs with controls, statistics, and reproducibility.
                   The goal isn't to prove anything — it's to see what's actually there.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
                   evaluation/ — validation
                 </div>
               </motion.div>
@@ -647,6 +650,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-5xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="Results_Dashboard.py"
             path="~/spatial-lab/analysis"
             summary="LLM-guided agents achieved 85% success rate, significantly outperforming baselines."
@@ -673,7 +677,7 @@ export default function CaseStudySpatialLab() {
               transition={{ delay: 0.4 }}
               className="grid md:grid-cols-2 gap-8"
             >
-              <div className="p-6 border border-white/10 rounded-lg bg-white/5">
+              <div className="p-6 border border-cyan-300/20 rounded-lg bg-cyan-400/5">
                 <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">Compared to Others</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
@@ -684,14 +688,14 @@ export default function CaseStudySpatialLab() {
                     <span className="opacity-60">Simple rules</span>
                     <span className="font-mono">60% success</span>
                   </div>
-                  <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
+                  <div className="flex justify-between border-t border-cyan-300/20 pt-3 mt-3">
                     <span className="opacity-60">With LLM reasoning</span>
                     <span className="text-white font-mono">85% success</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6 border border-white/10 rounded-lg bg-white/5">
+              <div className="p-6 border border-cyan-300/20 rounded-lg bg-cyan-400/5">
                 <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">Is it Real?</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
@@ -702,7 +706,7 @@ export default function CaseStudySpatialLab() {
                     <span className="opacity-60">With LLM reasoning</span>
                     <span className="font-mono">82.5% avg</span>
                   </div>
-                  <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
+                  <div className="flex justify-between border-t border-cyan-300/20 pt-3 mt-3">
                     <span className="opacity-60">Statistically significant?</span>
                     <span className="text-white font-mono">Yes (p &lt; 0.05)</span>
                   </div>
@@ -716,6 +720,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="File_Explorer"
             path="~/spatial-lab"
             summary="Browse the project structure: environments, coordination logic, and evaluation scripts."
@@ -732,6 +737,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="TODO.md"
             path="~/spatial-lab"
             summary="Current limitations include pathfinding optimization and production hardening."
@@ -744,19 +750,19 @@ export default function CaseStudySpatialLab() {
                 <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">Current State</div>
                 <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 mt-0.5 font-mono">✓</span>
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
                     <span>LLM integration framework operational</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 mt-0.5 font-mono">✓</span>
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
                     <span>Multi-robot coordination validated</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 mt-0.5 font-mono">✓</span>
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
                     <span>Statistical validation framework</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-green-400 mt-0.5 font-mono">✓</span>
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
                     <span>Reproducible experiment runners</span>
                   </li>
                 </ul>
@@ -766,19 +772,19 @@ export default function CaseStudySpatialLab() {
                 <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">In Progress</div>
                 <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-0.5 font-mono">○</span>
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
                     <span>Full A* pathfinding implementation</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-0.5 font-mono">○</span>
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
                     <span>Multi-agent conflict resolution</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-0.5 font-mono">○</span>
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
                     <span>Automated test coverage</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-0.5 font-mono">○</span>
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
                     <span>Production hardening</span>
                   </li>
                 </ul>
@@ -791,6 +797,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto text-center w-full">
           <GlassWindow
+            tone="aqua"
             title="Reflection.md"
             path="~/spatial-lab/thoughts"
             summary="This project demonstrates the potential of LLMs to reason about complex physical systems."
@@ -824,6 +831,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="Journal.md"
             path="~/personal/notes"
             summary="Exploring the mechanical sense of 'self' in artificial agents."
@@ -853,6 +861,7 @@ export default function CaseStudySpatialLab() {
       <section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10 snap-start">
         <div className="max-w-4xl mx-auto w-full">
           <GlassWindow
+            tone="aqua"
             title="Terminal"
             path="~/spatial-lab"
             summary="Ready to explore? View the full source code on GitHub."
@@ -868,7 +877,7 @@ export default function CaseStudySpatialLab() {
                 rel="noopener noreferrer"
                 className="group relative px-10 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
               >
-                <div className="absolute inset-0 border border-white/30 rounded-full group-hover:border-white/80 transition-colors duration-500" />
+                <div className="absolute inset-0 border border-cyan-300/35 rounded-full group-hover:border-cyan-100/80 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
                 <span className="relative text-sm font-bold tracking-[0.2em] uppercase font-mono">
                   View on GitHub

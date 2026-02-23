@@ -18,6 +18,7 @@ interface GlassWindowProps {
     summary?: string;
     expandedContent?: React.ReactNode;
     defaultState?: 'open' | 'minimized' | 'maximized' | 'closed';
+    tone?: 'default' | 'aqua';
 }
 
 export function GlassWindow({
@@ -27,11 +28,13 @@ export function GlassWindow({
     path = "~/projects/spatial-lab",
     summary = "Click to expand...",
     expandedContent,
-    defaultState = 'open'
+    defaultState = 'open',
+    tone = 'default'
 }: GlassWindowProps) {
     const [windowState, setWindowState] = useState<'open' | 'minimized' | 'maximized' | 'closed'>(defaultState);
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
+    const isAqua = tone === 'aqua';
 
     const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
         const { left, top } = currentTarget.getBoundingClientRect();
@@ -91,7 +94,9 @@ export function GlassWindow({
             <div
                 className="absolute -inset-[1px] rounded-xl pointer-events-none z-30"
                 style={{
-                    background: 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
+                    background: isAqua
+                        ? 'linear-gradient(135deg, rgba(119,255,244,0.38) 0%, rgba(78,209,255,0.1) 50%, rgba(111,255,244,0.32) 100%)'
+                        : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
                     padding: '1px',
                     WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                     WebkitMaskComposite: 'xor',
@@ -102,17 +107,23 @@ export function GlassWindow({
             <LiquidGlass
                 className="h-full w-full rounded-xl overflow-hidden"
                 padding="0"
-                displacementScale={windowState === 'maximized' ? 0.5 : 1.5}
-                blurAmount={0.15}
-                aberrationIntensity={0.5}
+                displacementScale={windowState === 'maximized' ? (isAqua ? 0.35 : 0.5) : (isAqua ? 1.15 : 1.5)}
+                blurAmount={isAqua ? 0.12 : 0.15}
+                saturation={isAqua ? 180 : 140}
+                aberrationIntensity={isAqua ? 1.5 : 0.5}
                 elasticity={0}
                 cornerRadius={12}
+                mode={isAqua ? "shader" : "standard"}
             >
                 {/* Edge Vignette - darker around edges for framing */}
                 <div
                     className="absolute inset-0 pointer-events-none z-0"
                     style={{
-                        background: `
+                        background: isAqua ? `
+                            radial-gradient(140% 90% at 0% 0%, rgba(168, 244, 255, 0.16) 0%, transparent 55%),
+                            radial-gradient(130% 90% at 100% 100%, rgba(18, 221, 201, 0.18) 0%, transparent 60%),
+                            linear-gradient(145deg, rgba(4, 24, 28, 0.6) 0%, rgba(4, 18, 24, 0.46) 35%, rgba(2, 11, 14, 0.7) 100%)
+                        ` : `
                             radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%),
                             linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)
                         `
@@ -123,7 +134,15 @@ export function GlassWindow({
                 <motion.div
                     className="pointer-events-none absolute inset-0 z-5 opacity-70"
                     style={{
-                        background: useMotionTemplate`
+                        background: isAqua ? useMotionTemplate`
+                            radial-gradient(
+                                220px circle at ${mouseX}px ${mouseY}px,
+                                rgba(107, 255, 244, 0.20) 0%,
+                                rgba(98, 206, 255, 0.14) 35%,
+                                rgba(38, 118, 138, 0.08) 60%,
+                                transparent 76%
+                            )
+                        ` : useMotionTemplate`
                             radial-gradient(
                                 200px circle at ${mouseX}px ${mouseY}px,
                                 rgba(255,100,100,0.12) 0%,
@@ -142,7 +161,14 @@ export function GlassWindow({
                 <motion.div
                     className="pointer-events-none absolute inset-0 z-5 opacity-50"
                     style={{
-                        background: useMotionTemplate`
+                        background: isAqua ? useMotionTemplate`
+                            radial-gradient(
+                                180px circle at ${mouseX}px ${mouseY}px,
+                                rgba(210, 255, 255, 0.16) 0%,
+                                rgba(124, 255, 241, 0.08) 40%,
+                                transparent 70%
+                            )
+                        ` : useMotionTemplate`
                             radial-gradient(
                                 150px circle at ${mouseX}px ${mouseY}px,
                                 rgba(255,150,200,0.15) 0%,
@@ -158,7 +184,10 @@ export function GlassWindow({
                 <div className="relative z-20 h-full flex flex-col">
                     {/* Window Chrome / Header - darker for framing */}
                     <div
-                        className="relative flex items-center justify-between px-6 py-4 border-b border-white/10 bg-black/40 backdrop-blur-sm cursor-default select-none shrink-0"
+                        className={cn(
+                            "relative flex items-center justify-between px-6 py-4 border-b backdrop-blur-sm cursor-default select-none shrink-0",
+                            isAqua ? "border-cyan-200/20 bg-[#041318]/55" : "border-white/10 bg-black/40"
+                        )}
                         onDoubleClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -173,7 +202,10 @@ export function GlassWindow({
                                     e.stopPropagation();
                                     setWindowState('closed');
                                 }}
-                                className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/20 border border-cyan-200/35" : "bg-[#FF5F56] border border-[#E0443E]/50"
+                                )}
                                 title="Close"
                             >
                                 <X className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
@@ -184,7 +216,10 @@ export function GlassWindow({
                                     e.stopPropagation();
                                     setWindowState(s => s === 'minimized' ? 'open' : 'minimized');
                                 }}
-                                className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/30 border border-cyan-200/35" : "bg-[#FFBD2E] border border-[#DEA123]/50"
+                                )}
                                 title="Minimize"
                             >
                                 <Minus className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
@@ -195,7 +230,10 @@ export function GlassWindow({
                                     e.stopPropagation();
                                     setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
                                 }}
-                                className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29]/50 shadow-inner flex items-center justify-center hover:brightness-90 transition-all"
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/40 border border-cyan-200/40" : "bg-[#27C93F] border border-[#1AAB29]/50"
+                                )}
                                 title="Maximize"
                             >
                                 {windowState === 'maximized' ? (
@@ -208,11 +246,17 @@ export function GlassWindow({
 
                         {/* Title */}
                         <div className="absolute left-0 right-0 flex justify-center items-center gap-2 opacity-60 pointer-events-none">
-                            <span className="text-[11px] font-medium tracking-wide text-white/90 drop-shadow-md">{title}</span>
+                            <span className={cn(
+                                "text-[11px] font-medium tracking-wide drop-shadow-md",
+                                isAqua ? "text-cyan-50/90" : "text-white/90"
+                            )}>{title}</span>
                         </div>
 
                         {/* Path */}
-                        <div className="text-[10px] font-mono text-white/30 tracking-tight hidden sm:block z-10">
+                        <div className={cn(
+                            "text-[10px] font-mono tracking-tight hidden sm:block z-10",
+                            isAqua ? "text-cyan-100/35" : "text-white/30"
+                        )}>
                             {path}
                         </div>
                     </div>
@@ -226,9 +270,15 @@ export function GlassWindow({
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
                                     exit={{ opacity: 0, height: 0 }}
-                                    className="px-6 py-4 bg-white/[0.01]"
+                                    className={cn(
+                                        "px-6 py-4",
+                                        isAqua ? "bg-cyan-400/[0.03]" : "bg-white/[0.01]"
+                                    )}
                                 >
-                                    <p className="text-sm text-white/50 font-light italic truncate">
+                                    <p className={cn(
+                                        "text-sm font-light italic truncate",
+                                        isAqua ? "text-cyan-100/55" : "text-white/50"
+                                    )}>
                                         {summary}
                                     </p>
                                 </motion.div>
@@ -241,9 +291,15 @@ export function GlassWindow({
                                     className="p-10 md:p-16 h-[calc(100vh-120px)] overflow-y-auto"
                                 >
                                     <div className="max-w-7xl mx-auto">
-                                        <div className="mb-12 pb-8 border-b border-white/10">
+                                        <div className={cn(
+                                            "mb-12 pb-8 border-b",
+                                            isAqua ? "border-cyan-200/20" : "border-white/10"
+                                        )}>
                                             <h2 className="text-4xl md:text-5xl font-thin tracking-tight mb-4">{title}</h2>
-                                            <p className="text-xl text-white/60 font-light">{summary}</p>
+                                            <p className={cn(
+                                                "text-xl font-light",
+                                                isAqua ? "text-cyan-100/70" : "text-white/60"
+                                            )}>{summary}</p>
                                         </div>
                                         {expandedContent}
                                     </div>
@@ -271,7 +327,10 @@ export function GlassWindow({
 
     if (windowState === 'maximized') {
         return createPortal(
-            <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm" onClick={(e) => e.stopPropagation()}>
+            <div className={cn(
+                "fixed inset-0 z-[9999] backdrop-blur-sm",
+                isAqua ? "bg-[#01080a]/70" : "bg-black/60"
+            )} onClick={(e) => e.stopPropagation()}>
                 {windowContent}
             </div>,
             document.body

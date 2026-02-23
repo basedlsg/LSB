@@ -298,7 +298,7 @@ const GradientBackground = () => {
 const MetricCard = ({ value, label }: { value: string, label: string }) => (
   <div className="text-center">
     <div className="text-3xl md:text-4xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">{value}</div>
-    <div className="text-[10px] md:text-xs tracking-[0.2em] uppercase opacity-60 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">{label}</div>
+    <div className="text-[10px] md:text-xs tracking-[0.2em] uppercase text-white/75 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">{label}</div>
   </div>
 );
 
@@ -346,7 +346,7 @@ const HypothesisExpanded = () => (
       </p>
     </div>
     <div className="bg-white/5 rounded-xl p-6 border border-white/10">
-      <h4 className="text-xs font-mono uppercase tracking-widest opacity-50 mb-4">Methodology</h4>
+      <h4 className="text-xs font-mono uppercase tracking-widest text-white/70 mb-4">Methodology</h4>
       <ul className="space-y-4 text-sm font-mono">
         <li className="flex justify-between border-b border-white/5 pb-2">
           <span>Generator</span>
@@ -373,38 +373,38 @@ const ResultsExpanded = () => (
   <div className="space-y-12">
     <div className="grid md:grid-cols-2 gap-8">
       <div className="bg-white/5 p-6 rounded-xl border border-white/10">
-        <h4 className="text-xs font-mono uppercase tracking-widest opacity-50 mb-6">Confusion Matrix (Top 5 Rooms)</h4>
+        <h4 className="text-xs font-mono uppercase tracking-widest text-white/70 mb-6">Confusion Matrix (Top 5 Rooms)</h4>
         <div className="space-y-3">
           <div className="flex items-center gap-4">
-            <span className="w-24 text-xs font-mono text-right opacity-70">Bathroom</span>
+            <span className="w-24 text-xs font-mono text-right text-white/75">Bathroom</span>
             <div className="flex-grow h-2 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-green-500/60 w-[92%]" />
             </div>
             <span className="w-12 text-xs font-mono text-right">92%</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="w-24 text-xs font-mono text-right opacity-70">Kitchen</span>
+            <span className="w-24 text-xs font-mono text-right text-white/75">Kitchen</span>
             <div className="flex-grow h-2 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-green-500/50 w-[88%]" />
             </div>
             <span className="w-12 text-xs font-mono text-right">88%</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="w-24 text-xs font-mono text-right opacity-70">Garage</span>
+            <span className="w-24 text-xs font-mono text-right text-white/75">Garage</span>
             <div className="flex-grow h-2 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-yellow-500/50 w-[76%]" />
             </div>
             <span className="w-12 text-xs font-mono text-right">76%</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="w-24 text-xs font-mono text-right opacity-70">Bedroom</span>
+            <span className="w-24 text-xs font-mono text-right text-white/75">Bedroom</span>
             <div className="flex-grow h-2 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-yellow-500/40 w-[65%]" />
             </div>
             <span className="w-12 text-xs font-mono text-right">65%</span>
           </div>
           <div className="flex items-center gap-4">
-            <span className="w-24 text-xs font-mono text-right opacity-70">Office</span>
+            <span className="w-24 text-xs font-mono text-right text-white/75">Office</span>
             <div className="flex-grow h-2 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-red-500/40 w-[32%]" />
             </div>
@@ -414,8 +414,8 @@ const ResultsExpanded = () => (
       </div>
 
       <div className="bg-white/5 p-6 rounded-xl border border-white/10">
-        <h4 className="text-xs font-mono uppercase tracking-widest opacity-50 mb-6">Key Insights</h4>
-        <ul className="space-y-4 text-sm font-light opacity-80">
+        <h4 className="text-xs font-mono uppercase tracking-widest text-white/70 mb-6">Key Insights</h4>
+        <ul className="space-y-4 text-sm font-light text-white/85">
           <li className="flex gap-3">
             <span className="text-green-400">→</span>
             <span>
@@ -463,9 +463,9 @@ export default function CaseStudyWhatsInTheRoom() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center mix-blend-difference"
+        className="fixed top-0 left-0 right-0 z-50 p-6 md:p-8 flex justify-between items-center"
       >
-        <a href="#/" className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono">
+        <a href="#/" className="group relative text-xs tracking-[0.3em] uppercase text-white/80 hover:text-white transition-colors font-mono">
           <span>&larr; Walking Stick Labs</span>
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
         </a>
@@ -473,7 +473,7 @@ export default function CaseStudyWhatsInTheRoom() {
           href="https://github.com/basedlsg/WhatsInTheRoom"
           target="_blank"
           rel="noopener noreferrer"
-          className="group relative text-xs tracking-[0.3em] uppercase opacity-70 hover:opacity-100 transition-opacity font-mono"
+          className="group relative text-xs tracking-[0.3em] uppercase text-white/80 hover:text-white transition-colors font-mono"
         >
           <span>View Code &rarr;</span>
           <span className="absolute -bottom-1 left-0 w-0 h-px bg-current transition-all duration-300 group-hover:w-full" />
@@ -486,7 +486,7 @@ export default function CaseStudyWhatsInTheRoom() {
             initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-50 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)] font-mono"
+            className="inline-flex rounded-full border border-white/25 bg-black/30 px-4 py-1.5 text-[10px] md:text-xs tracking-[0.35em] uppercase text-white/90 mb-6 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)] font-mono"
           >
             Case Study
           </motion.div>
@@ -518,7 +518,7 @@ export default function CaseStudyWhatsInTheRoom() {
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
-                className="px-4 py-1.5 border border-white/20 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/30 font-mono"
+                className="px-4 py-1.5 border border-white/25 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-black/35 text-white/90 font-mono"
               >
                 {tag}
               </motion.span>
@@ -542,11 +542,11 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="Testing if AI can deduce room types from floorplan context alone."
             expandedContent={<HypothesisExpanded />}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Question</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Question</div>
             <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
               "If you hide one room in a floorplan, can AI figure out what it is just by looking at everything else?"
             </blockquote>
-            <p className="text-base md:text-lg font-light opacity-70 mt-10 max-w-2xl leading-relaxed [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
+            <p className="text-base md:text-lg font-light text-white/85 mt-10 max-w-2xl leading-relaxed [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
               Humans use context constantly. A small room next to the master bedroom is probably a closet.
               A room with a door to the outside might be a garage. Can vision-language models
               pick up on these spatial relationships — or do they just see pixels?
@@ -563,7 +563,7 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="A four-step process: Generate floorplan, Mask room, Query VLM, Evaluate prediction."
             expandedContent={<div className="flex justify-center"><WhatsInTheRoomExperiment /></div>}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Experiment</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Experiment</div>
             <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How we tested it</h2>
 
             <WhatsInTheRoomExperiment />
@@ -578,50 +578,50 @@ export default function CaseStudyWhatsInTheRoom() {
             path="~/whats-in-the-room/src"
             summary="Procedural generation engine, regional architecture rules, and deterministic seed system."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Building Blocks</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Building Blocks</div>
             <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
 
             <div className="grid md:grid-cols-2 gap-12 md:gap-16">
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
                 <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Infinite Floorplans</h3>
-                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Procedural generation creates unlimited unique layouts. No external datasets needed —
                   every floorplan is synthesized from architectural rules and regional constraints.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono text-white/70">
                   src/generation/ — layout synthesis
                 </div>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-4">
                 <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Regional Architecture</h3>
-                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   US suburbs have attached garages. Chinese apartments have shoe rooms. European flats have different proportions.
                   The generator knows these rules.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono text-white/70">
                   6+ architectural regions
                 </div>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-4">
                 <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Deterministic Seeds</h3>
-                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Every experiment is reproducible. Same seed, same floorplan.
                   This lets us isolate variables and trust our results.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono text-white/70">
                   Full reproducibility
                 </div>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="space-y-4">
                 <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Ambiguity by Design</h3>
-                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   We don't hide obvious rooms. We pick closets, offices, storage rooms —
                   spaces that require reasoning about neighbors and context.
                 </p>
-                <div className="pt-4 border-t border-white/10 text-xs font-mono opacity-50">
+                <div className="pt-4 border-t border-white/10 text-xs font-mono text-white/70">
                   src/inference/ — mystery selection
                 </div>
               </motion.div>
@@ -638,7 +638,7 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="Models correctly identified bathrooms and kitchens but struggled with context-dependent rooms like offices."
             expandedContent={<ResultsExpanded />}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">What We Found</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">What We Found</div>
             <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
 
             <motion.div
@@ -660,36 +660,36 @@ export default function CaseStudyWhatsInTheRoom() {
               className="grid md:grid-cols-2 gap-8"
             >
               <div className="p-6 border border-white/10 rounded-lg bg-white/5">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">What Models Got Right</div>
+                <div className="text-xs tracking-[0.2em] uppercase text-white/70 mb-4 font-mono">What Models Got Right</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
-                    <span className="opacity-60">Bathrooms</span>
+                    <span className="text-white/75">Bathrooms</span>
                     <span className="font-mono">High confidence</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Kitchens</span>
+                    <span className="text-white/75">Kitchens</span>
                     <span className="font-mono">Size + proximity</span>
                   </div>
                   <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
-                    <span className="opacity-60">Living rooms</span>
+                    <span className="text-white/75">Living rooms</span>
                     <span className="text-white font-mono">Central, large</span>
                   </div>
                 </div>
               </div>
 
               <div className="p-6 border border-white/10 rounded-lg bg-white/5">
-                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">Where Models Struggled</div>
+                <div className="text-xs tracking-[0.2em] uppercase text-white/70 mb-4 font-mono">Where Models Struggled</div>
                 <div className="space-y-3 text-sm font-light">
                   <div className="flex justify-between">
-                    <span className="opacity-60">Closets vs. Storage</span>
+                    <span className="text-white/75">Closets vs. Storage</span>
                     <span className="font-mono">Similar size</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="opacity-60">Office vs. Guest Bedroom</span>
+                    <span className="text-white/75">Office vs. Guest Bedroom</span>
                     <span className="font-mono">Context-dependent</span>
                   </div>
                   <div className="flex justify-between border-t border-white/10 pt-3 mt-3">
-                    <span className="opacity-60">Regional variations</span>
+                    <span className="text-white/75">Regional variations</span>
                     <span className="text-white font-mono">Cultural norms</span>
                   </div>
                 </div>
@@ -707,7 +707,7 @@ export default function CaseStudyWhatsInTheRoom() {
             summary="Explore the generation, rendering, and inference modules."
             expandedContent={<div className="p-8"><CodebaseTree data={codebaseData} /></div>}
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Structure</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Structure</div>
             <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
 
             <CodebaseTree data={codebaseData} />
@@ -722,24 +722,24 @@ export default function CaseStudyWhatsInTheRoom() {
             path="~/whats-in-the-room/thoughts"
             summary="Demonstrating the importance of synthetic benchmarks for testing AI perception."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Bigger Picture</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">The Bigger Picture</div>
             <h2 className="text-3xl md:text-4xl font-light tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
             <div className="grid md:grid-cols-3 gap-8 text-left">
               <div>
                 <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Synthetic Benchmarks</div>
-                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Creating controlled test environments where every variable is known and reproducible
                 </p>
               </div>
               <div>
                 <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Testing Perception</div>
-                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Probing what AI actually "sees" versus what it pattern-matches from training data
                 </p>
               </div>
               <div>
                 <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Honest Measurement</div>
-                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                <p className="text-sm font-light text-white/85 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
                   Finding where models succeed and where they fail — both matter equally
                 </p>
               </div>
@@ -755,7 +755,7 @@ export default function CaseStudyWhatsInTheRoom() {
             path="~/personal/notes"
             summary="Reflecting on the nature of intelligence and spatial understanding."
           >
-            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Why This Exists</div>
+            <div className="text-[10px] tracking-[0.4em] uppercase text-white/70 mb-8 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)] font-mono">Why This Exists</div>
             <div className="space-y-8 text-base md:text-lg font-light leading-relaxed opacity-90 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
               <p>
                 There's something almost childlike about this experiment. You draw a house, you hide one room's name,
@@ -785,7 +785,7 @@ export default function CaseStudyWhatsInTheRoom() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
                 <div className="text-2xl md:text-3xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Explore the code</div>
-                <p className="text-sm font-light opacity-70 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">MIT Licensed. Open source.</p>
+                <p className="text-sm font-light text-white/85 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">MIT Licensed. Open source.</p>
               </div>
               <a
                 href="https://github.com/basedlsg/WhatsInTheRoom"
