@@ -1,3 +1,4 @@
+/// <reference types="@react-three/fiber" />
 import React, { useRef, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -206,7 +207,7 @@ void main() {
 `;
 
 // --- PARTICLE SYSTEM GENERATOR ---
-const PARTICLE_COUNT = 20000;
+const PARTICLE_COUNT = 15000;
 
 const generateParticles = (width: number, height: number) => {
   const pos0 = new Float32Array(PARTICLE_COUNT * 3); // Galaxy Spiral (Origin)
@@ -528,7 +529,7 @@ const CursorParticles = ({ mouse }: { mouse: THREE.Vector2 }) => {
   `;
 
   return (
-    <points ref={pointsRef}>
+    <points ref={pointsRef} frustumCulled={false}>
         <bufferGeometry>
             <bufferAttribute attach="attributes-position" count={positions.length/3} array={positions} itemSize={3} />
             <bufferAttribute attach="attributes-angle" count={angles.length} array={angles} itemSize={1} />
@@ -627,7 +628,7 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
         />
       </mesh>
 
-      <points ref={pointsRef}>
+      <points ref={pointsRef} frustumCulled={false}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" count={PARTICLE_COUNT} array={particles.pos0} itemSize={3} />
           <bufferAttribute attach="attributes-pos0" count={PARTICLE_COUNT} array={particles.pos0} itemSize={3} />
