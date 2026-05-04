@@ -6,13 +6,22 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 3000,
         host: '0.0.0.0',
       },
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      },
+      optimizeDeps: {
+        include: ['use-sync-external-store/shim/with-selector', 'stats.js'],
+        exclude: ['@react-three/drei']
+      },
+      build: {
+        sourcemap: false,
+        commonjsOptions: {
+          include: [/use-sync-external-store/, /node_modules/]
+        }
       },
       resolve: {
         alias: {

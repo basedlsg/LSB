@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
+import { useAppStore } from '../../store';
 import { Canvas } from '@react-three/fiber';
 import { View, Preload } from '@react-three/drei';
+import LivingRockExperience from '../LivingRockExperience';
 
 interface CanvasLayoutProps {
   children: React.ReactNode;
@@ -13,34 +15,38 @@ interface CanvasLayoutProps {
  */
 const CanvasLayout = ({ children }: CanvasLayoutProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollProgress = useAppStore(state => state.scrollProgress);
+  const mousePos = useAppStore(state => state.mousePos);
+  const route = useAppStore(state => state.route);
 
   return (
-    <div ref={containerRef} className="relative w-full h-full min-h-screen overflow-x-hidden">
-      {/* The persistent Canvas */}
-      <div className="fixed inset-0 z-0 bg-[#030106]">
+    <div ref={containerRef} className="relative w-full h-full bg-[#030106]">
+      {/* Persistent Canvas */}
+      <div className="fixed inset-0 z-0">
         <Canvas
-          eventSource={containerRef}
-          className="pointer-events-none"
+          shadows
           camera={{ position: [0, 0, 5], fov: 45 }}
-          gl={{ 
-            antialias: true, 
-            powerPreference: "high-performance",
-            alpha: false,
-            stencil: false,
-            depth: true 
-          }}
           dpr={[1, 2]}
+          gl={{ 
+            antialias: true,
+            alpha: true,
+            powerPreference: "high-performance"
+          }}
         >
-          {/* This renders everything from the 'track' refs in the app */}
-          <View.Port />
+          {route === '#/' && (
+            <LivingRockExperience
+              scrollProgress={scrollProgress}
+              mouse={mousePos}
+            />
+          )}
           
           {/* Optimization: Helps with shader compilation overhead */}
           <Preload all />
         </Canvas>
       </div>
 
-      {/* Main Content (Pages) */}
-      <div className="relative z-10 w-full h-full min-h-screen">
+      {/* Main UI Layer */}
+      <div className="relative z-10 w-full h-full">
         {children}
       </div>
     </div>

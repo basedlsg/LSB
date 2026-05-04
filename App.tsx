@@ -16,6 +16,8 @@ import CanvasLayout from './components/shared/CanvasLayout';
 import Nav from './components/shared/Nav';
 import { noteData } from './noteContent';
 
+import { useAppStore } from './store';
+
 // --- ANIMATED TEXT COMPONENT ---
 const RevealText = ({
   children,
@@ -83,9 +85,9 @@ const ChapterIndicator = ({ progress }: { progress: number }) => {
 // --- MAIN HOMEPAGE ---
 function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const viewRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const mousePos = useRef(new THREE.Vector2(0, 0));
+  const setScrollProgress = useAppStore(state => state.setScrollProgress);
+  const setMousePos = useAppStore(state => state.setMousePos);
+  const scrollProgress = useAppStore(state => state.scrollProgress);
 
   useEffect(() => {
     const calculateProgress = () => {
@@ -106,37 +108,22 @@ function HomePage() {
       handleScroll();
     }
     return () => container?.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [setScrollProgress]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      mousePos.current.set(
+      setMousePos(new THREE.Vector2(
         (e.clientX / window.innerWidth) * 2 - 1,
         -(e.clientY / window.innerHeight) * 2 + 1
-      );
+      ));
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [setMousePos]);
 
   return (
-    <div 
-      className="relative w-full h-screen overflow-hidden text-white font-body selection:bg-amber-warm/30"
-      style={{ backgroundColor: '#030106' }}
-    >
+    <div className="relative w-full h-screen overflow-hidden text-white font-body selection:bg-amber-warm/30">
       <ChapterIndicator progress={scrollProgress} />
-      
-      {/* 3D View Portal */}
-      <div ref={viewRef} className="absolute inset-0 z-0 pointer-events-none">
-        <View track={viewRef}>
-          <LivingRockExperience
-            scrollProgress={scrollProgress}
-            mouse={mousePos.current}
-            scrollContainerRef={scrollContainerRef}
-          />
-        </View>
-      </div>
-
       <Nav showBack={false} />
 
       {/* Content */}
@@ -168,7 +155,8 @@ function HomePage() {
             <div className="w-px h-16 bg-gradient-to-b from-bone/30 to-transparent animate-pulse" />
           </div>
         </section>
-
+        
+        {/* ... rest of sections ... */}
         <section className="h-screen w-full flex flex-col items-center justify-center snap-start relative px-8 md:px-16">
           <div className="max-w-4xl text-center space-y-12">
             <RevealText delay={0}>
@@ -265,10 +253,8 @@ function HomePage() {
 
 // --- ROUTER & ROOT ---
 export default function App() {
-  const [route, setRoute] = useState(() => {
-    const hash = window.location.hash || '#/';
-    return hash.split('?')[0].split('&')[0];
-  });
+  const setRoute = useAppStore(state => state.setRoute);
+  const route = useAppStore(state => state.route);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -279,7 +265,7 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange);
     handleHashChange();
     return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+  }, [setRoute]);
 
   const renderContent = () => {
     // Philosophy

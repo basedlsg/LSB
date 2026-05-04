@@ -1,3 +1,4 @@
+/// <reference types="@react-three/fiber" />
 import React, { useRef, useMemo, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -257,11 +258,14 @@ const LivingRockBackground = ({ scrollProgress, mouse }: { scrollProgress: numbe
     }
   });
 
+  const safeWidth = Number.isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 1;
+  const safeHeight = Number.isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 1;
+
   return (
     <>
       <mesh ref={meshRef} position={[0, 0, -1]}> 
         {/* Dynamic plane size based on viewport to ensure no "square" edges */}
-        <planeGeometry args={[viewport.width, viewport.height, 128, 128]} />
+        <planeGeometry args={[width, height, 128, 128]} />
         <shaderMaterial
           vertexShader={vertexShader}
           fragmentShader={fragmentShader}

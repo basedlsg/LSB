@@ -418,7 +418,7 @@ void main() {
   gl_Position = projectionMatrix * mvPosition;
 
   // Size Attenuation
-  gl_PointSize = (20.0 / -mvPosition.z);
+  gl_PointSize = (40.0 / -mvPosition.z);
   vSize = gl_PointSize;
 
   // Alpha / Fade logic
@@ -549,7 +549,7 @@ const CursorParticles = ({ mouse }: { mouse: THREE.Vector2 }) => {
 interface LivingRockExperienceProps {
   scrollProgress: number;
   mouse: THREE.Vector2;
-  scrollContainerRef: React.RefObject<HTMLDivElement>;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: LivingRockExperienceProps) => {
@@ -596,6 +596,10 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
     // Read scroll position directly from DOM every frame
     const currentScrollProgress = getScrollProgress();
 
+    // Guard against Infinity/NaN viewport (can happen during initialization or resize)
+    const safeVWidth = isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 1;
+    const safeVHeight = isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 1;
+
     // Always update uniforms every frame to prevent any freeze
     // Update particles
     if (pointsRef.current) {
@@ -603,7 +607,7 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
-      mat.uniforms.uViewport.value.set(viewport.width, viewport.height);
+      mat.uniforms.uViewport.value.set(safeVWidth, safeVHeight);
     }
     // Update rock background
     if (rockRef.current) {
@@ -611,11 +615,15 @@ const LivingRockExperience = ({ scrollProgress, mouse, scrollContainerRef }: Liv
       mat.uniforms.uTime.value = t;
       mat.uniforms.uScrollProgress.value = currentScrollProgress;
       mat.uniforms.uMouse.value.copy(mouse);
-      mat.uniforms.uViewport.value.set(viewport.width, viewport.height);
+      mat.uniforms.uViewport.value.set(safeVWidth, safeVHeight);
     }
   });
 
-  const bgScale: [number, number, number] = [viewport.width * 2.5, viewport.height * 2.5, 1];
+  const bgScale: [number, number, number] = [
+    (isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 1) * 2.5,
+    (isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 1) * 2.5,
+    1
+  ];
 
   return (
     <>

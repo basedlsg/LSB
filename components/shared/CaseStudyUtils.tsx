@@ -173,12 +173,15 @@ export function createGradientBg(fragmentShader: string) {
         (meshRef.current.material as THREE.ShaderMaterial).uniforms.uTime.value = state.clock.getElapsedTime();
       }
     });
-    return (
-      <mesh ref={meshRef} position={[0, 0, -5]}>
-        <planeGeometry args={[viewport.width * 2.5, viewport.height * 2.5]} />
-        <shaderMaterial vertexShader={bgVert} fragmentShader={fragmentShader} uniforms={uniforms} />
-      </mesh>
-    );
+      const safeWidth = Number.isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 1;
+      const safeHeight = Number.isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 1;
+      
+      return (
+        <mesh ref={meshRef} position={[0, 0, -5]}>
+          <planeGeometry args={[safeWidth * 2.5, safeHeight * 2.5]} />
+          <shaderMaterial vertexShader={bgVert} fragmentShader={fragmentShader} uniforms={uniforms} />
+        </mesh>
+      );
   };
 
   return BgComponent;

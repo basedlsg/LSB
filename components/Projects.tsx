@@ -227,6 +227,11 @@ const Background = ({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> })
     uMouse: { value: new THREE.Vector2(0, 0) }
   }), [mouse]);
 
+  const safeWidth = Number.isFinite(viewport.width) && viewport.width > 0 ? viewport.width : 1;
+  const safeHeight = Number.isFinite(viewport.height) && viewport.height > 0 ? viewport.height : 1;
+  const width = safeWidth * 2.5;
+  const height = safeHeight * 2.5;
+
   useFrame((state) => {
     if (meshRef.current) {
       const mat = meshRef.current.material as THREE.ShaderMaterial;
@@ -237,7 +242,7 @@ const Background = ({ mouse }: { mouse: React.MutableRefObject<THREE.Vector2> })
 
   return (
     <mesh ref={meshRef} position={[0, 0, -5]}>
-      <planeGeometry args={[viewport.width * 2.5, viewport.height * 2.5]} />
+      <planeGeometry args={[width, height]} />
       <shaderMaterial
         vertexShader={bgVertexShader}
         fragmentShader={bgFragmentShader}
@@ -308,7 +313,7 @@ export default function Projects() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-[#FDFBF7] font-body selection:bg-amber-warm/30 selection:text-white">
+    <div className="min-h-screen text-[#FDFBF7] font-body selection:bg-amber-warm/30 selection:text-white">
 
       {/* Shared Navigation */}
       <Nav showBack />
