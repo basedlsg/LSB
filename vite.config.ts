@@ -7,12 +7,17 @@ export default defineConfig(({ mode }) => {
     return {
       server: {
         port: 3000,
-        host: '0.0.0.0',
+        host: 'localhost',
+        strictPort: false,
       },
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      },
+      optimizeDeps: {
+        include: ['use-sync-external-store/shim/with-selector', 'stats.js'],
+        exclude: ['@react-three/drei']
       },
       resolve: {
         alias: {
