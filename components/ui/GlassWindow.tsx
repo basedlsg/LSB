@@ -1,0 +1,341 @@
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence, useMotionValue, useMotionTemplate } from 'framer-motion';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+import { Maximize2, Minimize2, X, Minus, RefreshCw } from 'lucide-react';
+import LiquidGlass from './LiquidGlass';
+
+function cn(...inputs: ClassValue[]) {
+    return twMerge(clsx(inputs));
+}
+
+interface GlassWindowProps {
+    children: React.ReactNode;
+    className?: string;
+    title?: string;
+    path?: string;
+    summary?: string;
+    expandedContent?: React.ReactNode;
+    defaultState?: 'open' | 'minimized' | 'maximized' | 'closed';
+    tone?: 'default' | 'aqua';
+}
+
+export function GlassWindow({
+    children,
+    className,
+    title = "Terminal",
+    path = "~/projects/spatial-lab",
+    summary = "Click to expand...",
+    expandedContent,
+    defaultState = 'open',
+    tone = 'default'
+}: GlassWindowProps) {
+    const [windowState, setWindowState] = useState<'open' | 'minimized' | 'maximized' | 'closed'>(defaultState);
+    const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+    const isAqua = tone === 'aqua';
+
+    const handleMouseMove = ({ currentTarget, clientX, clientY }: React.MouseEvent) => {
+        const { left, top } = currentTarget.getBoundingClientRect();
+        mouseX.set(clientX - left);
+        mouseY.set(clientY - top);
+    };
+
+    // Reopen Button State
+    if (windowState === 'closed') {
+        return (
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="flex items-center justify-center p-4"
+            >
+                <button
+                    onClick={() => setWindowState('open')}
+                    className="group flex items-center gap-3 px-6 py-3 rounded-full bg-black/40 backdrop-blur-md border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all shadow-xl"
+                >
+                    <div className="p-1.5 rounded-full bg-white/10 group-hover:rotate-180 transition-transform duration-500">
+                        <RefreshCw className="w-4 h-4 text-white/70" />
+                    </div>
+                    <span className="text-xs font-mono tracking-widest uppercase text-white/70 group-hover:text-white">Reopen {title}</span>
+                </button>
+            </motion.div>
+        );
+    }
+
+    // Scroll Lock Effect
+    React.useEffect(() => {
+        if (windowState === 'maximized') {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [windowState]);
+
+    const windowContent = (
+        <div
+            className={cn(
+                "group relative rounded-xl",
+                windowState === 'maximized' ? "fixed inset-4 md:inset-10 z-[9999] m-0 w-auto h-auto shadow-2xl" : "",
+                className
+            )}
+            onMouseMove={handleMouseMove}
+            onClick={(e) => {
+                if (windowState === 'maximized') {
+                    e.stopPropagation();
+                }
+            }}
+        >
+            {/* Always-visible border glow for edge definition */}
+            <div
+                className="absolute -inset-[1px] rounded-xl pointer-events-none z-30"
+                style={{
+                    background: isAqua
+                        ? 'linear-gradient(135deg, rgba(119,255,244,0.38) 0%, rgba(78,209,255,0.1) 50%, rgba(111,255,244,0.32) 100%)'
+                        : 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.1) 100%)',
+                    padding: '1px',
+                    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                    WebkitMaskComposite: 'xor',
+                    maskComposite: 'exclude'
+                }}
+            />
+
+            <LiquidGlass
+                className="h-full w-full rounded-xl overflow-hidden"
+                padding="0"
+                displacementScale={windowState === 'maximized' ? (isAqua ? 0.35 : 0.5) : (isAqua ? 1.15 : 1.5)}
+                blurAmount={isAqua ? 0.12 : 0.15}
+                saturation={isAqua ? 180 : 140}
+                aberrationIntensity={isAqua ? 1.5 : 0.5}
+                elasticity={0}
+                cornerRadius={12}
+                mode={isAqua ? "shader" : "standard"}
+            >
+                {/* Edge Vignette - darker around edges for framing */}
+                <div
+                    className="absolute inset-0 pointer-events-none z-0"
+                    style={{
+                        background: isAqua ? `
+                            radial-gradient(140% 90% at 0% 0%, rgba(168, 244, 255, 0.16) 0%, transparent 55%),
+                            radial-gradient(130% 90% at 100% 100%, rgba(18, 221, 201, 0.18) 0%, transparent 60%),
+                            linear-gradient(145deg, rgba(4, 24, 28, 0.6) 0%, rgba(4, 18, 24, 0.46) 35%, rgba(2, 11, 14, 0.7) 100%)
+                        ` : `
+                            radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%),
+                            linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 15%, transparent 85%, rgba(0,0,0,0.3) 100%)
+                        `
+                    }}
+                />
+
+                {/* Rainbow Refraction - prismatic effect following cursor */}
+                <motion.div
+                    className="pointer-events-none absolute inset-0 z-5 opacity-70"
+                    style={{
+                        background: isAqua ? useMotionTemplate`
+                            radial-gradient(
+                                220px circle at ${mouseX}px ${mouseY}px,
+                                rgba(107, 255, 244, 0.20) 0%,
+                                rgba(98, 206, 255, 0.14) 35%,
+                                rgba(38, 118, 138, 0.08) 60%,
+                                transparent 76%
+                            )
+                        ` : useMotionTemplate`
+                            radial-gradient(
+                                200px circle at ${mouseX}px ${mouseY}px,
+                                rgba(255,100,100,0.12) 0%,
+                                rgba(255,200,100,0.10) 15%,
+                                rgba(100,255,150,0.08) 30%,
+                                rgba(100,200,255,0.10) 45%,
+                                rgba(180,100,255,0.08) 60%,
+                                transparent 75%
+                            )
+                        `,
+                        mixBlendMode: 'screen'
+                    }}
+                />
+
+                {/* Secondary rainbow arc for more prismatic depth */}
+                <motion.div
+                    className="pointer-events-none absolute inset-0 z-5 opacity-50"
+                    style={{
+                        background: isAqua ? useMotionTemplate`
+                            radial-gradient(
+                                180px circle at ${mouseX}px ${mouseY}px,
+                                rgba(210, 255, 255, 0.16) 0%,
+                                rgba(124, 255, 241, 0.08) 40%,
+                                transparent 70%
+                            )
+                        ` : useMotionTemplate`
+                            radial-gradient(
+                                150px circle at ${mouseX}px ${mouseY}px,
+                                rgba(255,150,200,0.15) 0%,
+                                rgba(150,255,255,0.12) 25%,
+                                rgba(255,255,150,0.10) 50%,
+                                transparent 70%
+                            )
+                        `,
+                        mixBlendMode: 'overlay'
+                    }}
+                />
+
+                <div className="relative z-20 h-full flex flex-col">
+                    {/* Window Chrome / Header - darker for framing */}
+                    <div
+                        className={cn(
+                            "relative flex items-center justify-between px-6 py-4 border-b backdrop-blur-sm cursor-default select-none shrink-0",
+                            isAqua ? "border-cyan-200/20 bg-[#041318]/55" : "border-white/10 bg-black/40"
+                        )}
+                        onDoubleClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
+                        }}
+                    >
+                        {/* Traffic Lights */}
+                        <div className="flex items-center gap-2 group/controls z-10">
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState('closed');
+                                }}
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/20 border border-cyan-200/35" : "bg-[#FF5F56] border border-[#E0443E]/50"
+                                )}
+                                title="Close"
+                            >
+                                <X className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState(s => s === 'minimized' ? 'open' : 'minimized');
+                                }}
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/30 border border-cyan-200/35" : "bg-[#FFBD2E] border border-[#DEA123]/50"
+                                )}
+                                title="Minimize"
+                            >
+                                <Minus className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setWindowState(s => s === 'maximized' ? 'open' : 'maximized');
+                                }}
+                                className={cn(
+                                    "w-3 h-3 rounded-full shadow-inner flex items-center justify-center hover:brightness-90 transition-all",
+                                    isAqua ? "bg-cyan-300/40 border border-cyan-200/40" : "bg-[#27C93F] border border-[#1AAB29]/50"
+                                )}
+                                title="Maximize"
+                            >
+                                {windowState === 'maximized' ? (
+                                    <Minimize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                                ) : (
+                                    <Maximize2 className="w-2 h-2 text-black/50 opacity-0 group-hover/controls:opacity-100 transition-opacity" strokeWidth={3} />
+                                )}
+                            </button>
+                        </div>
+
+                        {/* Title */}
+                        <div className="absolute left-0 right-0 flex justify-center items-center gap-2 opacity-60 pointer-events-none">
+                            <span className={cn(
+                                "text-[11px] font-medium tracking-wide drop-shadow-md",
+                                isAqua ? "text-cyan-50/90" : "text-white/90"
+                            )}>{title}</span>
+                        </div>
+
+                        {/* Path */}
+                        <div className={cn(
+                            "text-[10px] font-mono tracking-tight hidden sm:block z-10",
+                            isAqua ? "text-cyan-100/35" : "text-white/30"
+                        )}>
+                            {path}
+                        </div>
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="relative overflow-hidden flex-1">
+                        <AnimatePresence mode="wait">
+                            {windowState === 'minimized' ? (
+                                <motion.div
+                                    key="summary"
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className={cn(
+                                        "px-6 py-4",
+                                        isAqua ? "bg-cyan-400/[0.03]" : "bg-white/[0.01]"
+                                    )}
+                                >
+                                    <p className={cn(
+                                        "text-sm font-light italic truncate",
+                                        isAqua ? "text-cyan-100/55" : "text-white/50"
+                                    )}>
+                                        {summary}
+                                    </p>
+                                </motion.div>
+                            ) : windowState === 'maximized' && expandedContent ? (
+                                <motion.div
+                                    key="expanded"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="p-10 md:p-16 h-[calc(100vh-120px)] overflow-y-auto"
+                                >
+                                    <div className="max-w-7xl mx-auto">
+                                        <div className={cn(
+                                            "mb-12 pb-8 border-b",
+                                            isAqua ? "border-cyan-200/20" : "border-white/10"
+                                        )}>
+                                            <h2 className="text-4xl md:text-5xl font-thin tracking-tight mb-4">{title}</h2>
+                                            <p className={cn(
+                                                "text-xl font-light",
+                                                isAqua ? "text-cyan-100/70" : "text-white/60"
+                                            )}>{summary}</p>
+                                        </div>
+                                        {expandedContent}
+                                    </div>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="content"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className={cn(
+                                        "p-8 md:p-10 transition-all duration-500 h-full",
+                                        windowState === 'maximized' ? "overflow-y-auto" : ""
+                                    )}
+                                >
+                                    {children}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+            </LiquidGlass>
+        </div>
+    );
+
+    if (windowState === 'maximized') {
+        return createPortal(
+            <div className={cn(
+                "fixed inset-0 z-[9999] backdrop-blur-sm",
+                isAqua ? "bg-[#01080a]/70" : "bg-black/60"
+            )} onClick={(e) => e.stopPropagation()}>
+                {windowContent}
+            </div>,
+            document.body
+        );
+    }
+
+    return windowContent;
+}

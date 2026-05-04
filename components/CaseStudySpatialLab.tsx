@@ -1,0 +1,625 @@
+import React, { useRef } from 'react';
+import { View } from '@react-three/drei';
+import { motion } from 'framer-motion';
+import Nav from './shared/Nav';
+import { GlassWindow } from './ui/GlassWindow';
+import { SpatialLabArchitecture } from './diagrams/SpatialLabArchitecture';
+import { CodebaseTree } from './diagrams/CodebaseTree';
+import { useControlledScroll, noiseFunctions, MetricCard, createParticleField, createParticleComponent, createGradientBg } from './shared/CaseStudyUtils';
+
+// --- CYAN/TEAL GRADIENT BACKGROUND ---
+const bgFragmentShader = `
+uniform float uTime;
+varying vec2 vUv;
+
+${noiseFunctions}
+
+void main() {
+  vec2 uv = vUv;
+  vec2 center = vec2(0.5);
+  float dist = length(uv - center);
+
+  vec3 abyssBlack = vec3(0.003, 0.012, 0.016);
+  vec3 deepTeal = vec3(0.010, 0.070, 0.090);
+  vec3 cyanAurora = vec3(0.020, 0.240, 0.280);
+  vec3 aquaGlow = vec3(0.050, 0.360, 0.340);
+  vec3 frostBlue = vec3(0.200, 0.520, 0.580);
+
+  float t = uTime * 0.04;
+  float n1 = snoise(vec3(uv * 1.5, t));
+  float n2 = snoise(vec3(uv * 3.0 + n1 * 0.4, t * 1.3));
+  float n3 = snoise(vec3(uv * 6.0 + n2 * 0.3, t * 0.7));
+  float n4 = snoise(vec3(uv * 12.0, t * 0.5));
+
+  float nebula1 = pow(n1 * 0.5 + 0.5, 1.5);
+  float nebula2 = pow(n2 * 0.5 + 0.5, 2.0);
+  float nebula3 = pow(max(0.0, n3), 3.0);
+
+  vec3 color = mix(abyssBlack, deepTeal, nebula1 * 0.5);
+  float cyanFlow = smoothstep(0.25, 0.85, dist) * nebula2;
+  color = mix(color, cyanAurora, cyanFlow * 0.45);
+  float highlights = nebula3 * smoothstep(0.7, 0.25, dist);
+  color = mix(color, aquaGlow, highlights * 0.38);
+  float coldMist = pow(n2 * 0.5 + 0.5, 2.4) * (1.0 - dist * 0.78);
+  color = mix(color, frostBlue, coldMist * 0.28);
+  color += n4 * 0.012;
+  float stars = pow(max(0.0, snoise(vec3(uv * 50.0, t * 0.1))), 12.0);
+  color += vec3(0.78, 0.99, 1.0) * stars * 0.2;
+  float vignette = smoothstep(1.2, 0.2, dist);
+  color *= 0.5 + vignette * 0.5;
+
+  gl_FragColor = vec4(color, 1.0);
+}
+`;
+
+const GradientBackground = createGradientBg(bgFragmentShader);
+const particleConfig = createParticleField(8000, 'vec3(0.72, 0.98, 0.96)');
+const ParticleField = createParticleComponent(particleConfig);
+
+const codebaseData = {
+  name: 'spatial_lab',
+  type: 'folder' as const,
+  children: [
+    {
+      name: 'environments',
+      type: 'folder' as const,
+      desc: 'Warehouse simulation',
+      children: [
+        { name: 'warehouse.py', type: 'file' as const, desc: 'Layout generation, physics' }
+      ]
+    },
+    {
+      name: 'coordination',
+      type: 'folder' as const,
+      desc: 'Multi-agent systems',
+      children: [
+        { name: 'fleet.py', type: 'file' as const, desc: 'Robot management' },
+        { name: 'pathfinding.py', type: 'file' as const, desc: 'A*, collision avoidance' },
+        { name: 'communication.py', type: 'file' as const, desc: 'Inter-robot messaging' }
+      ]
+    },
+    {
+      name: 'llm',
+      type: 'folder' as const,
+      desc: 'Language model integration',
+      children: [
+        { name: 'gemini.py', type: 'file' as const, desc: 'Google Gemini client' },
+        { name: 'openai.py', type: 'file' as const, desc: 'GPT-4 client' }
+      ]
+    },
+    {
+      name: 'evaluation',
+      type: 'folder' as const,
+      desc: 'Research framework',
+      children: [
+        { name: 'metrics.py', type: 'file' as const, desc: 'Performance measurement' },
+        { name: 'statistics.py', type: 'file' as const, desc: 'Significance testing' }
+      ]
+    },
+    { name: 'config.py', type: 'file' as const, desc: 'Experiment configuration' }
+  ]
+};
+
+// --- EXPANDED CONTENT ---
+const HypothesisExpanded = () => (
+  <div className="grid md:grid-cols-2 gap-12">
+    <div>
+      <h3 className="text-xl font-light mb-6">Research Context</h3>
+      <p className="text-sm font-light opacity-80 leading-relaxed mb-6">
+        Traditional robotics relies on SLAM (Simultaneous Localization and Mapping) and explicit geometric planning.
+        While robust, these systems lack semantic understanding. They know "obstacle at (x,y)" but not "that is a chair, I should move it."
+      </p>
+      <p className="text-sm font-light opacity-80 leading-relaxed">
+        Large Language Models (LLMs) have demonstrated remarkable reasoning capabilities in text.
+        Our hypothesis posits that this reasoning can be grounded in spatial environments without visual training,
+        using coordinate-based prompts to build an internal "mental map."
+      </p>
+    </div>
+    <div className="bg-cyan-400/5 rounded-xl p-6 border border-cyan-300/20">
+      <h4 className="text-xs font-mono uppercase tracking-widest opacity-50 mb-4">Experimental Setup</h4>
+      <ul className="space-y-4 text-sm font-mono">
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
+          <span>Model</span>
+          <span className="text-cyan-50/80">GPT-4 / Gemini Pro</span>
+        </li>
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
+          <span>Input</span>
+          <span className="text-cyan-50/80">JSON Grid State</span>
+        </li>
+        <li className="flex justify-between border-b border-cyan-200/10 pb-2">
+          <span>Output</span>
+          <span className="text-cyan-50/80">Action Vector (x, y)</span>
+        </li>
+        <li className="flex justify-between pb-2">
+          <span>Metric</span>
+          <span className="text-cyan-50/80">Path Optimality %</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+);
+
+const ResultsExpanded = () => (
+  <div className="space-y-12">
+    <div className="grid md:grid-cols-3 gap-6">
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
+        <div className="h-32 flex items-end gap-2 mb-4">
+          <div className="w-1/3 bg-white/10 rounded-t-sm h-[30%]" />
+          <div className="w-1/3 bg-white/20 rounded-t-sm h-[60%]" />
+          <div className="w-1/3 bg-green-500/50 rounded-t-sm h-[85%]" />
+        </div>
+        <div className="flex justify-between text-[10px] font-mono uppercase opacity-50">
+          <span>Random</span>
+          <span>Heuristic</span>
+          <span>LLM</span>
+        </div>
+        <div className="mt-4 text-center">
+          <div className="text-2xl font-thin">85%</div>
+          <div className="text-[10px] uppercase tracking-widest opacity-50">Success Rate</div>
+        </div>
+      </div>
+
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
+        <div className="h-32 flex items-end gap-2 mb-4">
+          <div className="w-1/3 bg-white/10 rounded-t-sm h-[40%]" />
+          <div className="w-1/3 bg-white/20 rounded-t-sm h-[55%]" />
+          <div className="w-1/3 bg-blue-500/50 rounded-t-sm h-[92%]" />
+        </div>
+        <div className="flex justify-between text-[10px] font-mono uppercase opacity-50">
+          <span>Random</span>
+          <span>Heuristic</span>
+          <span>LLM</span>
+        </div>
+        <div className="mt-4 text-center">
+          <div className="text-2xl font-thin">92%</div>
+          <div className="text-[10px] uppercase tracking-widest opacity-50">Collision Avoidance</div>
+        </div>
+      </div>
+
+      <div className="bg-cyan-400/5 p-6 rounded-xl border border-cyan-300/20">
+        <div className="h-32 flex items-end gap-2 mb-4">
+          <div className="w-1/3 bg-white/10 rounded-t-sm h-[20%]" />
+          <div className="w-1/3 bg-white/20 rounded-t-sm h-[45%]" />
+          <div className="w-1/3 bg-cyan-400/60 rounded-t-sm h-[81%]" />
+        </div>
+        <div className="flex justify-between text-[10px] font-mono uppercase opacity-50">
+          <span>Random</span>
+          <span>Heuristic</span>
+          <span>LLM</span>
+        </div>
+        <div className="mt-4 text-center">
+          <div className="text-2xl font-thin">81%</div>
+          <div className="text-[10px] uppercase tracking-widest opacity-50">Cooperation</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <h3 className="text-xl font-light mb-6">Detailed Analysis</h3>
+      <p className="text-sm font-light opacity-80 leading-relaxed max-w-3xl">
+        The data reveals a clear hierarchy of capability. While heuristic methods (A*) are optimal for single-agent pathfinding,
+        they fail in dynamic multi-agent scenarios without complex conflict resolution logic. The LLM agents, however,
+        demonstrated emergent cooperative behavior—waiting for others to pass, choosing alternate routes to avoid congestion—without
+        explicit programming. This suggests that "common sense" reasoning from language training transfers to spatial negotiation.
+      </p>
+    </div>
+  </div>
+);
+
+export default function CaseStudySpatialLab() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<HTMLDivElement>(null);
+  useControlledScroll(scrollContainerRef);
+
+  return (
+    <div
+      ref={scrollContainerRef}
+      className="h-screen overflow-y-auto overflow-x-hidden bg-[#01090c] text-[#E8FBFF] font-sans selection:bg-cyan-300/30 selection:text-white"
+    >
+
+      <div ref={viewRef} className="fixed inset-0 z-0 pointer-events-none">
+        <View track={viewRef}>
+          <GradientBackground />
+          <ParticleField />
+        </View>
+      </div>
+
+      <Nav />
+
+      <section data-section className="min-h-screen flex flex-col items-center justify-center px-6 md:px-12 pt-20 relative z-10">
+        <div className="text-center max-w-4xl">
+          <motion.div
+            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.0, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="inline-flex rounded-full border border-cyan-300/25 bg-cyan-400/10 px-4 py-1.5 text-[10px] md:text-xs tracking-[0.35em] uppercase text-cyan-100/90 mb-6 [text-shadow:_0_0_18px_rgba(18,221,201,0.6)] font-mono"
+          >
+            Case Study
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 30, filter: 'blur(15px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.2, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="text-5xl md:text-7xl lg:text-8xl font-thin tracking-tighter leading-[0.9] [text-shadow:_0_2px_30px_rgba(0,0,0,0.9),_0_4px_60px_rgba(0,0,0,0.8)]"
+          >
+            Spatial Lab
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 1.0, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="text-lg md:text-xl font-light tracking-wide opacity-80 mt-8 max-w-2xl mx-auto [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]"
+          >
+            Teaching AI to understand space — not through vision, but through reasoning
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-wrap justify-center gap-3 mt-10"
+          >
+            {['Python', 'AI Research', 'Spatial Intelligence', 'Simulation'].map((tag, i) => (
+              <motion.span
+                key={tag}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 1.0 + i * 0.1 }}
+                className="px-4 py-1.5 border border-cyan-300/30 rounded-full text-[10px] tracking-[0.15em] uppercase backdrop-blur-sm bg-cyan-400/10 text-cyan-100/90 font-mono"
+              >
+                {tag}
+              </motion.span>
+            ))}
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5, delay: 1.5 }}
+          className="absolute bottom-12 w-px h-16 bg-gradient-to-b from-cyan-200/0 via-cyan-200/70 to-cyan-200/0 animate-pulse"
+        />
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Hypothesis.md"
+            path="~/spatial-lab/docs"
+            summary="Investigating if language models can understand spatial relationships without visual input."
+            expandedContent={<HypothesisExpanded />}
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Question</div>
+            <blockquote className="text-2xl md:text-4xl lg:text-5xl font-thin leading-snug tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">
+              "Can an AI that's only ever read words understand how to move through a room?"
+            </blockquote>
+            <p className="text-base md:text-lg font-light opacity-70 mt-10 max-w-2xl leading-relaxed [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
+              Language models learn from text alone — they've never walked through a room or moved an object.
+              Yet somehow, they can often answer spatial questions correctly. This experiment explores a simple question:
+              how far does that understanding actually go?
+            </p>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-5xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="System_Architecture.canvas"
+            path="~/spatial-lab/design"
+            summary="Visualizing the flow from LLM reasoning to multi-agent simulation."
+            expandedContent={<div className="flex justify-center"><SpatialLabArchitecture /></div>}
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">System Architecture</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">How it works</h2>
+
+            <SpatialLabArchitecture />
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-5xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Components.json"
+            path="~/spatial-lab/src"
+            summary="Core modules: Simulation Environment, Multi-Agent Coordination, and LLM Reasoning Engine."
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Building Blocks</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What powers the experiment</h2>
+
+            <div className="grid md:grid-cols-2 gap-12 md:gap-16">
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="space-y-4">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">A World to Live In</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  A simulated grid environment where every position, obstacle, and path is visible.
+                  Small enough to hold in your head, detailed enough to reveal meaningful patterns.
+                </p>
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
+                  environments/ — simulation engine
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="space-y-4">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Movement & Coordination</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Multiple agents moving through shared space, avoiding collisions,
+                  finding paths, and working together — or getting in each other's way.
+                </p>
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
+                  coordination/ — path planning
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="space-y-4">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">The AI Mind</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Language models (GPT-4, Gemini) receive descriptions of the world and decide how to act.
+                  They see coordinates and consequences. Then they choose.
+                </p>
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
+                  llm/ — reasoning engine
+                </div>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="space-y-4">
+                <h3 className="text-xl font-light tracking-tight [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Measuring Truth</h3>
+                <p className="text-sm font-light opacity-70 leading-relaxed [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Every experiment runs with controls, statistics, and reproducibility.
+                  The goal isn't to prove anything — it's to see what's actually there.
+                </p>
+                <div className="pt-4 border-t border-cyan-300/20 text-xs font-mono opacity-50">
+                  evaluation/ — validation
+                </div>
+              </motion.div>
+            </div>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-5xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Results_Dashboard.py"
+            path="~/spatial-lab/analysis"
+            summary="LLM-guided agents achieved 85% success rate, significantly outperforming baselines."
+            expandedContent={<ResultsExpanded />}
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">What We Found</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-16 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">The numbers tell a story</h2>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-16"
+            >
+              <MetricCard value="85%" label="Found Good Paths" />
+              <MetricCard value="92%" label="Avoided Collisions" />
+              <MetricCard value="81%" label="Worked Together" />
+              <MetricCard value="+18.7%" label="vs. Baseline" />
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="grid md:grid-cols-2 gap-8"
+            >
+              <div className="p-6 border border-cyan-300/20 rounded-lg bg-cyan-400/5">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">Compared to Others</div>
+                <div className="space-y-3 text-sm font-light">
+                  <div className="flex justify-between">
+                    <span className="opacity-60">Random (no thinking)</span>
+                    <span className="font-mono">30% success</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="opacity-60">Simple rules</span>
+                    <span className="font-mono">60% success</span>
+                  </div>
+                  <div className="flex justify-between border-t border-cyan-300/20 pt-3 mt-3">
+                    <span className="opacity-60">With LLM reasoning</span>
+                    <span className="text-white font-mono">85% success</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 border border-cyan-300/20 rounded-lg bg-cyan-400/5">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 mb-4 font-mono">Is it Real?</div>
+                <div className="space-y-3 text-sm font-light">
+                  <div className="flex justify-between">
+                    <span className="opacity-60">Without LLM reasoning</span>
+                    <span className="font-mono">69.5% avg</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="opacity-60">With LLM reasoning</span>
+                    <span className="font-mono">82.5% avg</span>
+                  </div>
+                  <div className="flex justify-between border-t border-cyan-300/20 pt-3 mt-3">
+                    <span className="opacity-60">Statistically significant?</span>
+                    <span className="text-white font-mono">Yes (p &lt; 0.05)</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="File_Explorer"
+            path="~/spatial-lab"
+            summary="Browse the project structure: environments, coordination logic, and evaluation scripts."
+            expandedContent={<div className="p-8"><CodebaseTree data={codebaseData} /></div>}
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Structure</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Codebase</h2>
+
+            <CodebaseTree data={codebaseData} />
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="TODO.md"
+            path="~/spatial-lab"
+            summary="Current limitations include pathfinding optimization and production hardening."
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Honest Assessment</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Limitations</h2>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-6">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">Current State</div>
+                <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
+                    <span>LLM integration framework operational</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
+                    <span>Multi-robot coordination validated</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
+                    <span>Statistical validation framework</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-300 mt-0.5 font-mono">✓</span>
+                    <span>Reproducible experiment runners</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="space-y-6">
+                <div className="text-xs tracking-[0.2em] uppercase opacity-50 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)] font-mono">In Progress</div>
+                <ul className="space-y-3 text-sm font-light opacity-80 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
+                    <span>Full A* pathfinding implementation</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
+                    <span>Multi-agent conflict resolution</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
+                    <span>Automated test coverage</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-cyan-200 mt-0.5 font-mono">○</span>
+                    <span>Production hardening</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto text-center w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Reflection.md"
+            path="~/spatial-lab/thoughts"
+            summary="This project demonstrates the potential of LLMs to reason about complex physical systems."
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">The Bigger Picture</div>
+            <h2 className="text-3xl md:text-4xl font-thin tracking-tight mb-12 [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">What this project represents</h2>
+            <div className="grid md:grid-cols-3 gap-8 text-left">
+              <div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Building Complex Systems</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Taking a big question and breaking it into pieces that can actually be tested and measured
+                </p>
+              </div>
+              <div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Honest Inquiry</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Designing experiments that could fail — and learning from what they reveal either way
+                </p>
+              </div>
+              <div>
+                <div className="text-lg font-light mb-3 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">Pushing AI Forward</div>
+                <p className="text-sm font-light opacity-70 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">
+                  Exploring what language models can do beyond conversation — into understanding space itself
+                </p>
+              </div>
+            </div>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Journal.md"
+            path="~/personal/notes"
+            summary="Exploring the mechanical sense of 'self' in artificial agents."
+          >
+            <div className="text-[10px] tracking-[0.4em] uppercase opacity-50 mb-8 font-mono">Why This Exists</div>
+            <div className="space-y-8 text-base md:text-lg font-light leading-relaxed opacity-90 [text-shadow:_0_2px_10px_rgba(0,0,0,0.9)]">
+              <p>
+                I started Spatial Lab with something small and honest: a simple grid and a representation of a tiny robot.
+                I had experimented with 3D before — it was fascinating from an RL angle, but too heavy to fully understand
+                end-to-end without outside tools. I wanted a world I could actually hold in my head, inspect, tweak, and
+                run a complete experiment inside. In that sense, the grid made the most sense. It's stripped down enough
+                that every mistake, every decision, every pattern becomes visible.
+              </p>
+              <p>
+                The real question underneath all of this is whether a language model can develop a sense of "self" inside a space.
+                Not philosophically — mechanically. If it lives on a board, can it reason as if it is the agent moving on that board?
+                Can it understand the difference between itself, the objects, and the grid that contains them? I wanted to watch how
+                an LLM behaves when its entire world is coordinates and consequences, when every action shifts the reality it depends on.
+                The experiment isn't about grand theories — it's about seeing what an AI actually does when you give it a world,
+                however small, and tell it: <em className="opacity-100">go live in it.</em>
+              </p>
+            </div>
+          </GlassWindow>
+        </div>
+      </section>
+
+      <section data-section className="min-h-screen flex items-center justify-center px-6 md:px-12 relative z-10">
+        <div className="max-w-4xl mx-auto w-full">
+          <GlassWindow
+            tone="aqua"
+            title="Terminal"
+            path="~/spatial-lab"
+            summary="Ready to explore? View the full source code on GitHub."
+          >
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+              <div>
+                <div className="text-2xl md:text-3xl font-thin tracking-tight [text-shadow:_0_2px_20px_rgba(0,0,0,0.9)]">Explore the code</div>
+                <p className="text-sm font-light opacity-70 mt-2 [text-shadow:_0_1px_5px_rgba(0,0,0,0.9)]">MIT Licensed. Open source.</p>
+              </div>
+              <a
+                href="https://github.com/basedlsg/spatial-lab"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative px-10 py-4 bg-transparent overflow-hidden rounded-full transition-all hover:scale-105"
+              >
+                <div className="absolute inset-0 border border-cyan-300/35 rounded-full group-hover:border-cyan-100/80 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left opacity-10" />
+                <span className="relative text-sm font-bold tracking-[0.2em] uppercase font-mono">
+                  View on GitHub
+                </span>
+              </a>
+            </div>
+          </GlassWindow>
+        </div>
+      </section>
+
+    </div>
+  );
+}
